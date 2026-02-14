@@ -8,7 +8,7 @@ import {
   applyUpdateSetting,
   applyDeleteSetting,
   applyMoveSetting,
-} from './config-mutations.js'
+} from '../lib/config-writer.js'
 
 describe('readJsonFileSafe', () => {
   let tmpDir: string

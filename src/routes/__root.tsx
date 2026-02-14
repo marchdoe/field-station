@@ -1,4 +1,5 @@
-import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { HeadContent, Outlet, Scripts, createRootRoute, useRouter } from '@tanstack/react-router'
 import { getRegisteredProjects, scanForProjects } from '@/server/functions/projects.js'
 import { ToastProvider } from '@/components/ui/Toast.js'
 
@@ -66,6 +67,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const router = useRouter()
+
+  useEffect(() => {
+    const onFocus = () => router.invalidate()
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [router])
+
   return (
     <ToastProvider>
       <Outlet />

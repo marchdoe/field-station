@@ -1,193 +1,79 @@
-Welcome to your new TanStack Start app! 
+# Field Station
 
-# Getting Started
+A visual configuration explorer and management tool for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Browse, inspect, and edit your Claude Code settings, agents, commands, skills, hooks, and plugins through a local web interface instead of manually navigating `~/.claude/` and editing JSON files.
 
-To run this application:
+## Prerequisites
+
+- **Node.js** (modern version with ES module support)
+- **Claude Code** installed with a `~/.claude/` directory
+- At least one project registered in `~/.claude/projects/`
+
+## Getting Started
 
 ```bash
 npm install
 npm run dev
 ```
 
-# Building For Production
+The app runs at **http://localhost:3456**.
 
-To build this application for production:
+On first launch you'll see a welcome screen. Click **Run Setup** to scan for Claude Code projects and select which ones to track.
+
+## Building for Production
 
 ```bash
 npm run build
+npm run preview
 ```
+
+## What You Can Do
+
+### Global Settings
+
+View and edit configuration across all four layers — global, global local, project, and project local — with a merged "effective config" view. Sensitive values like API keys are automatically redacted.
+
+### Projects
+
+Browse all your registered Claude Code projects. Each project shows its path, whether a `CLAUDE.md` exists, and counts of agents, commands, and skills. Drill into any project to manage its resources.
+
+### Agents, Commands & Skills
+
+Browse, create, edit, and delete markdown-based resources:
+
+- **Agents** — custom AI agent definitions with frontmatter (name, description, tools)
+- **Commands** — slash commands organized by folder
+- **Skills** — skill packages with `SKILL.md` files
+
+Files are displayed with syntax-highlighted previews and parsed YAML frontmatter.
+
+### Hooks
+
+View hook configurations (SessionStart, Stop, PreToolUse, etc.) from your settings, with color-coded event types and handler details.
+
+### Plugins
+
+See installed plugins with version info, install dates, git commit SHAs, and enabled/disabled status. Links to plugin homepages when available.
+
+## Architecture
+
+Field Station is a full-stack TypeScript application built on [TanStack Start](https://tanstack.com/start) with file-based routing via [TanStack Router](https://tanstack.com/router). The server layer runs on [Nitro](https://nitro.build) and uses TanStack Start's `createServerFn` for server-side operations like reading/writing config files and scanning the filesystem.
+
+**Key libraries:**
+
+- **Tailwind CSS** — styling with a custom dark/light theme system
+- **Shiki** — dual-theme syntax highlighting for code and markdown previews
+- **react-markdown** — rendering markdown content with GFM support
+- **gray-matter** — parsing YAML frontmatter from resource files
+- **Zod** — schema validation
+- **Lucide React** — icons
 
 ## Testing
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
-
 ```bash
-npm run test
+npm run test        # run tests
+npm run typecheck   # type check
 ```
 
-## Styling
+## License
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `npm install @tailwindcss/vite tailwindcss -D`
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+Private

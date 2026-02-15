@@ -16,4 +16,5 @@ data/
 .playwright-mcp/
 .claude/
 .vscode/
+.worktrees/
 docs/

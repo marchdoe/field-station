@@ -4,8 +4,8 @@ import { LayerBadge } from "@/components/config/LayerBadge.js";
 import { SettingsViewer } from "@/components/config/SettingsViewer.js";
 import { AppShell } from "@/components/layout/AppShell.js";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog.js";
-import { getGlobalSettings, getGlobalSettingsLocal } from "@/server/functions/config.js";
 import { type ConfirmState, useSettingsMutations } from "@/lib/useSettingsMutations.js";
+import { getGlobalSettings, getGlobalSettingsLocal } from "@/server/functions/config.js";
 
 export const Route = createFileRoute("/global/settings")({
   loader: async () => {

@@ -9,34 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as GlobalAgentsAgentNameRouteImport } from './routes/global/agents/$agentName'
-import { Route as GlobalAgentsIndexRouteImport } from './routes/global/agents/index'
-import { Route as GlobalAgentsRouteRouteImport } from './routes/global/agents/route'
-import { Route as GlobalCommandsFolderCommandNameRouteImport } from './routes/global/commands/$folder.$commandName'
-import { Route as GlobalCommandsIndexRouteImport } from './routes/global/commands/index'
-import { Route as GlobalCommandsRouteRouteImport } from './routes/global/commands/route'
-import { Route as GlobalHooksRouteImport } from './routes/global/hooks'
-import { Route as GlobalIndexRouteImport } from './routes/global/index'
-import { Route as GlobalPluginsRouteImport } from './routes/global/plugins'
-import { Route as GlobalSettingsRouteImport } from './routes/global/settings'
-import { Route as GlobalSkillsSkillNameRouteImport } from './routes/global/skills/$skillName'
-import { Route as GlobalSkillsIndexRouteImport } from './routes/global/skills/index'
-import { Route as GlobalSkillsRouteRouteImport } from './routes/global/skills/route'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as ProjectsProjectIdAgentsAgentNameRouteImport } from './routes/projects/$projectId/agents/$agentName'
-import { Route as ProjectsProjectIdAgentsIndexRouteImport } from './routes/projects/$projectId/agents/index'
-import { Route as ProjectsProjectIdAgentsRouteRouteImport } from './routes/projects/$projectId/agents/route'
-import { Route as ProjectsProjectIdCommandsFolderCommandNameRouteImport } from './routes/projects/$projectId/commands/$folder.$commandName'
-import { Route as ProjectsProjectIdCommandsIndexRouteImport } from './routes/projects/$projectId/commands/index'
-import { Route as ProjectsProjectIdCommandsRouteRouteImport } from './routes/projects/$projectId/commands/route'
-import { Route as ProjectsProjectIdIndexRouteImport } from './routes/projects/$projectId/index'
-import { Route as ProjectsProjectIdRouteRouteImport } from './routes/projects/$projectId/route'
-import { Route as ProjectsProjectIdSettingsRouteImport } from './routes/projects/$projectId/settings'
-import { Route as ProjectsProjectIdSkillsSkillNameRouteImport } from './routes/projects/$projectId/skills/$skillName'
-import { Route as ProjectsProjectIdSkillsIndexRouteImport } from './routes/projects/$projectId/skills/index'
-import { Route as ProjectsProjectIdSkillsRouteRouteImport } from './routes/projects/$projectId/skills/route'
-import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
+import { Route as GlobalIndexRouteImport } from './routes/global/index'
+import { Route as GlobalSettingsRouteImport } from './routes/global/settings'
+import { Route as GlobalPluginsRouteImport } from './routes/global/plugins'
+import { Route as GlobalHooksRouteImport } from './routes/global/hooks'
+import { Route as ProjectsProjectIdRouteRouteImport } from './routes/projects/$projectId/route'
+import { Route as GlobalSkillsRouteRouteImport } from './routes/global/skills/route'
+import { Route as GlobalCommandsRouteRouteImport } from './routes/global/commands/route'
+import { Route as GlobalAgentsRouteRouteImport } from './routes/global/agents/route'
+import { Route as ProjectsProjectIdIndexRouteImport } from './routes/projects/$projectId/index'
+import { Route as GlobalSkillsIndexRouteImport } from './routes/global/skills/index'
+import { Route as GlobalCommandsIndexRouteImport } from './routes/global/commands/index'
+import { Route as GlobalAgentsIndexRouteImport } from './routes/global/agents/index'
+import { Route as ProjectsProjectIdSettingsRouteImport } from './routes/projects/$projectId/settings'
+import { Route as GlobalSkillsSkillNameRouteImport } from './routes/global/skills/$skillName'
+import { Route as GlobalAgentsAgentNameRouteImport } from './routes/global/agents/$agentName'
+import { Route as ProjectsProjectIdSkillsRouteRouteImport } from './routes/projects/$projectId/skills/route'
+import { Route as ProjectsProjectIdCommandsRouteRouteImport } from './routes/projects/$projectId/commands/route'
+import { Route as ProjectsProjectIdAgentsRouteRouteImport } from './routes/projects/$projectId/agents/route'
+import { Route as ProjectsProjectIdSkillsIndexRouteImport } from './routes/projects/$projectId/skills/index'
+import { Route as ProjectsProjectIdCommandsIndexRouteImport } from './routes/projects/$projectId/commands/index'
+import { Route as ProjectsProjectIdAgentsIndexRouteImport } from './routes/projects/$projectId/agents/index'
+import { Route as ProjectsProjectIdSkillsSkillNameRouteImport } from './routes/projects/$projectId/skills/$skillName'
+import { Route as ProjectsProjectIdAgentsAgentNameRouteImport } from './routes/projects/$projectId/agents/$agentName'
+import { Route as GlobalCommandsFolderCommandNameRouteImport } from './routes/global/commands/$folder.$commandName'
+import { Route as ProjectsProjectIdCommandsFolderCommandNameRouteImport } from './routes/projects/$projectId/commands/$folder.$commandName'
 
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
@@ -707,9 +707,8 @@ export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
-import type { createStart } from '@tanstack/react-start'
 import type { getRouter } from './router.tsx'
-
+import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true

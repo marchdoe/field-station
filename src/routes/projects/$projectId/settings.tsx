@@ -6,8 +6,8 @@ import { SettingsViewer } from "@/components/config/SettingsViewer.js";
 import { CodeViewer } from "@/components/files/CodeViewer.js";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog.js";
 import { ViewToggle } from "@/components/ui/ViewToggle.js";
-import { decodePath } from "@/lib/utils.js";
 import { type ConfirmState, useSettingsMutations } from "@/lib/useSettingsMutations.js";
+import { decodePath } from "@/lib/utils.js";
 import { getProjectSettings, getProjectSettingsLocal } from "@/server/functions/config.js";
 import type { ConfigLayer, ConfigLayerSource, JsonValue } from "@/types/config.js";
 

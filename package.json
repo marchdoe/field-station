@@ -7,6 +7,8 @@
     "build": "node ./node_modules/.bin/vite build",
     "preview": "node ./node_modules/.bin/vite preview",
     "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint .",
     "format": "biome format .",

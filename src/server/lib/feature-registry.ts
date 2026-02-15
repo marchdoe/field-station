@@ -1,4 +1,10 @@
-export type FeatureCategory = "experimental" | "model" | "ui" | "security" | "telemetry" | "advanced";
+export type FeatureCategory =
+  | "experimental"
+  | "model"
+  | "ui"
+  | "security"
+  | "telemetry"
+  | "advanced";
 
 export interface FeatureDefinition {
   key: string;

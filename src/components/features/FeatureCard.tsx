@@ -86,7 +86,12 @@ export function FeatureCard({ feature, onToggle, onValueChange }: FeatureCardPro
           <span className="font-medium text-text-primary text-sm">
             {isDocumented ? def.name : def.key}
           </span>
-          <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", categoryColors[def.category] ?? categoryColors.undocumented)}>
+          <span
+            className={cn(
+              "text-xs px-2 py-0.5 rounded-full font-medium",
+              categoryColors[def.category] ?? categoryColors.undocumented,
+            )}
+          >
             {def.category}
           </span>
           <span className="text-xs px-1.5 py-0.5 rounded bg-surface-2 text-text-muted font-mono">
@@ -96,9 +101,7 @@ export function FeatureCard({ feature, onToggle, onValueChange }: FeatureCardPro
         {isDocumented && (
           <code className="text-xs text-text-muted font-mono mt-0.5 block">{def.key}</code>
         )}
-        {def.description && (
-          <p className="text-sm text-text-secondary mt-1">{def.description}</p>
-        )}
+        {def.description && <p className="text-sm text-text-secondary mt-1">{def.description}</p>}
       </div>
     </div>
   );

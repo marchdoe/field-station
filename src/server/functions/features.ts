@@ -1,11 +1,11 @@
 import { join } from "node:path";
 import { createServerFn } from "@tanstack/react-start";
-import { resolveClaudeHome } from "../lib/claude-home.js";
+import type { JsonObject } from "@/types/config.js";
 import { scanClaudeBinary } from "../lib/claude-binary.js";
+import { resolveClaudeHome } from "../lib/claude-home.js";
+import { readJsonFileSafe } from "../lib/config-writer.js";
 import type { FeatureCategory, FeatureDefinition } from "../lib/feature-registry.js";
 import { getRegistryByKey } from "../lib/feature-registry.js";
-import { readJsonFileSafe } from "../lib/config-writer.js";
-import type { JsonObject } from "@/types/config.js";
 
 export interface Feature {
   definition: FeatureDefinition;

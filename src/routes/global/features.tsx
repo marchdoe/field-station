@@ -4,8 +4,8 @@ import { useState } from "react";
 import { FeatureList } from "@/components/features/FeatureList.js";
 import { AppShell } from "@/components/layout/AppShell.js";
 import { useToast } from "@/components/ui/Toast.js";
-import { getFeatures } from "@/server/functions/features.js";
 import { deleteSetting, updateSetting } from "@/server/functions/config-mutations.js";
+import { getFeatures } from "@/server/functions/features.js";
 
 export const Route = createFileRoute("/global/features")({
   loader: async () => {

@@ -57,7 +57,7 @@ export function FeatureList({ features, onToggle, onValueChange }: FeatureListPr
     for (const f of filtered) {
       const cat = f.definition.category;
       if (!groups.has(cat)) groups.set(cat, []);
-      groups.get(cat)!.push(f);
+      groups.get(cat)?.push(f);
     }
     return [...groups.entries()].sort(
       ([a], [b]) => (CATEGORY_ORDER[a] ?? 99) - (CATEGORY_ORDER[b] ?? 99),

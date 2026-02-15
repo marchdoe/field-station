@@ -1,41 +1,41 @@
-import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
-import type { ReactNode } from 'react'
-import { cn } from '@/lib/utils'
-import { X, CheckCircle, AlertCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, X } from "lucide-react";
+import type { ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface Toast {
-  id: number
-  message: string
-  type: 'success' | 'error'
+  id: number;
+  message: string;
+  type: "success" | "error";
 }
 
 interface ToastContextValue {
-  toast: (message: string, type?: 'success' | 'error') => void
+  toast: (message: string, type?: "success" | "error") => void;
 }
 
-const ToastContext = createContext<ToastContextValue | null>(null)
+const ToastContext = createContext<ToastContextValue | null>(null);
 
 export function useToast(): ToastContextValue {
-  const ctx = useContext(ToastContext)
-  if (!ctx) throw new Error('useToast must be used within ToastProvider')
-  return ctx
+  const ctx = useContext(ToastContext);
+  if (!ctx) throw new Error("useToast must be used within ToastProvider");
+  return ctx;
 }
 
 function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
   useEffect(() => {
-    const timer = setTimeout(onDismiss, 3000)
-    return () => clearTimeout(timer)
-  }, [onDismiss])
+    const timer = setTimeout(onDismiss, 3000);
+    return () => clearTimeout(timer);
+  }, [onDismiss]);
 
   return (
     <div
       className={cn(
-        'flex items-center gap-2 rounded-lg px-4 py-3 shadow-lg text-sm',
-        toast.type === 'success' && 'bg-success/10 text-success border border-success/20',
-        toast.type === 'error' && 'bg-danger/10 text-danger border border-danger/20',
+        "flex items-center gap-2 rounded-lg px-4 py-3 shadow-lg text-sm",
+        toast.type === "success" && "bg-success/10 text-success border border-success/20",
+        toast.type === "error" && "bg-danger/10 text-danger border border-danger/20",
       )}
     >
-      {toast.type === 'success' ? (
+      {toast.type === "success" ? (
         <CheckCircle className="w-4 h-4 shrink-0" />
       ) : (
         <AlertCircle className="w-4 h-4 shrink-0" />
@@ -45,21 +45,21 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
         <X className="w-3.5 h-3.5" />
       </button>
     </div>
-  )
+  );
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([])
-  const idRef = useRef(0)
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const idRef = useRef(0);
 
-  const addToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
-    const id = ++idRef.current
-    setToasts((prev) => [...prev, { id, message, type }])
-  }, [])
+  const addToast = useCallback((message: string, type: "success" | "error" = "success") => {
+    const id = ++idRef.current;
+    setToasts((prev) => [...prev, { id, message, type }]);
+  }, []);
 
   const removeToast = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id))
-  }, [])
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
 
   return (
     <ToastContext value={{ toast: addToast }}>
@@ -70,5 +70,5 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         ))}
       </div>
     </ToastContext>
-  )
+  );
 }

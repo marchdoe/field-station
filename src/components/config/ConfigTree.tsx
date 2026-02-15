@@ -1,41 +1,33 @@
-import { useState } from 'react'
-import {
-  File,
-  Folder,
-  FolderOpen,
-  ChevronRight,
-  ChevronDown,
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { ChevronDown, ChevronRight, File, Folder, FolderOpen } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface TreeItem {
-  name: string
-  type: 'file' | 'directory'
-  path: string
-  children?: TreeItem[]
+  name: string;
+  type: "file" | "directory";
+  path: string;
+  children?: TreeItem[];
 }
 
 interface ConfigTreeProps {
-  items: TreeItem[]
+  items: TreeItem[];
 }
 
 function TreeNode({ item, depth = 0 }: { item: TreeItem; depth?: number }) {
-  const [expanded, setExpanded] = useState(false)
-  const isDirectory = item.type === 'directory'
-  const hasChildren = isDirectory && item.children && item.children.length > 0
+  const [expanded, setExpanded] = useState(false);
+  const isDirectory = item.type === "directory";
+  const hasChildren = isDirectory && item.children && item.children.length > 0;
 
   return (
     <div>
       <button
         type="button"
         onClick={() => {
-          if (isDirectory) setExpanded((prev) => !prev)
+          if (isDirectory) setExpanded((prev) => !prev);
         }}
         className={cn(
-          'flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-sm text-text-secondary transition-colors',
-          isDirectory
-            ? 'cursor-pointer hover:bg-surface-2'
-            : 'cursor-default hover:bg-surface-2',
+          "flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-sm text-text-secondary transition-colors",
+          isDirectory ? "cursor-pointer hover:bg-surface-2" : "cursor-default hover:bg-surface-2",
         )}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
       >
@@ -63,13 +55,13 @@ function TreeNode({ item, depth = 0 }: { item: TreeItem; depth?: number }) {
 
       {expanded && hasChildren && (
         <div>
-          {item.children!.map((child) => (
+          {item.children?.map((child) => (
             <TreeNode key={child.path} item={child} depth={depth + 1} />
           ))}
         </div>
       )}
     </div>
-  )
+  );
 }
 
 export default function ConfigTree({ items }: ConfigTreeProps) {
@@ -79,5 +71,5 @@ export default function ConfigTree({ items }: ConfigTreeProps) {
         <TreeNode key={item.path} item={item} />
       ))}
     </div>
-  )
+  );
 }

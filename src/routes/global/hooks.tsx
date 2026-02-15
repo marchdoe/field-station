@@ -1,16 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Webhook, FileCode } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { listHookScripts, getHookConfig } from '@/server/functions/hooks.js'
-import { AppShell } from '@/components/layout/AppShell.js'
+import { createFileRoute } from "@tanstack/react-router";
+import { FileCode, Webhook } from "lucide-react";
+import { AppShell } from "@/components/layout/AppShell.js";
+import { cn } from "@/lib/utils";
+import { getHookConfig, listHookScripts } from "@/server/functions/hooks.js";
 
-export const Route = createFileRoute('/global/hooks')({
+export const Route = createFileRoute("/global/hooks")({
   loader: async () => {
-    const [scripts, config] = await Promise.all([
-      listHookScripts(),
-      getHookConfig(),
-    ])
-    return { scripts, config }
+    const [scripts, config] = await Promise.all([listHookScripts(), getHookConfig()]);
+    return { scripts, config };
   },
   component: GlobalHooksPage,
   pendingComponent: () => (
@@ -28,10 +25,10 @@ export const Route = createFileRoute('/global/hooks')({
       </div>
     </AppShell>
   ),
-})
+});
 
 function GlobalHooksPage() {
-  const { scripts, config } = Route.useLoaderData()
+  const { scripts, config } = Route.useLoaderData();
 
   return (
     <AppShell title="Global Hooks">
@@ -39,19 +36,15 @@ function GlobalHooksPage() {
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Global Hooks</h1>
           <p className="text-text-secondary mt-1">
-            Event-driven hooks from settings and{' '}
+            Event-driven hooks from settings and{" "}
             <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">~/.claude/hooks/</code>
           </p>
         </div>
 
         {config && Object.keys(config).length > 0 && (
           <div>
-            <h2 className="text-lg font-semibold text-text-primary mb-3">
-              Hook Configuration
-            </h2>
-            <p className="text-sm text-text-secondary mb-4">
-              Hooks defined in settings.json
-            </p>
+            <h2 className="text-lg font-semibold text-text-primary mb-3">Hook Configuration</h2>
+            <p className="text-sm text-text-secondary mb-4">Hooks defined in settings.json</p>
             <div className="space-y-3">
               {Object.entries(config).map(([event, hooks]) => (
                 <div
@@ -63,18 +56,18 @@ function GlobalHooksPage() {
                     <h3 className="font-semibold text-text-primary">{event}</h3>
                     <span
                       className={cn(
-                        'text-xs px-2 py-0.5 rounded-full font-medium',
-                        (event === 'SessionStart' || event === 'Stop') &&
-                          'bg-badge-success-bg text-badge-success-text',
-                        (event === 'PreToolUse' || event === 'PostToolUse') &&
-                          'bg-badge-info-bg text-badge-info-text',
-                        event === 'Notification' &&
-                          'bg-badge-warning-bg text-badge-warning-text',
-                        (event === 'SubagentStop' || event === 'UserPromptSubmit') &&
-                          'bg-accent/15 text-accent',
+                        "text-xs px-2 py-0.5 rounded-full font-medium",
+                        (event === "SessionStart" || event === "Stop") &&
+                          "bg-badge-success-bg text-badge-success-text",
+                        (event === "PreToolUse" || event === "PostToolUse") &&
+                          "bg-badge-info-bg text-badge-info-text",
+                        event === "Notification" && "bg-badge-warning-bg text-badge-warning-text",
+                        (event === "SubagentStop" || event === "UserPromptSubmit") &&
+                          "bg-accent/15 text-accent",
                       )}
                     >
-                      {Array.isArray(hooks) ? hooks.length : 0} handler{Array.isArray(hooks) && hooks.length !== 1 ? 's' : ''}
+                      {Array.isArray(hooks) ? hooks.length : 0} handler
+                      {Array.isArray(hooks) && hooks.length !== 1 ? "s" : ""}
                     </span>
                   </div>
                   {Array.isArray(hooks) &&
@@ -99,11 +92,9 @@ function GlobalHooksPage() {
         )}
 
         <div>
-          <h2 className="text-lg font-semibold text-text-primary mb-3">
-            Hook Scripts
-          </h2>
+          <h2 className="text-lg font-semibold text-text-primary mb-3">Hook Scripts</h2>
           <p className="text-sm text-text-secondary mb-4">
-            {scripts.length} script file{scripts.length !== 1 ? 's' : ''}
+            {scripts.length} script file{scripts.length !== 1 ? "s" : ""}
           </p>
 
           {scripts.length === 0 ? (
@@ -119,9 +110,7 @@ function GlobalHooksPage() {
                 >
                   <div className="flex items-center gap-2 px-4 py-3 border-b border-border-muted">
                     <FileCode className="w-4 h-4 text-accent" />
-                    <span className="font-medium text-text-primary text-sm">
-                      {script.fileName}
-                    </span>
+                    <span className="font-medium text-text-primary text-sm">{script.fileName}</span>
                   </div>
                   <pre className="text-sm p-4 overflow-x-auto text-text-secondary">
                     <code>{script.contentPreview}</code>
@@ -133,5 +122,5 @@ function GlobalHooksPage() {
         </div>
       </div>
     </AppShell>
-  )
+  );
 }

@@ -1,35 +1,32 @@
-import { cn } from '@/lib/utils'
+import { cn } from "@/lib/utils";
 
-type FileCardVariant = 'default' | 'agent' | 'command' | 'skill'
+type FileCardVariant = "default" | "agent" | "command" | "skill";
 
 interface FileCardProps {
-  name: string
-  description?: string
-  fileName: string
-  meta?: Record<string, string>
-  preview?: string
-  icon?: React.ReactNode
-  variant?: FileCardVariant
+  name: string;
+  description?: string;
+  fileName: string;
+  meta?: Record<string, string>;
+  preview?: string;
+  icon?: React.ReactNode;
+  variant?: FileCardVariant;
 }
 
-const variantStyles: Record<
-  FileCardVariant,
-  { border: string; iconBg: string }
-> = {
-  default: { border: '', iconBg: 'bg-surface-2' },
+const variantStyles: Record<FileCardVariant, { border: string; iconBg: string }> = {
+  default: { border: "", iconBg: "bg-surface-2" },
   agent: {
-    border: 'border-l-4 border-l-accent',
-    iconBg: 'bg-accent/15',
+    border: "border-l-4 border-l-accent",
+    iconBg: "bg-accent/15",
   },
   command: {
-    border: 'border-l-4 border-l-blue-500',
-    iconBg: 'bg-blue-500/15',
+    border: "border-l-4 border-l-blue-500",
+    iconBg: "bg-blue-500/15",
   },
   skill: {
-    border: 'border-l-4 border-l-amber-500',
-    iconBg: 'bg-amber-500/15',
+    border: "border-l-4 border-l-amber-500",
+    iconBg: "bg-amber-500/15",
   },
-}
+};
 
 export function FileCard({
   name,
@@ -38,14 +35,14 @@ export function FileCard({
   meta,
   preview,
   icon,
-  variant = 'default',
+  variant = "default",
 }: FileCardProps) {
-  const styles = variantStyles[variant]
+  const styles = variantStyles[variant];
 
   return (
     <div
       className={cn(
-        'rounded-xl border border-border-default bg-surface-1 p-4 transition-colors hover:border-border-muted hover:bg-surface-1/80',
+        "rounded-xl border border-border-default bg-surface-1 p-4 transition-colors hover:border-border-muted hover:bg-surface-1/80",
         styles.border,
       )}
     >
@@ -53,7 +50,7 @@ export function FileCard({
         {icon && (
           <div
             className={cn(
-              'mt-0.5 flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center',
+              "mt-0.5 flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center",
               styles.iconBg,
             )}
           >
@@ -66,9 +63,7 @@ export function FileCard({
       <p className="mb-2 text-xs text-text-muted">{fileName}</p>
 
       {description && (
-        <p className="mb-3 text-sm leading-relaxed text-text-secondary">
-          {description}
-        </p>
+        <p className="mb-3 text-sm leading-relaxed text-text-secondary">{description}</p>
       )}
 
       {meta && Object.keys(meta).length > 0 && (
@@ -77,8 +72,8 @@ export function FileCard({
             <span
               key={key}
               className={cn(
-                'inline-flex items-center rounded-full px-2 py-0.5 text-xs',
-                'bg-surface-2 text-text-secondary border border-border-muted',
+                "inline-flex items-center rounded-full px-2 py-0.5 text-xs",
+                "bg-surface-2 text-text-secondary border border-border-muted",
               )}
             >
               {key}: {value}
@@ -96,5 +91,5 @@ export function FileCard({
         </div>
       )}
     </div>
-  )
+  );
 }

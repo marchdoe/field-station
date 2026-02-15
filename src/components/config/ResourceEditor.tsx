@@ -1,36 +1,36 @@
-import { useState } from 'react'
-import { Save, X } from 'lucide-react'
+import { Save, X } from "lucide-react";
+import { useState } from "react";
 
-type ResourceType = 'agent' | 'command' | 'skill'
+type ResourceType = "agent" | "command" | "skill";
 
 interface FrontmatterField {
-  key: string
-  label: string
-  required?: boolean
+  key: string;
+  label: string;
+  required?: boolean;
 }
 
 const FRONTMATTER_FIELDS: Record<ResourceType, FrontmatterField[]> = {
   agent: [
-    { key: 'name', label: 'Name', required: true },
-    { key: 'description', label: 'Description' },
-    { key: 'tools', label: 'Tools' },
-    { key: 'color', label: 'Color' },
+    { key: "name", label: "Name", required: true },
+    { key: "description", label: "Description" },
+    { key: "tools", label: "Tools" },
+    { key: "color", label: "Color" },
   ],
   command: [],
   skill: [
-    { key: 'name', label: 'Name', required: true },
-    { key: 'description', label: 'Description' },
-    { key: 'allowed-tools', label: 'Allowed Tools' },
+    { key: "name", label: "Name", required: true },
+    { key: "description", label: "Description" },
+    { key: "allowed-tools", label: "Allowed Tools" },
   ],
-}
+};
 
 interface ResourceEditorProps {
-  type: ResourceType
-  frontmatter: Record<string, string>
-  body: string
-  saving?: boolean
-  onSave: (frontmatter: Record<string, string>, body: string) => void
-  onCancel: () => void
+  type: ResourceType;
+  frontmatter: Record<string, string>;
+  body: string;
+  saving?: boolean;
+  onSave: (frontmatter: Record<string, string>, body: string) => void;
+  onCancel: () => void;
 }
 
 export function ResourceEditor({
@@ -41,17 +41,17 @@ export function ResourceEditor({
   onSave,
   onCancel,
 }: ResourceEditorProps) {
-  const fields = FRONTMATTER_FIELDS[type]
-  const [frontmatter, setFrontmatter] = useState<Record<string, string>>({ ...initialFrontmatter })
-  const [body, setBody] = useState(initialBody)
+  const fields = FRONTMATTER_FIELDS[type];
+  const [frontmatter, setFrontmatter] = useState<Record<string, string>>({ ...initialFrontmatter });
+  const [body, setBody] = useState(initialBody);
 
   const updateField = (key: string, value: string) => {
-    setFrontmatter((prev) => ({ ...prev, [key]: value }))
-  }
+    setFrontmatter((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handleSave = () => {
-    onSave(frontmatter, body)
-  }
+    onSave(frontmatter, body);
+  };
 
   return (
     <div className="space-y-4">
@@ -72,7 +72,7 @@ export function ResourceEditor({
               <input
                 id={`field-${field.key}`}
                 type="text"
-                value={frontmatter[field.key] ?? ''}
+                value={frontmatter[field.key] ?? ""}
                 onChange={(e) => updateField(field.key, e.target.value)}
                 className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
               />
@@ -104,7 +104,7 @@ export function ResourceEditor({
           className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50 transition-colors"
         >
           <Save className="w-4 h-4" />
-          {saving ? 'Saving...' : 'Save'}
+          {saving ? "Saving..." : "Save"}
         </button>
         <button
           onClick={onCancel}
@@ -116,5 +116,5 @@ export function ResourceEditor({
         </button>
       </div>
     </div>
-  )
+  );
 }

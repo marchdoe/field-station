@@ -1,9 +1,9 @@
-import Sidebar from './Sidebar'
-import Header from './Header'
+import Header from "./Header";
+import Sidebar from "./Sidebar";
 
 interface AppShellProps {
-  children: React.ReactNode
-  title?: string
+  children: React.ReactNode;
+  title?: string;
 }
 
 export function AppShell({ children, title }: AppShellProps) {
@@ -15,5 +15,5 @@ export function AppShell({ children, title }: AppShellProps) {
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
-  )
+  );
 }

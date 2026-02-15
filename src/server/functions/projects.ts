@@ -1,76 +1,81 @@
-import { createServerFn } from '@tanstack/react-start'
-import { z } from 'zod'
-import { readdirSync, readFileSync, existsSync, writeFileSync, statSync } from 'node:fs'
-import { join } from 'node:path'
-import { homedir } from 'node:os'
-import { resolveClaudeHome } from '../lib/claude-home.js'
-import { redactSensitiveValues } from '../lib/redact.js'
-import { projectPathInput } from '../lib/validation.js'
-import { decodePath } from '@/lib/utils.js'
-import type { ProjectInfo, ProjectSummary, GlobalStats, ClaudeSettings, JsonObject } from '@/types/config.js'
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { decodePath } from "@/lib/utils.js";
+import type {
+  ClaudeSettings,
+  GlobalStats,
+  JsonObject,
+  ProjectInfo,
+  ProjectSummary,
+} from "@/types/config.js";
+import { resolveClaudeHome } from "../lib/claude-home.js";
+import { redactSensitiveValues } from "../lib/redact.js";
+import { projectPathInput } from "../lib/validation.js";
 
 function countMdFiles(dir: string): number {
-  if (!existsSync(dir)) return 0
+  if (!existsSync(dir)) return 0;
   try {
-    return readdirSync(dir).filter((f) => f.endsWith('.md')).length
+    return readdirSync(dir).filter((f) => f.endsWith(".md")).length;
   } catch {
-    return 0
+    return 0;
   }
 }
 
 function countCommandFiles(dir: string): { folders: number; files: number } {
-  if (!existsSync(dir)) return { folders: 0, files: 0 }
+  if (!existsSync(dir)) return { folders: 0, files: 0 };
   try {
-    let folders = 0
-    let files = 0
+    let folders = 0;
+    let files = 0;
     for (const entry of readdirSync(dir)) {
-      const entryPath = join(dir, entry)
+      const entryPath = join(dir, entry);
       if (statSync(entryPath).isDirectory()) {
-        folders++
-        files += readdirSync(entryPath).filter((f) => f.endsWith('.md')).length
+        folders++;
+        files += readdirSync(entryPath).filter((f) => f.endsWith(".md")).length;
       }
     }
-    return { folders, files }
+    return { folders, files };
   } catch {
-    return { folders: 0, files: 0 }
+    return { folders: 0, files: 0 };
   }
 }
 
 function countSkillFolders(dir: string): number {
-  if (!existsSync(dir)) return 0
+  if (!existsSync(dir)) return 0;
   try {
     return readdirSync(dir).filter((entry) => {
-      const entryPath = join(dir, entry)
-      return statSync(entryPath).isDirectory() && existsSync(join(entryPath, 'SKILL.md'))
-    }).length
+      const entryPath = join(dir, entry);
+      return statSync(entryPath).isDirectory() && existsSync(join(entryPath, "SKILL.md"));
+    }).length;
   } catch {
-    return 0
+    return 0;
   }
 }
 
-export const scanForProjects = createServerFn({ method: 'GET' }).handler(
+export const scanForProjects = createServerFn({ method: "GET" }).handler(
   async (): Promise<ProjectInfo[]> => {
-    const projectsDir = join(resolveClaudeHome(), 'projects')
-    if (!existsSync(projectsDir)) return []
+    const projectsDir = join(resolveClaudeHome(), "projects");
+    if (!existsSync(projectsDir)) return [];
 
-    const entries = readdirSync(projectsDir)
-    const projects: ProjectInfo[] = []
-    const home = homedir()
+    const entries = readdirSync(projectsDir);
+    const projects: ProjectInfo[] = [];
+    const home = homedir();
 
     for (const encoded of entries) {
-      const entryPath = join(projectsDir, encoded)
-      if (!statSync(entryPath).isDirectory()) continue
+      const entryPath = join(projectsDir, encoded);
+      if (!statSync(entryPath).isDirectory()) continue;
 
-      const decoded = decodePath(encoded)
+      const decoded = decodePath(encoded);
 
       // Skip if this project's .claude/ is the global config directory
-      if (decoded === home) continue
-      const projectExists = existsSync(decoded)
-      const claudeDir = join(decoded, '.claude')
-      const hasClaudeDir = existsSync(claudeDir)
+      if (decoded === home) continue;
+      const projectExists = existsSync(decoded);
+      const claudeDir = join(decoded, ".claude");
+      const hasClaudeDir = existsSync(claudeDir);
       const hasClaudeMd =
-        existsSync(join(decoded, 'CLAUDE.md')) ||
-        existsSync(join(decoded, 'claude.md'))
+        existsSync(join(decoded, "CLAUDE.md")) || existsSync(join(decoded, "claude.md"));
 
       projects.push({
         encodedPath: encoded,
@@ -78,44 +83,41 @@ export const scanForProjects = createServerFn({ method: 'GET' }).handler(
         exists: projectExists,
         hasClaudeDir,
         hasClaudeMd,
-        agentCount: countMdFiles(join(claudeDir, 'agents')),
-        commandCount: countCommandFiles(join(claudeDir, 'commands')).files,
-        skillCount: countSkillFolders(join(claudeDir, 'skills')),
-      })
+        agentCount: countMdFiles(join(claudeDir, "agents")),
+        commandCount: countCommandFiles(join(claudeDir, "commands")).files,
+        skillCount: countSkillFolders(join(claudeDir, "skills")),
+      });
     }
 
-    return projects
+    return projects;
   },
-)
+);
 
-export const getProjectSummary = createServerFn({ method: 'GET' })
+export const getProjectSummary = createServerFn({ method: "GET" })
   .inputValidator(projectPathInput)
   .handler(async ({ data }): Promise<ProjectSummary> => {
-    const { projectPath } = data
-    const encoded = '-' + projectPath.slice(1).replace(/\//g, '-')
-    const claudeDir = join(projectPath, '.claude')
-    const hasClaudeDir = existsSync(claudeDir)
+    const { projectPath } = data;
+    const encoded = `-${projectPath.slice(1).replace(/\//g, "-")}`;
+    const claudeDir = join(projectPath, ".claude");
+    const hasClaudeDir = existsSync(claudeDir);
 
-    let claudeMdPreview = ''
-    const claudeMdPath = existsSync(join(projectPath, 'CLAUDE.md'))
-      ? join(projectPath, 'CLAUDE.md')
-      : existsSync(join(projectPath, 'claude.md'))
-        ? join(projectPath, 'claude.md')
-        : null
+    let claudeMdPreview = "";
+    const claudeMdPath = existsSync(join(projectPath, "CLAUDE.md"))
+      ? join(projectPath, "CLAUDE.md")
+      : existsSync(join(projectPath, "claude.md"))
+        ? join(projectPath, "claude.md")
+        : null;
 
     if (claudeMdPath) {
-      const content = readFileSync(claudeMdPath, 'utf-8')
-      const lines = content.split('\n')
-      claudeMdPreview =
-        lines.length > 20
-          ? lines.slice(0, 20).join('\n') + '\n...'
-          : content
+      const content = readFileSync(claudeMdPath, "utf-8");
+      const lines = content.split("\n");
+      claudeMdPreview = lines.length > 20 ? `${lines.slice(0, 20).join("\n")}\n...` : content;
     }
 
-    const settingsPath = join(claudeDir, 'settings.json')
-    const settingsLocalPath = join(claudeDir, 'settings.local.json')
+    const settingsPath = join(claudeDir, "settings.json");
+    const settingsLocalPath = join(claudeDir, "settings.local.json");
 
-    const cmdCounts = countCommandFiles(join(claudeDir, 'commands'))
+    const cmdCounts = countCommandFiles(join(claudeDir, "commands"));
 
     const summary: ProjectSummary = {
       path: projectPath,
@@ -126,52 +128,52 @@ export const getProjectSummary = createServerFn({ method: 'GET' })
       claudeMdPreview,
       settings: existsSync(settingsPath)
         ? {
-            source: 'project' as const,
+            source: "project" as const,
             filePath: settingsPath,
             exists: true,
-            content: JSON.parse(readFileSync(settingsPath, 'utf-8')) as JsonObject,
+            content: JSON.parse(readFileSync(settingsPath, "utf-8")) as JsonObject,
           }
         : null,
       settingsLocal: existsSync(settingsLocalPath)
         ? {
-            source: 'project-local' as const,
+            source: "project-local" as const,
             filePath: settingsLocalPath,
             exists: true,
-            content: JSON.parse(readFileSync(settingsLocalPath, 'utf-8')) as JsonObject,
+            content: JSON.parse(readFileSync(settingsLocalPath, "utf-8")) as JsonObject,
           }
         : null,
-      agentCount: countMdFiles(join(claudeDir, 'agents')),
+      agentCount: countMdFiles(join(claudeDir, "agents")),
       commandFolderCount: cmdCounts.folders,
       commandCount: cmdCounts.files,
-      skillCount: countSkillFolders(join(claudeDir, 'skills')),
-    }
+      skillCount: countSkillFolders(join(claudeDir, "skills")),
+    };
 
-    return redactSensitiveValues(summary)
-  })
+    return redactSensitiveValues(summary);
+  });
 
-export const getGlobalStats = createServerFn({ method: 'GET' }).handler(
+export const getGlobalStats = createServerFn({ method: "GET" }).handler(
   async (): Promise<GlobalStats> => {
-    const claudeHome = resolveClaudeHome()
+    const claudeHome = resolveClaudeHome();
 
-    const settingsExists = existsSync(join(claudeHome, 'settings.json'))
-    const settingsLocalExists = existsSync(join(claudeHome, 'settings.local.json'))
-    const agentCount = countMdFiles(join(claudeHome, 'agents'))
-    const cmdCounts = countCommandFiles(join(claudeHome, 'commands'))
-    const skillCount = countSkillFolders(join(claudeHome, 'skills'))
+    const settingsExists = existsSync(join(claudeHome, "settings.json"));
+    const settingsLocalExists = existsSync(join(claudeHome, "settings.local.json"));
+    const agentCount = countMdFiles(join(claudeHome, "agents"));
+    const cmdCounts = countCommandFiles(join(claudeHome, "commands"));
+    const skillCount = countSkillFolders(join(claudeHome, "skills"));
 
-    let hookScriptCount = 0
-    const hooksDir = join(claudeHome, 'hooks')
+    let hookScriptCount = 0;
+    const hooksDir = join(claudeHome, "hooks");
     if (existsSync(hooksDir)) {
-      hookScriptCount = readdirSync(hooksDir).filter((f) => f.endsWith('.js')).length
+      hookScriptCount = readdirSync(hooksDir).filter((f) => f.endsWith(".js")).length;
     }
 
-    let pluginCount = 0
-    let enabledPluginCount = 0
-    const pluginsPath = join(claudeHome, 'plugins', 'installed_plugins.json')
+    let pluginCount = 0;
+    let enabledPluginCount = 0;
+    const pluginsPath = join(claudeHome, "plugins", "installed_plugins.json");
     if (existsSync(pluginsPath)) {
       try {
-        const pData = JSON.parse(readFileSync(pluginsPath, 'utf-8'))
-        pluginCount = Object.keys(pData.plugins || {}).length
+        const pData = JSON.parse(readFileSync(pluginsPath, "utf-8"));
+        pluginCount = Object.keys(pData.plugins || {}).length;
       } catch {
         // ignore
       }
@@ -179,26 +181,26 @@ export const getGlobalStats = createServerFn({ method: 'GET' }).handler(
     if (settingsExists) {
       try {
         const settings = JSON.parse(
-          readFileSync(join(claudeHome, 'settings.json'), 'utf-8'),
-        ) as ClaudeSettings
+          readFileSync(join(claudeHome, "settings.json"), "utf-8"),
+        ) as ClaudeSettings;
         if (settings.enabledPlugins) {
-          enabledPluginCount = Object.values(settings.enabledPlugins).filter(Boolean).length
+          enabledPluginCount = Object.values(settings.enabledPlugins).filter(Boolean).length;
         }
       } catch {
         // ignore
       }
     }
 
-    const projectsDir = join(claudeHome, 'projects')
-    let projectCount = 0
+    const projectsDir = join(claudeHome, "projects");
+    let projectCount = 0;
     if (existsSync(projectsDir)) {
       projectCount = readdirSync(projectsDir).filter((e) => {
         try {
-          return statSync(join(projectsDir, e)).isDirectory()
+          return statSync(join(projectsDir, e)).isDirectory();
         } catch {
-          return false
+          return false;
         }
-      }).length
+      }).length;
     }
 
     return {
@@ -212,31 +214,31 @@ export const getGlobalStats = createServerFn({ method: 'GET' }).handler(
       pluginCount,
       enabledPluginCount,
       projectCount,
-    }
+    };
   },
-)
+);
 
-const DATA_FILE = join(process.cwd(), 'data', 'projects.json')
+const DATA_FILE = join(process.cwd(), "data", "projects.json");
 
-export const getRegisteredProjects = createServerFn({ method: 'GET' }).handler(
+export const getRegisteredProjects = createServerFn({ method: "GET" }).handler(
   async (): Promise<string[]> => {
-    if (!existsSync(DATA_FILE)) return []
+    if (!existsSync(DATA_FILE)) return [];
     try {
-      return JSON.parse(readFileSync(DATA_FILE, 'utf-8')) as string[]
+      return JSON.parse(readFileSync(DATA_FILE, "utf-8")) as string[];
     } catch {
-      return []
+      return [];
     }
   },
-)
+);
 
-export const registerProjects = createServerFn({ method: 'POST' })
+export const registerProjects = createServerFn({ method: "POST" })
   .inputValidator(z.object({ paths: z.array(z.string()) }))
   .handler(async ({ data }): Promise<string[]> => {
-    const dir = join(process.cwd(), 'data')
+    const dir = join(process.cwd(), "data");
     if (!existsSync(dir)) {
-      const { mkdirSync } = await import('node:fs')
-      mkdirSync(dir, { recursive: true })
+      const { mkdirSync } = await import("node:fs");
+      mkdirSync(dir, { recursive: true });
     }
-    writeFileSync(DATA_FILE, JSON.stringify(data.paths, null, 2))
-    return data.paths
-  })
+    writeFileSync(DATA_FILE, JSON.stringify(data.paths, null, 2));
+    return data.paths;
+  });

@@ -1,21 +1,21 @@
-import { useState } from 'react'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { getGlobalSettings, getGlobalSettingsLocal } from '@/server/functions/config.js'
-import { updateSetting, deleteSetting, moveSetting } from '@/server/functions/config-mutations.js'
-import { AppShell } from '@/components/layout/AppShell.js'
-import { SettingsViewer } from '@/components/config/SettingsViewer.js'
-import { LayerBadge } from '@/components/config/LayerBadge.js'
-import { useToast } from '@/components/ui/Toast.js'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog.js'
-import type { JsonValue, ConfigLayerSource } from '@/types/config.js'
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
+import { LayerBadge } from "@/components/config/LayerBadge.js";
+import { SettingsViewer } from "@/components/config/SettingsViewer.js";
+import { AppShell } from "@/components/layout/AppShell.js";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog.js";
+import { useToast } from "@/components/ui/Toast.js";
+import { getGlobalSettings, getGlobalSettingsLocal } from "@/server/functions/config.js";
+import { deleteSetting, moveSetting, updateSetting } from "@/server/functions/config-mutations.js";
+import type { ConfigLayerSource, JsonValue } from "@/types/config.js";
 
-export const Route = createFileRoute('/global/settings')({
+export const Route = createFileRoute("/global/settings")({
   loader: async () => {
     const [settings, settingsLocal] = await Promise.all([
       getGlobalSettings(),
       getGlobalSettingsLocal(),
-    ])
-    return { settings, settingsLocal }
+    ]);
+    return { settings, settingsLocal };
   },
   component: GlobalSettingsPage,
   pendingComponent: () => (
@@ -33,78 +33,78 @@ export const Route = createFileRoute('/global/settings')({
       </div>
     </AppShell>
   ),
-})
+});
 
 function GlobalSettingsPage() {
-  const { settings, settingsLocal } = Route.useLoaderData()
-  const router = useRouter()
-  const { toast } = useToast()
+  const { settings, settingsLocal } = Route.useLoaderData();
+  const router = useRouter();
+  const { toast } = useToast();
 
   // Confirmation dialog state
   const [confirmState, setConfirmState] = useState<{
-    open: boolean
-    title: string
-    message: string
-    action: () => Promise<void>
-  } | null>(null)
+    open: boolean;
+    title: string;
+    message: string;
+    action: () => Promise<void>;
+  } | null>(null);
 
   function createHandlers(layer: ConfigLayerSource) {
     return {
       onUpdate: async (keyPath: string, value: JsonValue) => {
         try {
-          await updateSetting({ data: { layer, keyPath, value } })
-          toast(`Updated "${keyPath}"`)
-          router.invalidate()
+          await updateSetting({ data: { layer, keyPath, value } });
+          toast(`Updated "${keyPath}"`);
+          router.invalidate();
         } catch (e) {
-          toast(`Failed to update "${keyPath}": ${(e as Error).message}`, 'error')
+          toast(`Failed to update "${keyPath}": ${(e as Error).message}`, "error");
         }
       },
       onDelete: (keyPath: string) => {
         setConfirmState({
           open: true,
-          title: 'Delete Setting',
+          title: "Delete Setting",
           message: `Are you sure you want to delete "${keyPath}" from the ${layer} layer?`,
           action: async () => {
             try {
-              await deleteSetting({ data: { layer, keyPath } })
-              toast(`Deleted "${keyPath}"`)
-              router.invalidate()
+              await deleteSetting({ data: { layer, keyPath } });
+              toast(`Deleted "${keyPath}"`);
+              router.invalidate();
             } catch (e) {
-              toast(`Failed to delete "${keyPath}": ${(e as Error).message}`, 'error')
+              toast(`Failed to delete "${keyPath}": ${(e as Error).message}`, "error");
             }
           },
-        })
+        });
       },
       onMove: (keyPath: string, targetLayer: ConfigLayerSource) => {
         setConfirmState({
           open: true,
-          title: 'Move Setting',
+          title: "Move Setting",
           message: `Move "${keyPath}" from ${layer} to ${targetLayer}?`,
           action: async () => {
             try {
-              await moveSetting({ data: { fromLayer: layer, toLayer: targetLayer, keyPath } })
-              toast(`Moved "${keyPath}" to ${targetLayer}`)
-              router.invalidate()
+              await moveSetting({ data: { fromLayer: layer, toLayer: targetLayer, keyPath } });
+              toast(`Moved "${keyPath}" to ${targetLayer}`);
+              router.invalidate();
             } catch (e) {
-              toast(`Failed to move "${keyPath}": ${(e as Error).message}`, 'error')
+              toast(`Failed to move "${keyPath}": ${(e as Error).message}`, "error");
             }
           },
-        })
+        });
       },
       onAdd: async (keyPath: string, value: JsonValue) => {
         try {
-          await updateSetting({ data: { layer, keyPath, value } })
-          toast(`Added "${keyPath}"`)
-          router.invalidate()
+          await updateSetting({ data: { layer, keyPath, value } });
+          toast(`Added "${keyPath}"`);
+          router.invalidate();
         } catch (e) {
-          toast(`Failed to add "${keyPath}": ${(e as Error).message}`, 'error')
+          toast(`Failed to add "${keyPath}": ${(e as Error).message}`, "error");
         }
       },
-    }
+    };
   }
 
-  const globalHandlers = createHandlers('global')
-  const globalLocalHandlers = createHandlers('global-local')
+  const globalHandlers = createHandlers("global");
+  const globalLocalHandlers = createHandlers("global-local");
 
   return (
     <AppShell title="Global Settings">
@@ -112,7 +112,11 @@ function GlobalSettingsPage() {
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Global Settings</h1>
           <p className="text-text-secondary mt-1">
-            Configuration from <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">~/.claude/settings.json</code> and{' '}
+            Configuration from{" "}
+            <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">
+              ~/.claude/settings.json
+            </code>{" "}
+            and{" "}
             <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">settings.local.json</code>
           </p>
         </div>
@@ -151,9 +155,7 @@ function GlobalSettingsPage() {
 
           <div>
             <div className="flex items-center gap-3 mb-3">
-              <h2 className="text-lg font-semibold text-text-primary">
-                settings.local.json
-              </h2>
+              <h2 className="text-lg font-semibold text-text-primary">settings.local.json</h2>
               <LayerBadge source="global-local" />
               {!settingsLocal.exists && (
                 <span className="text-xs text-text-muted bg-surface-2 px-2 py-0.5 rounded-full">
@@ -192,12 +194,12 @@ function GlobalSettingsPage() {
           variant="danger"
           confirmLabel="Confirm"
           onConfirm={async () => {
-            await confirmState.action()
-            setConfirmState(null)
+            await confirmState.action();
+            setConfirmState(null);
           }}
           onCancel={() => setConfirmState(null)}
         />
       )}
     </AppShell>
-  )
+  );
 }

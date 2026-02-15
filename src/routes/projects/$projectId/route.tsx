@@ -1,14 +1,14 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { getProjectSummary } from '@/server/functions/projects.js'
-import { AppShell } from '@/components/layout/AppShell.js'
-import { ProjectTabs } from '@/components/layout/ProjectTabs.js'
-import { decodePath, getProjectName } from '@/lib/utils.js'
+import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { AppShell } from "@/components/layout/AppShell.js";
+import { ProjectTabs } from "@/components/layout/ProjectTabs.js";
+import { decodePath, getProjectName } from "@/lib/utils.js";
+import { getProjectSummary } from "@/server/functions/projects.js";
 
-export const Route = createFileRoute('/projects/$projectId')({
+export const Route = createFileRoute("/projects/$projectId")({
   loader: async ({ params }) => {
-    const projectPath = decodePath(params.projectId)
-    const summary = await getProjectSummary({ data: { projectPath } })
-    return { summary, projectId: params.projectId }
+    const projectPath = decodePath(params.projectId);
+    const summary = await getProjectSummary({ data: { projectPath } });
+    return { summary, projectId: params.projectId };
   },
   component: ProjectLayout,
   pendingComponent: () => (
@@ -22,17 +22,15 @@ export const Route = createFileRoute('/projects/$projectId')({
     <AppShell title="Project">
       <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
         <p className="text-danger font-medium">Failed to load project</p>
-        <p className="text-text-muted text-sm mt-1">
-          {(error as Error).message}
-        </p>
+        <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
       </div>
     </AppShell>
   ),
-})
+});
 
 function ProjectLayout() {
-  const { summary, projectId } = Route.useLoaderData()
-  const name = getProjectName(summary.path)
+  const { summary, projectId } = Route.useLoaderData();
+  const name = getProjectName(summary.path);
 
   return (
     <AppShell title={name}>
@@ -45,5 +43,5 @@ function ProjectLayout() {
         <Outlet />
       </div>
     </AppShell>
-  )
+  );
 }

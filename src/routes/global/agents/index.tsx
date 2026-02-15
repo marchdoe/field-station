@@ -1,18 +1,18 @@
-import { useState } from 'react'
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { Bot, Plus, Lock } from 'lucide-react'
-import { listAgents } from '@/server/functions/agents.js'
-import { createResource } from '@/server/functions/resource-mutations.js'
-import { AppShell } from '@/components/layout/AppShell.js'
-import { FileCard } from '@/components/files/FileCard.js'
-import { FileList } from '@/components/files/FileList.js'
-import { CreateResourceDialog } from '@/components/config/CreateResourceDialog.js'
-import { useToast } from '@/components/ui/Toast.js'
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { Bot, Lock, Plus } from "lucide-react";
+import { useState } from "react";
+import { CreateResourceDialog } from "@/components/config/CreateResourceDialog.js";
+import { FileCard } from "@/components/files/FileCard.js";
+import { FileList } from "@/components/files/FileList.js";
+import { AppShell } from "@/components/layout/AppShell.js";
+import { useToast } from "@/components/ui/Toast.js";
+import { listAgents } from "@/server/functions/agents.js";
+import { createResource } from "@/server/functions/resource-mutations.js";
 
-export const Route = createFileRoute('/global/agents/')({
+export const Route = createFileRoute("/global/agents/")({
   loader: async () => {
-    const agents = await listAgents({ data: { scope: 'global' } })
-    return { agents }
+    const agents = await listAgents({ data: { scope: "global" } });
+    return { agents };
   },
   component: GlobalAgentsPage,
   pendingComponent: () => (
@@ -30,41 +30,41 @@ export const Route = createFileRoute('/global/agents/')({
       </div>
     </AppShell>
   ),
-})
+});
 
 function GlobalAgentsPage() {
-  const { agents } = Route.useLoaderData()
-  const router = useRouter()
-  const { toast } = useToast()
-  const [showCreate, setShowCreate] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const { agents } = Route.useLoaderData();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [showCreate, setShowCreate] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const handleCreate = async (data: {
-    name: string
-    folder?: string
-    frontmatter: Record<string, string>
-    body: string
+    name: string;
+    folder?: string;
+    frontmatter: Record<string, string>;
+    body: string;
   }) => {
-    setSaving(true)
+    setSaving(true);
     try {
       await createResource({
         data: {
-          scope: 'global',
-          type: 'agent',
+          scope: "global",
+          type: "agent",
           name: data.name,
           frontmatter: data.frontmatter,
           body: data.body,
         },
-      })
-      toast('Agent created successfully')
-      setShowCreate(false)
-      router.invalidate()
+      });
+      toast("Agent created successfully");
+      setShowCreate(false);
+      router.invalidate();
     } catch (e) {
-      toast((e as Error).message, 'error')
+      toast((e as Error).message, "error");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return (
     <AppShell title="Global Agents">
@@ -73,7 +73,7 @@ function GlobalAgentsPage() {
           <div>
             <h1 className="text-2xl font-bold text-text-primary">Global Agents</h1>
             <p className="text-text-secondary mt-1">
-              {agents.length} agent definition{agents.length !== 1 ? 's' : ''} from{' '}
+              {agents.length} agent definition{agents.length !== 1 ? "s" : ""} from{" "}
               <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">~/.claude/agents/</code>
             </p>
           </div>
@@ -91,7 +91,7 @@ function GlobalAgentsPage() {
             <Link
               key={agent.fileName}
               to="/global/agents/$agentName"
-              params={{ agentName: agent.fileName.replace('.md', '') }}
+              params={{ agentName: agent.fileName.replace(".md", "") }}
               className="block"
             >
               <FileCard
@@ -101,7 +101,7 @@ function GlobalAgentsPage() {
                 variant="agent"
                 meta={{
                   ...(agent.tools ? { tools: agent.tools } : {}),
-                  ...(!agent.isEditable ? { source: 'plugin' } : {}),
+                  ...(!agent.isEditable ? { source: "plugin" } : {}),
                 }}
                 preview={agent.bodyPreview}
                 icon={
@@ -125,5 +125,5 @@ function GlobalAgentsPage() {
         onClose={() => setShowCreate(false)}
       />
     </AppShell>
-  )
+  );
 }

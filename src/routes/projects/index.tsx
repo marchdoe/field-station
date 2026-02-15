@@ -1,17 +1,17 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { FolderOpen, FileText, Bot, Terminal, Zap } from 'lucide-react'
-import { scanForProjects, getRegisteredProjects } from '@/server/functions/projects.js'
-import { AppShell } from '@/components/layout/AppShell.js'
-import { cn } from '@/lib/utils.js'
-import type { ProjectInfo } from '@/types/config.js'
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Bot, FileText, FolderOpen, Terminal, Zap } from "lucide-react";
+import { AppShell } from "@/components/layout/AppShell.js";
+import { cn } from "@/lib/utils.js";
+import { getRegisteredProjects, scanForProjects } from "@/server/functions/projects.js";
+import type { ProjectInfo } from "@/types/config.js";
 
-export const Route = createFileRoute('/projects/')({
+export const Route = createFileRoute("/projects/")({
   loader: async () => {
     const [projects, registeredPaths] = await Promise.all([
       scanForProjects(),
       getRegisteredProjects(),
-    ])
-    return { projects, registeredPaths }
+    ]);
+    return { projects, registeredPaths };
   },
   component: ProjectsListPage,
   pendingComponent: () => (
@@ -29,13 +29,13 @@ export const Route = createFileRoute('/projects/')({
       </div>
     </AppShell>
   ),
-})
+});
 
 function ProjectsListPage() {
-  const { projects, registeredPaths } = Route.useLoaderData()
+  const { projects, registeredPaths } = Route.useLoaderData();
 
-  const registered = projects.filter((p) => registeredPaths.includes(p.decodedPath))
-  const unregistered = projects.filter((p) => !registeredPaths.includes(p.decodedPath))
+  const registered = projects.filter((p) => registeredPaths.includes(p.decodedPath));
+  const unregistered = projects.filter((p) => !registeredPaths.includes(p.decodedPath));
 
   return (
     <AppShell title="Projects">
@@ -43,23 +43,17 @@ function ProjectsListPage() {
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Projects</h1>
           <p className="text-text-secondary mt-1">
-            {projects.length} project{projects.length !== 1 ? 's' : ''} discovered,{' '}
+            {projects.length} project{projects.length !== 1 ? "s" : ""} discovered,{" "}
             {registered.length} registered
           </p>
         </div>
 
         {registered.length > 0 && (
           <div>
-            <h2 className="text-lg font-semibold text-text-primary mb-4">
-              Registered Projects
-            </h2>
+            <h2 className="text-lg font-semibold text-text-primary mb-4">Registered Projects</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {registered.map((project) => (
-                <ProjectCard
-                  key={project.encodedPath}
-                  project={project}
-                  registered
-                />
+                <ProjectCard key={project.encodedPath} project={project} registered />
               ))}
             </div>
           </div>
@@ -72,42 +66,32 @@ function ProjectsListPage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {unregistered.map((project) => (
-                <ProjectCard
-                  key={project.encodedPath}
-                  project={project}
-                  registered={false}
-                />
+                <ProjectCard key={project.encodedPath} project={project} registered={false} />
               ))}
             </div>
           </div>
         )}
       </div>
     </AppShell>
-  )
+  );
 }
 
-function ProjectCard({
-  project,
-  registered,
-}: {
-  project: ProjectInfo
-  registered: boolean
-}) {
-  const name = project.decodedPath.split('/').filter(Boolean).pop() ?? project.decodedPath
+function ProjectCard({ project, registered }: { project: ProjectInfo; registered: boolean }) {
+  const name = project.decodedPath.split("/").filter(Boolean).pop() ?? project.decodedPath;
 
   return (
     <Link
       to="/projects/$projectId"
       params={{ projectId: project.encodedPath }}
       className={cn(
-        'bg-surface-1 border rounded-xl p-4 transition-colors',
+        "bg-surface-1 border rounded-xl p-4 transition-colors",
         registered
-          ? 'border-border-default hover:border-accent/40'
-          : 'border-border-muted opacity-70 hover:opacity-100',
+          ? "border-border-default hover:border-accent/40"
+          : "border-border-muted opacity-70 hover:opacity-100",
       )}
     >
       <div className="flex items-center gap-3 mb-2">
-        <FolderOpen className={cn('w-5 h-5', registered ? 'text-accent' : 'text-text-muted')} />
+        <FolderOpen className={cn("w-5 h-5", registered ? "text-accent" : "text-text-muted")} />
         <h3 className="font-semibold text-text-primary truncate">{name}</h3>
       </div>
       <p className="text-sm text-text-muted truncate mb-3">{project.decodedPath}</p>
@@ -137,5 +121,5 @@ function ProjectCard({
         )}
       </div>
     </Link>
-  )
+  );
 }

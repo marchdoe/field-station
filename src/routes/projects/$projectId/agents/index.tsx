@@ -1,21 +1,21 @@
-import { useState } from 'react'
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { Bot, Plus, Lock } from 'lucide-react'
-import { listAgents } from '@/server/functions/agents.js'
-import { createResource } from '@/server/functions/resource-mutations.js'
-import { FileCard } from '@/components/files/FileCard.js'
-import { FileList } from '@/components/files/FileList.js'
-import { CreateResourceDialog } from '@/components/config/CreateResourceDialog.js'
-import { useToast } from '@/components/ui/Toast.js'
-import { decodePath } from '@/lib/utils.js'
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { Bot, Lock, Plus } from "lucide-react";
+import { useState } from "react";
+import { CreateResourceDialog } from "@/components/config/CreateResourceDialog.js";
+import { FileCard } from "@/components/files/FileCard.js";
+import { FileList } from "@/components/files/FileList.js";
+import { useToast } from "@/components/ui/Toast.js";
+import { decodePath } from "@/lib/utils.js";
+import { listAgents } from "@/server/functions/agents.js";
+import { createResource } from "@/server/functions/resource-mutations.js";
 
-export const Route = createFileRoute('/projects/$projectId/agents/')({
+export const Route = createFileRoute("/projects/$projectId/agents/")({
   loader: async ({ params }) => {
-    const projectPath = decodePath(params.projectId)
+    const projectPath = decodePath(params.projectId);
     const agents = await listAgents({
-      data: { scope: 'project', projectPath },
-    })
-    return { agents, projectId: params.projectId, projectPath }
+      data: { scope: "project", projectPath },
+    });
+    return { agents, projectId: params.projectId, projectPath };
   },
   component: ProjectAgentsPage,
   pendingComponent: () => (
@@ -29,51 +29,49 @@ export const Route = createFileRoute('/projects/$projectId/agents/')({
       <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
     </div>
   ),
-})
+});
 
 function ProjectAgentsPage() {
-  const { agents, projectId, projectPath } = Route.useLoaderData()
-  const router = useRouter()
-  const { toast } = useToast()
-  const [showCreate, setShowCreate] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const { agents, projectId, projectPath } = Route.useLoaderData();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [showCreate, setShowCreate] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const handleCreate = async (data: {
-    name: string
-    folder?: string
-    frontmatter: Record<string, string>
-    body: string
+    name: string;
+    folder?: string;
+    frontmatter: Record<string, string>;
+    body: string;
   }) => {
-    setSaving(true)
+    setSaving(true);
     try {
       await createResource({
         data: {
-          scope: 'project',
-          type: 'agent',
+          scope: "project",
+          type: "agent",
           name: data.name,
           projectPath,
           frontmatter: data.frontmatter,
           body: data.body,
         },
-      })
-      toast('Agent created successfully')
-      setShowCreate(false)
-      router.invalidate()
+      });
+      toast("Agent created successfully");
+      setShowCreate(false);
+      router.invalidate();
     } catch (e) {
-      toast((e as Error).message, 'error')
+      toast((e as Error).message, "error");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-text-secondary">
-          {agents.length} agent definition{agents.length !== 1 ? 's' : ''} from{' '}
-          <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">
-            .claude/agents/
-          </code>
+          {agents.length} agent definition{agents.length !== 1 ? "s" : ""} from{" "}
+          <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">.claude/agents/</code>
         </p>
         <button
           onClick={() => setShowCreate(true)}
@@ -89,7 +87,7 @@ function ProjectAgentsPage() {
           <Link
             key={agent.fileName}
             to="/projects/$projectId/agents/$agentName"
-            params={{ projectId, agentName: agent.fileName.replace('.md', '') }}
+            params={{ projectId, agentName: agent.fileName.replace(".md", "") }}
             className="block"
           >
             <FileCard
@@ -99,7 +97,7 @@ function ProjectAgentsPage() {
               variant="agent"
               meta={{
                 ...(agent.tools ? { tools: agent.tools } : {}),
-                ...(!agent.isEditable ? { source: 'plugin' } : {}),
+                ...(!agent.isEditable ? { source: "plugin" } : {}),
               }}
               preview={agent.bodyPreview}
               icon={
@@ -122,5 +120,5 @@ function ProjectAgentsPage() {
         onClose={() => setShowCreate(false)}
       />
     </div>
-  )
+  );
 }

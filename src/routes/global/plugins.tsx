@@ -1,12 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { getInstalledPlugins } from '@/server/functions/plugins.js'
-import { AppShell } from '@/components/layout/AppShell.js'
-import { PluginCard } from '@/components/plugins/PluginCard.js'
+import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/layout/AppShell.js";
+import { PluginCard } from "@/components/plugins/PluginCard.js";
+import { getInstalledPlugins } from "@/server/functions/plugins.js";
 
-export const Route = createFileRoute('/global/plugins')({
+export const Route = createFileRoute("/global/plugins")({
   loader: async () => {
-    const plugins = await getInstalledPlugins()
-    return { plugins }
+    const plugins = await getInstalledPlugins();
+    return { plugins };
   },
   component: GlobalPluginsPage,
   pendingComponent: () => (
@@ -24,11 +24,11 @@ export const Route = createFileRoute('/global/plugins')({
       </div>
     </AppShell>
   ),
-})
+});
 
 function GlobalPluginsPage() {
-  const { plugins } = Route.useLoaderData()
-  const enabledCount = plugins.filter((p) => p.enabled).length
+  const { plugins } = Route.useLoaderData();
+  const enabledCount = plugins.filter((p) => p.enabled).length;
 
   return (
     <AppShell title="Global Plugins">
@@ -36,7 +36,8 @@ function GlobalPluginsPage() {
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Installed Plugins</h1>
           <p className="text-text-secondary mt-1">
-            {plugins.length} plugin{plugins.length !== 1 ? 's' : ''} installed, {enabledCount} enabled
+            {plugins.length} plugin{plugins.length !== 1 ? "s" : ""} installed, {enabledCount}{" "}
+            enabled
           </p>
         </div>
 
@@ -53,5 +54,5 @@ function GlobalPluginsPage() {
         )}
       </div>
     </AppShell>
-  )
+  );
 }

@@ -1,75 +1,64 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { resolveClaudeHome } from './claude-home.js'
-import { getAtPath, setAtPath, deleteAtPath } from './json-path.js'
-import type { JsonObject, JsonValue, ConfigLayerSource } from '@/types/config.js'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import type { ConfigLayerSource, JsonObject, JsonValue } from "@/types/config.js";
+import { resolveClaudeHome } from "./claude-home.js";
+import { deleteAtPath, getAtPath, setAtPath } from "./json-path.js";
 
 export function readJsonFileSafe(filePath: string): JsonObject {
-  if (!existsSync(filePath)) return {}
+  if (!existsSync(filePath)) return {};
   try {
-    return JSON.parse(readFileSync(filePath, 'utf-8')) as JsonObject
+    return JSON.parse(readFileSync(filePath, "utf-8")) as JsonObject;
   } catch {
-    return {}
+    return {};
   }
 }
 
 export function writeJsonFileSafe(filePath: string, data: JsonObject): void {
-  const dir = dirname(filePath)
+  const dir = dirname(filePath);
   if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true })
+    mkdirSync(dir, { recursive: true });
   }
-  writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf-8')
+  writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
 }
 
-export function resolveLayerPath(
-  layer: ConfigLayerSource,
-  projectPath?: string,
-): string {
-  const claudeHome = resolveClaudeHome()
+export function resolveLayerPath(layer: ConfigLayerSource, projectPath?: string): string {
+  const claudeHome = resolveClaudeHome();
   switch (layer) {
-    case 'global':
-      return join(claudeHome, 'settings.json')
-    case 'global-local':
-      return join(claudeHome, 'settings.local.json')
-    case 'project':
-      if (!projectPath) throw new Error('projectPath required for project layer')
-      return join(projectPath, '.claude', 'settings.json')
-    case 'project-local':
-      if (!projectPath) throw new Error('projectPath required for project-local layer')
-      return join(projectPath, '.claude', 'settings.local.json')
+    case "global":
+      return join(claudeHome, "settings.json");
+    case "global-local":
+      return join(claudeHome, "settings.local.json");
+    case "project":
+      if (!projectPath) throw new Error("projectPath required for project layer");
+      return join(projectPath, ".claude", "settings.json");
+    case "project-local":
+      if (!projectPath) throw new Error("projectPath required for project-local layer");
+      return join(projectPath, ".claude", "settings.local.json");
   }
 }
 
-export function applyUpdateSetting(
-  filePath: string,
-  keyPath: string,
-  value: JsonValue,
-): void {
-  const current = readJsonFileSafe(filePath)
-  const updated = setAtPath(current, keyPath, value)
-  writeJsonFileSafe(filePath, updated)
+export function applyUpdateSetting(filePath: string, keyPath: string, value: JsonValue): void {
+  const current = readJsonFileSafe(filePath);
+  const updated = setAtPath(current, keyPath, value);
+  writeJsonFileSafe(filePath, updated);
 }
 
 export function applyDeleteSetting(filePath: string, keyPath: string): void {
   if (!existsSync(filePath)) {
-    throw new Error(`File does not exist: ${filePath}`)
+    throw new Error(`File does not exist: ${filePath}`);
   }
-  const current = readJsonFileSafe(filePath)
-  const updated = deleteAtPath(current, keyPath)
-  writeJsonFileSafe(filePath, updated)
+  const current = readJsonFileSafe(filePath);
+  const updated = deleteAtPath(current, keyPath);
+  writeJsonFileSafe(filePath, updated);
 }
 
-export function applyMoveSetting(
-  fromPath: string,
-  toPath: string,
-  keyPath: string,
-): void {
-  const fromData = readJsonFileSafe(fromPath)
-  const value = getAtPath(fromData, keyPath)
+export function applyMoveSetting(fromPath: string, toPath: string, keyPath: string): void {
+  const fromData = readJsonFileSafe(fromPath);
+  const value = getAtPath(fromData, keyPath);
   if (value === undefined) {
-    throw new Error(`Key "${keyPath}" not found in source file`)
+    throw new Error(`Key "${keyPath}" not found in source file`);
   }
-  const toData = readJsonFileSafe(toPath)
-  writeJsonFileSafe(toPath, setAtPath(toData, keyPath, value))
-  writeJsonFileSafe(fromPath, deleteAtPath(fromData, keyPath))
+  const toData = readJsonFileSafe(toPath);
+  writeJsonFileSafe(toPath, setAtPath(toData, keyPath, value));
+  writeJsonFileSafe(fromPath, deleteAtPath(fromData, keyPath));
 }

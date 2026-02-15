@@ -1,46 +1,46 @@
-import { useState } from 'react'
-import { Plus, X } from 'lucide-react'
-import type { JsonValue } from '@/types/config.js'
+import { Plus, X } from "lucide-react";
+import { useState } from "react";
+import type { JsonValue } from "@/types/config.js";
 
 interface AddSettingFormProps {
-  onAdd: (keyPath: string, value: JsonValue) => void
-  onCancel: () => void
+  onAdd: (keyPath: string, value: JsonValue) => void;
+  onCancel: () => void;
 }
 
-type ValueType = 'string' | 'number' | 'boolean' | 'json'
+type ValueType = "string" | "number" | "boolean" | "json";
 
 function parseValue(raw: string, type: ValueType): JsonValue {
   switch (type) {
-    case 'string':
-      return raw
-    case 'number':
-      return Number(raw)
-    case 'boolean':
-      return raw === 'true'
-    case 'json':
-      return JSON.parse(raw) as JsonValue
+    case "string":
+      return raw;
+    case "number":
+      return Number(raw);
+    case "boolean":
+      return raw === "true";
+    case "json":
+      return JSON.parse(raw) as JsonValue;
   }
 }
 
 export function AddSettingForm({ onAdd, onCancel }: AddSettingFormProps) {
-  const [keyPath, setKeyPath] = useState('')
-  const [rawValue, setRawValue] = useState('')
-  const [valueType, setValueType] = useState<ValueType>('string')
-  const [error, setError] = useState<string | null>(null)
+  const [keyPath, setKeyPath] = useState("");
+  const [rawValue, setRawValue] = useState("");
+  const [valueType, setValueType] = useState<ValueType>("string");
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = () => {
-    setError(null)
+    setError(null);
     if (!keyPath.trim()) {
-      setError('Key path is required')
-      return
+      setError("Key path is required");
+      return;
     }
     try {
-      const value = parseValue(rawValue, valueType)
-      onAdd(keyPath.trim(), value)
+      const value = parseValue(rawValue, valueType);
+      onAdd(keyPath.trim(), value);
     } catch {
-      setError('Invalid value for selected type')
+      setError("Invalid value for selected type");
     }
-  }
+  };
 
   return (
     <div className="rounded-lg border border-accent/30 bg-accent/5 p-4 space-y-3">
@@ -72,7 +72,7 @@ export function AddSettingForm({ onAdd, onCancel }: AddSettingFormProps) {
             <option value="json">JSON</option>
           </select>
 
-          {valueType === 'boolean' ? (
+          {valueType === "boolean" ? (
             <select
               value={rawValue}
               onChange={(e) => setRawValue(e.target.value)}
@@ -83,7 +83,7 @@ export function AddSettingForm({ onAdd, onCancel }: AddSettingFormProps) {
             </select>
           ) : (
             <input
-              type={valueType === 'number' ? 'number' : 'text'}
+              type={valueType === "number" ? "number" : "text"}
               placeholder="Value"
               value={rawValue}
               onChange={(e) => setRawValue(e.target.value)}
@@ -103,5 +103,5 @@ export function AddSettingForm({ onAdd, onCancel }: AddSettingFormProps) {
         Add
       </button>
     </div>
-  )
+  );
 }

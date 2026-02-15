@@ -1,33 +1,33 @@
-import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link } from "@tanstack/react-router";
 import {
-  Globe,
-  Settings,
   Bot,
-  Terminal,
-  Zap,
-  Webhook,
-  Puzzle,
-  FolderOpen,
   ChevronRight,
-} from 'lucide-react'
-import { cn, getProjectName } from '@/lib/utils'
-import type { GlobalStats, ProjectInfo } from '@/types/config.js'
+  FolderOpen,
+  Globe,
+  Puzzle,
+  Settings,
+  Terminal,
+  Webhook,
+  Zap,
+} from "lucide-react";
+import { useState } from "react";
+import { cn, getProjectName } from "@/lib/utils";
+import type { GlobalStats, ProjectInfo } from "@/types/config.js";
 
 interface ConfigNavigationTreeProps {
-  stats: GlobalStats
-  projects: ProjectInfo[]
+  stats: GlobalStats;
+  projects: ProjectInfo[];
 }
 
 interface TreeNodeProps {
-  icon: React.ReactNode
-  label: string
-  badge?: string
-  to: string
-  params?: Record<string, string>
-  theme: 'accent' | 'success'
-  isLast?: boolean
-  depth?: number
+  icon: React.ReactNode;
+  label: string;
+  badge?: string;
+  to: string;
+  params?: Record<string, string>;
+  theme: "accent" | "success";
+  isLast?: boolean;
+  depth?: number;
 }
 
 function TreeNode({
@@ -40,7 +40,7 @@ function TreeNode({
   isLast = false,
   depth = 1,
 }: TreeNodeProps) {
-  const leftOffset = 19 + (depth - 1) * 20
+  const leftOffset = 19 + (depth - 1) * 20;
 
   return (
     <div className="relative">
@@ -68,16 +68,16 @@ function TreeNode({
         to={to}
         params={params}
         className={cn(
-          'group flex items-center gap-2.5 py-1.5 rounded-lg transition-colors relative',
-          'hover:bg-surface-2',
+          "group flex items-center gap-2.5 py-1.5 rounded-lg transition-colors relative",
+          "hover:bg-surface-2",
         )}
         style={{ paddingLeft: leftOffset + 16 }}
       >
         <span
           className={cn(
-            'flex-shrink-0',
-            theme === 'accent' && 'text-accent',
-            theme === 'success' && 'text-success',
+            "flex-shrink-0",
+            theme === "accent" && "text-accent",
+            theme === "success" && "text-success",
           )}
         >
           {icon}
@@ -86,9 +86,9 @@ function TreeNode({
         {badge && (
           <span
             className={cn(
-              'ml-auto flex-shrink-0 text-xs px-1.5 py-0.5 rounded-full font-medium',
-              theme === 'accent' && 'bg-accent/15 text-accent',
-              theme === 'success' && 'bg-badge-success-bg text-badge-success-text',
+              "ml-auto flex-shrink-0 text-xs px-1.5 py-0.5 rounded-full font-medium",
+              theme === "accent" && "bg-accent/15 text-accent",
+              theme === "success" && "bg-badge-success-bg text-badge-success-text",
             )}
           >
             {badge}
@@ -96,73 +96,67 @@ function TreeNode({
         )}
         <ChevronRight
           className={cn(
-            'w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0',
-            !badge && 'ml-auto',
+            "w-3.5 h-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0",
+            !badge && "ml-auto",
           )}
         />
       </Link>
     </div>
-  )
+  );
 }
 
-export function ConfigNavigationTree({
-  stats,
-  projects,
-}: ConfigNavigationTreeProps) {
-  const [expanded, setExpanded] = useState<Set<string>>(
-    () => new Set(['global']),
-  )
+export function ConfigNavigationTree({ stats, projects }: ConfigNavigationTreeProps) {
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(["global"]));
 
   const toggle = (key: string) => {
     setExpanded((prev) => {
-      const next = new Set(prev)
+      const next = new Set(prev);
       if (next.has(key)) {
-        next.delete(key)
+        next.delete(key);
       } else {
-        next.add(key)
+        next.add(key);
       }
-      return next
-    })
-  }
+      return next;
+    });
+  };
 
-  const settingsCount =
-    (stats.settingsExists ? 1 : 0) + (stats.settingsLocalExists ? 1 : 0)
+  const settingsCount = (stats.settingsExists ? 1 : 0) + (stats.settingsLocalExists ? 1 : 0);
 
-  const hasProjects = projects.length > 0
+  const hasProjects = projects.length > 0;
 
   return (
     <div className="bg-surface-1 rounded-xl border border-border-default overflow-hidden">
       <div className="p-2">
         {/* Global root node */}
         <button
-          onClick={() => toggle('global')}
+          onClick={() => toggle("global")}
           className={cn(
-            'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors',
-            'hover:bg-surface-2 text-left',
+            "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors",
+            "hover:bg-surface-2 text-left",
           )}
         >
           <ChevronRight
             className={cn(
-              'w-4 h-4 text-text-muted transition-transform duration-200',
-              expanded.has('global') && 'rotate-90',
+              "w-4 h-4 text-text-muted transition-transform duration-200",
+              expanded.has("global") && "rotate-90",
             )}
           />
           <Globe className="w-4.5 h-4.5 text-accent" />
-          <span className="text-sm font-semibold text-text-primary">
-            Global
-          </span>
-          <span className="ml-auto text-xs text-text-muted font-medium">
-            ~/.claude
-          </span>
+          <span className="text-sm font-semibold text-text-primary">Global</span>
+          <span className="ml-auto text-xs text-text-muted font-medium">~/.claude</span>
         </button>
 
-        {expanded.has('global') && (
+        {expanded.has("global") && (
           <div className="mt-0.5 relative">
             {/* Global config sections */}
             <TreeNode
               icon={<Settings className="w-4 h-4" />}
               label="Settings"
-              badge={settingsCount > 0 ? `${settingsCount} file${settingsCount !== 1 ? 's' : ''}` : undefined}
+              badge={
+                settingsCount > 0
+                  ? `${settingsCount} file${settingsCount !== 1 ? "s" : ""}`
+                  : undefined
+              }
               to="/global/settings"
               theme="accent"
             />
@@ -192,7 +186,7 @@ export function ConfigNavigationTree({
               label="Hooks"
               badge={
                 stats.hookScriptCount > 0
-                  ? `${stats.hookScriptCount} script${stats.hookScriptCount !== 1 ? 's' : ''}`
+                  ? `${stats.hookScriptCount} script${stats.hookScriptCount !== 1 ? "s" : ""}`
                   : undefined
               }
               to="/global/hooks"
@@ -213,10 +207,10 @@ export function ConfigNavigationTree({
 
             {/* Projects nested under Global to show inheritance */}
             {projects.map((project, idx) => {
-              const projectKey = `project-${project.encodedPath}`
-              const isLastProject = idx === projects.length - 1
-              const isProjectExpanded = expanded.has(projectKey)
-              const name = getProjectName(project.decodedPath)
+              const projectKey = `project-${project.encodedPath}`;
+              const isLastProject = idx === projects.length - 1;
+              const isProjectExpanded = expanded.has(projectKey);
+              const name = getProjectName(project.decodedPath);
 
               return (
                 <div key={project.encodedPath} className="relative">
@@ -233,20 +227,18 @@ export function ConfigNavigationTree({
                   <button
                     onClick={() => toggle(projectKey)}
                     className={cn(
-                      'w-full flex items-center gap-2.5 pl-10 pr-3 py-1.5 rounded-lg transition-colors',
-                      'hover:bg-surface-2 text-left',
+                      "w-full flex items-center gap-2.5 pl-10 pr-3 py-1.5 rounded-lg transition-colors",
+                      "hover:bg-surface-2 text-left",
                     )}
                   >
                     <ChevronRight
                       className={cn(
-                        'w-3.5 h-3.5 text-text-muted transition-transform duration-200 flex-shrink-0',
-                        isProjectExpanded && 'rotate-90',
+                        "w-3.5 h-3.5 text-text-muted transition-transform duration-200 flex-shrink-0",
+                        isProjectExpanded && "rotate-90",
                       )}
                     />
                     <FolderOpen className="w-4 h-4 text-success flex-shrink-0" />
-                    <span className="text-sm text-text-primary font-medium truncate">
-                      {name}
-                    </span>
+                    <span className="text-sm text-text-primary font-medium truncate">{name}</span>
                     <span className="ml-auto text-xs text-text-muted truncate max-w-[200px] hidden sm:inline">
                       {project.decodedPath}
                     </span>
@@ -265,11 +257,7 @@ export function ConfigNavigationTree({
                       <TreeNode
                         icon={<Bot className="w-3.5 h-3.5" />}
                         label="Agents"
-                        badge={
-                          project.agentCount > 0
-                            ? String(project.agentCount)
-                            : undefined
-                        }
+                        badge={project.agentCount > 0 ? String(project.agentCount) : undefined}
                         to="/projects/$projectId/agents"
                         params={{ projectId: project.encodedPath }}
                         theme="success"
@@ -278,11 +266,7 @@ export function ConfigNavigationTree({
                       <TreeNode
                         icon={<Terminal className="w-3.5 h-3.5" />}
                         label="Commands"
-                        badge={
-                          project.commandCount > 0
-                            ? String(project.commandCount)
-                            : undefined
-                        }
+                        badge={project.commandCount > 0 ? String(project.commandCount) : undefined}
                         to="/projects/$projectId/commands"
                         params={{ projectId: project.encodedPath }}
                         theme="success"
@@ -291,11 +275,7 @@ export function ConfigNavigationTree({
                       <TreeNode
                         icon={<Zap className="w-3.5 h-3.5" />}
                         label="Skills"
-                        badge={
-                          project.skillCount > 0
-                            ? String(project.skillCount)
-                            : undefined
-                        }
+                        badge={project.skillCount > 0 ? String(project.skillCount) : undefined}
                         to="/projects/$projectId/skills"
                         params={{ projectId: project.encodedPath }}
                         theme="success"
@@ -305,11 +285,11 @@ export function ConfigNavigationTree({
                     </div>
                   )}
                 </div>
-              )
+              );
             })}
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

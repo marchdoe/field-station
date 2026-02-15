@@ -1,28 +1,25 @@
-import { useState } from 'react'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
-import {
-  getProjectSettings,
-  getProjectSettingsLocal,
-} from '@/server/functions/config.js'
-import { updateSetting, deleteSetting, moveSetting } from '@/server/functions/config-mutations.js'
-import { SettingsViewer } from '@/components/config/SettingsViewer.js'
-import { LayerBadge } from '@/components/config/LayerBadge.js'
-import { CodeViewer } from '@/components/files/CodeViewer.js'
-import { ViewToggle } from '@/components/ui/ViewToggle.js'
-import { useToast } from '@/components/ui/Toast.js'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog.js'
-import { decodePath } from '@/lib/utils.js'
-import { FileText } from 'lucide-react'
-import type { ConfigLayer, JsonValue, ConfigLayerSource } from '@/types/config.js'
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { FileText } from "lucide-react";
+import { useState } from "react";
+import { LayerBadge } from "@/components/config/LayerBadge.js";
+import { SettingsViewer } from "@/components/config/SettingsViewer.js";
+import { CodeViewer } from "@/components/files/CodeViewer.js";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog.js";
+import { useToast } from "@/components/ui/Toast.js";
+import { ViewToggle } from "@/components/ui/ViewToggle.js";
+import { decodePath } from "@/lib/utils.js";
+import { getProjectSettings, getProjectSettingsLocal } from "@/server/functions/config.js";
+import { deleteSetting, moveSetting, updateSetting } from "@/server/functions/config-mutations.js";
+import type { ConfigLayer, ConfigLayerSource, JsonValue } from "@/types/config.js";
 
-export const Route = createFileRoute('/projects/$projectId/settings')({
+export const Route = createFileRoute("/projects/$projectId/settings")({
   loader: async ({ params }) => {
-    const projectPath = decodePath(params.projectId)
+    const projectPath = decodePath(params.projectId);
     const [project, projectLocal] = await Promise.all([
       getProjectSettings({ data: { projectPath } }),
       getProjectSettingsLocal({ data: { projectPath } }),
-    ])
-    return { layers: [project, projectLocal], projectPath }
+    ]);
+    return { layers: [project, projectLocal], projectPath };
   },
   component: ProjectSettingsPage,
   pendingComponent: () => (
@@ -36,27 +33,25 @@ export const Route = createFileRoute('/projects/$projectId/settings')({
       <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
     </div>
   ),
-})
+});
 
 interface LayerSectionProps {
-  layer: ConfigLayer
-  editable?: boolean
-  onUpdate?: (keyPath: string, value: JsonValue) => void
-  onDelete?: (keyPath: string) => void
-  onMove?: (keyPath: string, targetLayer: ConfigLayerSource) => void
-  onAdd?: (keyPath: string, value: JsonValue) => void
+  layer: ConfigLayer;
+  editable?: boolean;
+  onUpdate?: (keyPath: string, value: JsonValue) => void;
+  onDelete?: (keyPath: string) => void;
+  onMove?: (keyPath: string, targetLayer: ConfigLayerSource) => void;
+  onAdd?: (keyPath: string, value: JsonValue) => void;
 }
 
 function LayerSection({ layer, editable, onUpdate, onDelete, onMove, onAdd }: LayerSectionProps) {
-  const [view, setView] = useState<'structured' | 'raw'>('structured')
+  const [view, setView] = useState<"structured" | "raw">("structured");
 
   return (
     <div>
       <div className="flex items-center gap-3 mb-2">
         <FileText className="w-4 h-4 text-text-muted" />
-        <span className="text-sm font-medium text-text-primary">
-          {layer.filePath}
-        </span>
+        <span className="text-sm font-medium text-text-primary">{layer.filePath}</span>
         <LayerBadge source={layer.source} />
         {!layer.exists && (
           <span className="text-xs text-text-muted bg-surface-2 px-2 py-0.5 rounded-full">
@@ -69,7 +64,7 @@ function LayerSection({ layer, editable, onUpdate, onDelete, onMove, onAdd }: La
           <div className="mb-2">
             <ViewToggle view={view} onChange={setView} />
           </div>
-          {view === 'structured' ? (
+          {view === "structured" ? (
             <SettingsViewer
               settings={layer.content}
               source={layer.source}
@@ -80,10 +75,7 @@ function LayerSection({ layer, editable, onUpdate, onDelete, onMove, onAdd }: La
               onAdd={onAdd}
             />
           ) : (
-            <CodeViewer
-              code={JSON.stringify(layer.content, null, 2)}
-              language="json"
-            />
+            <CodeViewer code={JSON.stringify(layer.content, null, 2)} language="json" />
           )}
         </div>
       ) : (
@@ -98,85 +90,85 @@ function LayerSection({ layer, editable, onUpdate, onDelete, onMove, onAdd }: La
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function ProjectSettingsPage() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const { layers, projectPath } = Route.useLoaderData()
+  const router = useRouter();
+  const { toast } = useToast();
+  const { layers, projectPath } = Route.useLoaderData();
 
   const [confirmState, setConfirmState] = useState<{
-    open: boolean
-    title: string
-    message: string
-    action: () => Promise<void>
-  } | null>(null)
+    open: boolean;
+    title: string;
+    message: string;
+    action: () => Promise<void>;
+  } | null>(null);
 
   function createHandlers(layer: ConfigLayerSource) {
     return {
       onUpdate: async (keyPath: string, value: JsonValue) => {
         try {
-          await updateSetting({ data: { layer, keyPath, value, projectPath } })
-          toast(`Updated "${keyPath}"`)
-          router.invalidate()
+          await updateSetting({ data: { layer, keyPath, value, projectPath } });
+          toast(`Updated "${keyPath}"`);
+          router.invalidate();
         } catch (e) {
-          toast(`Failed to update "${keyPath}": ${(e as Error).message}`, 'error')
+          toast(`Failed to update "${keyPath}": ${(e as Error).message}`, "error");
         }
       },
       onDelete: (keyPath: string) => {
         setConfirmState({
           open: true,
-          title: 'Delete Setting',
+          title: "Delete Setting",
           message: `Are you sure you want to delete "${keyPath}" from the ${layer} layer?`,
           action: async () => {
             try {
-              await deleteSetting({ data: { layer, keyPath, projectPath } })
-              toast(`Deleted "${keyPath}"`)
-              router.invalidate()
+              await deleteSetting({ data: { layer, keyPath, projectPath } });
+              toast(`Deleted "${keyPath}"`);
+              router.invalidate();
             } catch (e) {
-              toast(`Failed to delete "${keyPath}": ${(e as Error).message}`, 'error')
+              toast(`Failed to delete "${keyPath}": ${(e as Error).message}`, "error");
             }
           },
-        })
+        });
       },
       onMove: (keyPath: string, targetLayer: ConfigLayerSource) => {
         setConfirmState({
           open: true,
-          title: 'Move Setting',
+          title: "Move Setting",
           message: `Move "${keyPath}" from ${layer} to ${targetLayer}?`,
           action: async () => {
             try {
-              await moveSetting({ data: { fromLayer: layer, toLayer: targetLayer, keyPath, projectPath } })
-              toast(`Moved "${keyPath}" to ${targetLayer}`)
-              router.invalidate()
+              await moveSetting({
+                data: { fromLayer: layer, toLayer: targetLayer, keyPath, projectPath },
+              });
+              toast(`Moved "${keyPath}" to ${targetLayer}`);
+              router.invalidate();
             } catch (e) {
-              toast(`Failed to move "${keyPath}": ${(e as Error).message}`, 'error')
+              toast(`Failed to move "${keyPath}": ${(e as Error).message}`, "error");
             }
           },
-        })
+        });
       },
       onAdd: async (keyPath: string, value: JsonValue) => {
         try {
-          await updateSetting({ data: { layer, keyPath, value, projectPath } })
-          toast(`Added "${keyPath}"`)
-          router.invalidate()
+          await updateSetting({ data: { layer, keyPath, value, projectPath } });
+          toast(`Added "${keyPath}"`);
+          router.invalidate();
         } catch (e) {
-          toast(`Failed to add "${keyPath}": ${(e as Error).message}`, 'error')
+          toast(`Failed to add "${keyPath}": ${(e as Error).message}`, "error");
         }
       },
-    }
+    };
   }
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-lg font-semibold text-text-primary mb-4">
-          Project Configuration
-        </h2>
+        <h2 className="text-lg font-semibold text-text-primary mb-4">Project Configuration</h2>
         <div className="space-y-4">
           {layers.map((layer) => {
-            const handlers = createHandlers(layer.source)
+            const handlers = createHandlers(layer.source);
             return (
               <LayerSection
                 key={layer.source}
@@ -187,7 +179,7 @@ function ProjectSettingsPage() {
                 onMove={handlers.onMove}
                 onAdd={handlers.onAdd}
               />
-            )
+            );
           })}
         </div>
       </div>
@@ -200,12 +192,12 @@ function ProjectSettingsPage() {
           variant="danger"
           confirmLabel="Confirm"
           onConfirm={async () => {
-            await confirmState.action()
-            setConfirmState(null)
+            await confirmState.action();
+            setConfirmState(null);
           }}
           onCancel={() => setConfirmState(null)}
         />
       )}
     </div>
-  )
+  );
 }

@@ -1,21 +1,21 @@
-import { useState } from 'react'
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { Terminal, FolderOpen, Plus, Lock } from 'lucide-react'
-import { listCommands } from '@/server/functions/commands.js'
-import { createResource } from '@/server/functions/resource-mutations.js'
-import { FileCard } from '@/components/files/FileCard.js'
-import { FileList } from '@/components/files/FileList.js'
-import { CreateResourceDialog } from '@/components/config/CreateResourceDialog.js'
-import { useToast } from '@/components/ui/Toast.js'
-import { decodePath } from '@/lib/utils.js'
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { FolderOpen, Lock, Plus, Terminal } from "lucide-react";
+import { useState } from "react";
+import { CreateResourceDialog } from "@/components/config/CreateResourceDialog.js";
+import { FileCard } from "@/components/files/FileCard.js";
+import { FileList } from "@/components/files/FileList.js";
+import { useToast } from "@/components/ui/Toast.js";
+import { decodePath } from "@/lib/utils.js";
+import { listCommands } from "@/server/functions/commands.js";
+import { createResource } from "@/server/functions/resource-mutations.js";
 
-export const Route = createFileRoute('/projects/$projectId/commands/')({
+export const Route = createFileRoute("/projects/$projectId/commands/")({
   loader: async ({ params }) => {
-    const projectPath = decodePath(params.projectId)
+    const projectPath = decodePath(params.projectId);
     const result = await listCommands({
-      data: { scope: 'project', projectPath },
-    })
-    return { ...result, projectId: params.projectId, projectPath }
+      data: { scope: "project", projectPath },
+    });
+    return { ...result, projectId: params.projectId, projectPath };
   },
   component: ProjectCommandsPage,
   pendingComponent: () => (
@@ -29,53 +29,51 @@ export const Route = createFileRoute('/projects/$projectId/commands/')({
       <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
     </div>
   ),
-})
+});
 
 function ProjectCommandsPage() {
-  const { folders, commands, projectId, projectPath } = Route.useLoaderData()
-  const router = useRouter()
-  const { toast } = useToast()
-  const [showCreate, setShowCreate] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const { folders, commands, projectId, projectPath } = Route.useLoaderData();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [showCreate, setShowCreate] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const handleCreate = async (data: {
-    name: string
-    folder?: string
-    frontmatter: Record<string, string>
-    body: string
+    name: string;
+    folder?: string;
+    frontmatter: Record<string, string>;
+    body: string;
   }) => {
-    setSaving(true)
+    setSaving(true);
     try {
       await createResource({
         data: {
-          scope: 'project',
-          type: 'command',
+          scope: "project",
+          type: "command",
           name: data.name,
           folder: data.folder,
           projectPath,
           frontmatter: {},
           body: data.body,
         },
-      })
-      toast('Command created successfully')
-      setShowCreate(false)
-      router.invalidate()
+      });
+      toast("Command created successfully");
+      setShowCreate(false);
+      router.invalidate();
     } catch (e) {
-      toast((e as Error).message, 'error')
+      toast((e as Error).message, "error");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-text-secondary">
-          {commands.length} command{commands.length !== 1 ? 's' : ''} in{' '}
-          {folders.length} folder{folders.length !== 1 ? 's' : ''} from{' '}
-          <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">
-            .claude/commands/
-          </code>
+          {commands.length} command{commands.length !== 1 ? "s" : ""} in {folders.length} folder
+          {folders.length !== 1 ? "s" : ""} from{" "}
+          <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">.claude/commands/</code>
         </p>
         <button
           onClick={() => setShowCreate(true)}
@@ -87,17 +85,13 @@ function ProjectCommandsPage() {
       </div>
 
       {folders.map((folder) => {
-        const folderCommands = commands.filter((c) => c.folder === folder)
+        const folderCommands = commands.filter((c) => c.folder === folder);
         return (
           <div key={folder}>
             <div className="flex items-center gap-2 mb-3">
               <FolderOpen className="w-4 h-4 text-accent" />
-              <h2 className="text-lg font-semibold text-text-primary">
-                {folder}/
-              </h2>
-              <span className="text-sm text-text-muted">
-                ({folderCommands.length} commands)
-              </span>
+              <h2 className="text-lg font-semibold text-text-primary">{folder}/</h2>
+              <span className="text-sm text-text-muted">({folderCommands.length} commands)</span>
             </div>
             <FileList emptyMessage="No commands">
               {folderCommands.map((cmd) => (
@@ -124,7 +118,7 @@ function ProjectCommandsPage() {
               ))}
             </FileList>
           </div>
-        )
+        );
       })}
 
       {commands.length === 0 && (
@@ -142,5 +136,5 @@ function ProjectCommandsPage() {
         onClose={() => setShowCreate(false)}
       />
     </div>
-  )
+  );
 }

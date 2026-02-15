@@ -1,16 +1,16 @@
-import React from 'react'
-import { PackageX } from 'lucide-react'
+import { PackageX } from "lucide-react";
+import React from "react";
 
 interface PluginListProps {
-  children: React.ReactNode
-  emptyMessage?: string
+  children: React.ReactNode;
+  emptyMessage?: string;
 }
 
 export default function PluginList({
   children,
-  emptyMessage = 'No plugins installed.',
+  emptyMessage = "No plugins installed.",
 }: PluginListProps) {
-  const hasChildren = React.Children.count(children) > 0
+  const hasChildren = React.Children.count(children) > 0;
 
   if (!hasChildren) {
     return (
@@ -18,12 +18,8 @@ export default function PluginList({
         <PackageX size={40} className="mb-3 opacity-50" />
         <p className="text-sm">{emptyMessage}</p>
       </div>
-    )
+    );
   }
 
-  return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {children}
-    </div>
-  )
+  return <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">{children}</div>;
 }

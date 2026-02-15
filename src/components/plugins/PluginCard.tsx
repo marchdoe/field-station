@@ -1,14 +1,14 @@
-import { cn, getPluginDisplayName, getPluginSource, formatDate } from '@/lib/utils'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink } from "lucide-react";
+import { cn, formatDate, getPluginDisplayName, getPluginSource } from "@/lib/utils";
 
 interface PluginCardProps {
-  id: string
-  enabled: boolean
-  version: string
-  installedAt: string
-  lastUpdated: string
-  homepage?: string
-  repository?: string
+  id: string;
+  enabled: boolean;
+  version: string;
+  installedAt: string;
+  lastUpdated: string;
+  homepage?: string;
+  repository?: string;
 }
 
 export function PluginCard({
@@ -20,17 +20,15 @@ export function PluginCard({
   homepage,
   repository,
 }: PluginCardProps) {
-  const displayName = getPluginDisplayName(id)
-  const source = getPluginSource(id)
-  const link = homepage || repository
+  const displayName = getPluginDisplayName(id);
+  const source = getPluginSource(id);
+  const link = homepage || repository;
 
   return (
     <div
       className={cn(
-        'rounded-xl border border-border-default bg-surface-1 p-4',
-        enabled
-          ? 'border-l-4 border-l-success'
-          : 'border-l-4 border-l-border-muted opacity-80',
+        "rounded-xl border border-border-default bg-surface-1 p-4",
+        enabled ? "border-l-4 border-l-success" : "border-l-4 border-l-border-muted opacity-80",
       )}
     >
       <div className="mb-2 flex items-start justify-between gap-2">
@@ -52,25 +50,26 @@ export function PluginCard({
                 <h3 className="text-sm font-semibold text-text-primary truncate group-hover:text-accent transition-colors">
                   {displayName}
                 </h3>
-                <ExternalLink size={12} className="shrink-0 text-text-muted group-hover:text-accent transition-colors" />
+                <ExternalLink
+                  size={12}
+                  className="shrink-0 text-text-muted group-hover:text-accent transition-colors"
+                />
               </a>
             ) : (
-              <h3 className="text-sm font-semibold text-text-primary truncate">
-                {displayName}
-              </h3>
+              <h3 className="text-sm font-semibold text-text-primary truncate">{displayName}</h3>
             )}
           </div>
           <p className="mt-0.5 text-xs text-text-muted truncate">{source}</p>
         </div>
         <span
           className={cn(
-            'inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium',
+            "inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium",
             enabled
-              ? 'bg-badge-success-bg text-badge-success-text'
-              : 'bg-badge-danger-bg text-badge-danger-text',
+              ? "bg-badge-success-bg text-badge-success-text"
+              : "bg-badge-danger-bg text-badge-danger-text",
           )}
         >
-          {enabled ? 'Enabled' : 'Disabled'}
+          {enabled ? "Enabled" : "Disabled"}
         </span>
       </div>
 
@@ -91,5 +90,5 @@ export function PluginCard({
         </div>
       </div>
     </div>
-  )
+  );
 }

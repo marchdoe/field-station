@@ -1,26 +1,26 @@
-import { useState } from 'react'
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { Terminal, ArrowLeft, FileText, Pencil, Trash2, Lock } from 'lucide-react'
-import { getCommand } from '@/server/functions/commands.js'
-import { updateResource, deleteResource } from '@/server/functions/resource-mutations.js'
-import { AppShell } from '@/components/layout/AppShell.js'
-import { MarkdownViewer } from '@/components/files/MarkdownViewer.js'
-import { CodeViewer } from '@/components/files/CodeViewer.js'
-import { ViewToggle } from '@/components/ui/ViewToggle.js'
-import { ResourceEditor } from '@/components/config/ResourceEditor.js'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog.js'
-import { useToast } from '@/components/ui/Toast.js'
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { ArrowLeft, FileText, Lock, Pencil, Terminal, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ResourceEditor } from "@/components/config/ResourceEditor.js";
+import { CodeViewer } from "@/components/files/CodeViewer.js";
+import { MarkdownViewer } from "@/components/files/MarkdownViewer.js";
+import { AppShell } from "@/components/layout/AppShell.js";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog.js";
+import { useToast } from "@/components/ui/Toast.js";
+import { ViewToggle } from "@/components/ui/ViewToggle.js";
+import { getCommand } from "@/server/functions/commands.js";
+import { deleteResource, updateResource } from "@/server/functions/resource-mutations.js";
 
-export const Route = createFileRoute('/global/commands/$folder/$commandName')({
+export const Route = createFileRoute("/global/commands/$folder/$commandName")({
   loader: async ({ params }) => {
     const command = await getCommand({
       data: {
-        scope: 'global',
+        scope: "global",
         folder: params.folder,
         name: params.commandName,
       },
-    })
-    return command
+    });
+    return command;
   },
   component: GlobalCommandDetailPage,
   pendingComponent: () => (
@@ -38,46 +38,46 @@ export const Route = createFileRoute('/global/commands/$folder/$commandName')({
       </div>
     </AppShell>
   ),
-})
+});
 
 function GlobalCommandDetailPage() {
-  const command = Route.useLoaderData()
-  const router = useRouter()
-  const { toast } = useToast()
-  const [view, setView] = useState<'structured' | 'raw'>('structured')
-  const [editing, setEditing] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  const command = Route.useLoaderData();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [view, setView] = useState<"structured" | "raw">("structured");
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const handleSave = async (_frontmatter: Record<string, string>, body: string) => {
-    setSaving(true)
+    setSaving(true);
     try {
       await updateResource({
         data: { filePath: command.filePath, frontmatter: {}, body },
-      })
-      toast('Command updated successfully')
-      setEditing(false)
-      router.invalidate()
+      });
+      toast("Command updated successfully");
+      setEditing(false);
+      router.invalidate();
     } catch (e) {
-      toast((e as Error).message, 'error')
+      toast((e as Error).message, "error");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const handleDelete = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
-      await deleteResource({ data: { filePath: command.filePath } })
-      toast('Command deleted')
-      router.navigate({ to: '/global/commands' })
+      await deleteResource({ data: { filePath: command.filePath } });
+      toast("Command deleted");
+      router.navigate({ to: "/global/commands" });
     } catch (e) {
-      toast((e as Error).message, 'error')
+      toast((e as Error).message, "error");
     } finally {
-      setSaving(false)
-      setConfirmDelete(false)
+      setSaving(false);
+      setConfirmDelete(false);
     }
-  }
+  };
 
   return (
     <AppShell title={`/${command.folder}:${command.name}`}>
@@ -143,7 +143,7 @@ function GlobalCommandDetailPage() {
             <div className="mb-2">
               <ViewToggle view={view} onChange={setView} />
             </div>
-            {view === 'structured' ? (
+            {view === "structured" ? (
               <MarkdownViewer content={command.body} />
             ) : (
               <CodeViewer code={command.body} language="markdown" />
@@ -162,5 +162,5 @@ function GlobalCommandDetailPage() {
         onCancel={() => setConfirmDelete(false)}
       />
     </AppShell>
-  )
+  );
 }

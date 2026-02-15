@@ -1,29 +1,27 @@
-import { useState } from 'react'
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { Bot, ArrowLeft, FileText, Pencil, Trash2, Lock } from 'lucide-react'
-import { getAgent } from '@/server/functions/agents.js'
-import { updateResource, deleteResource } from '@/server/functions/resource-mutations.js'
-import { MarkdownViewer } from '@/components/files/MarkdownViewer.js'
-import { CodeViewer } from '@/components/files/CodeViewer.js'
-import { ViewToggle } from '@/components/ui/ViewToggle.js'
-import { ResourceEditor } from '@/components/config/ResourceEditor.js'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog.js'
-import { useToast } from '@/components/ui/Toast.js'
-import { decodePath } from '@/lib/utils.js'
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { ArrowLeft, Bot, FileText, Lock, Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ResourceEditor } from "@/components/config/ResourceEditor.js";
+import { CodeViewer } from "@/components/files/CodeViewer.js";
+import { MarkdownViewer } from "@/components/files/MarkdownViewer.js";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog.js";
+import { useToast } from "@/components/ui/Toast.js";
+import { ViewToggle } from "@/components/ui/ViewToggle.js";
+import { decodePath } from "@/lib/utils.js";
+import { getAgent } from "@/server/functions/agents.js";
+import { deleteResource, updateResource } from "@/server/functions/resource-mutations.js";
 
-export const Route = createFileRoute(
-  '/projects/$projectId/agents/$agentName',
-)({
+export const Route = createFileRoute("/projects/$projectId/agents/$agentName")({
   loader: async ({ params }) => {
-    const projectPath = decodePath(params.projectId)
+    const projectPath = decodePath(params.projectId);
     const agent = await getAgent({
       data: {
-        scope: 'project',
+        scope: "project",
         projectPath,
         name: params.agentName,
       },
-    })
-    return { agent, projectId: params.projectId }
+    });
+    return { agent, projectId: params.projectId };
   },
   component: ProjectAgentDetailPage,
   pendingComponent: () => (
@@ -37,46 +35,46 @@ export const Route = createFileRoute(
       <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
     </div>
   ),
-})
+});
 
 function ProjectAgentDetailPage() {
-  const { agent, projectId } = Route.useLoaderData()
-  const router = useRouter()
-  const { toast } = useToast()
-  const [view, setView] = useState<'structured' | 'raw'>('structured')
-  const [editing, setEditing] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  const { agent, projectId } = Route.useLoaderData();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [view, setView] = useState<"structured" | "raw">("structured");
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const handleSave = async (frontmatter: Record<string, string>, body: string) => {
-    setSaving(true)
+    setSaving(true);
     try {
       await updateResource({
         data: { filePath: agent.filePath, frontmatter, body },
-      })
-      toast('Agent updated successfully')
-      setEditing(false)
-      router.invalidate()
+      });
+      toast("Agent updated successfully");
+      setEditing(false);
+      router.invalidate();
     } catch (e) {
-      toast((e as Error).message, 'error')
+      toast((e as Error).message, "error");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const handleDelete = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
-      await deleteResource({ data: { filePath: agent.filePath } })
-      toast('Agent deleted')
-      router.navigate({ to: '/projects/$projectId/agents', params: { projectId } })
+      await deleteResource({ data: { filePath: agent.filePath } });
+      toast("Agent deleted");
+      router.navigate({ to: "/projects/$projectId/agents", params: { projectId } });
     } catch (e) {
-      toast((e as Error).message, 'error')
+      toast((e as Error).message, "error");
     } finally {
-      setSaving(false)
-      setConfirmDelete(false)
+      setSaving(false);
+      setConfirmDelete(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -97,9 +95,7 @@ function ProjectAgentDetailPage() {
               style={agent.color ? { color: agent.color } : undefined}
             />
           </div>
-          <h1 className="text-2xl font-bold text-text-primary">
-            {agent.name}
-          </h1>
+          <h1 className="text-2xl font-bold text-text-primary">{agent.name}</h1>
           {!agent.isEditable && (
             <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs bg-surface-2 text-text-muted border border-border-muted">
               <Lock className="w-3 h-3" />
@@ -131,9 +127,7 @@ function ProjectAgentDetailPage() {
         </div>
       </div>
 
-      {!editing && agent.description && (
-        <p className="text-text-secondary">{agent.description}</p>
-      )}
+      {!editing && agent.description && <p className="text-text-secondary">{agent.description}</p>}
 
       {!editing && (agent.tools || agent.color) && (
         <div className="flex flex-wrap gap-1.5">
@@ -174,7 +168,7 @@ function ProjectAgentDetailPage() {
           <div className="mb-2">
             <ViewToggle view={view} onChange={setView} />
           </div>
-          {view === 'structured' ? (
+          {view === "structured" ? (
             <MarkdownViewer content={agent.body} />
           ) : (
             <CodeViewer code={agent.body} language="markdown" />
@@ -192,5 +186,5 @@ function ProjectAgentDetailPage() {
         onCancel={() => setConfirmDelete(false)}
       />
     </div>
-  )
+  );
 }

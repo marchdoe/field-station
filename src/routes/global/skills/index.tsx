@@ -1,18 +1,18 @@
-import { useState } from 'react'
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { Zap, Plus, Lock } from 'lucide-react'
-import { listSkills } from '@/server/functions/skills.js'
-import { createResource } from '@/server/functions/resource-mutations.js'
-import { AppShell } from '@/components/layout/AppShell.js'
-import { FileCard } from '@/components/files/FileCard.js'
-import { FileList } from '@/components/files/FileList.js'
-import { CreateResourceDialog } from '@/components/config/CreateResourceDialog.js'
-import { useToast } from '@/components/ui/Toast.js'
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { Lock, Plus, Zap } from "lucide-react";
+import { useState } from "react";
+import { CreateResourceDialog } from "@/components/config/CreateResourceDialog.js";
+import { FileCard } from "@/components/files/FileCard.js";
+import { FileList } from "@/components/files/FileList.js";
+import { AppShell } from "@/components/layout/AppShell.js";
+import { useToast } from "@/components/ui/Toast.js";
+import { createResource } from "@/server/functions/resource-mutations.js";
+import { listSkills } from "@/server/functions/skills.js";
 
-export const Route = createFileRoute('/global/skills/')({
+export const Route = createFileRoute("/global/skills/")({
   loader: async () => {
-    const skills = await listSkills({ data: { scope: 'global' } })
-    return { skills }
+    const skills = await listSkills({ data: { scope: "global" } });
+    return { skills };
   },
   component: GlobalSkillsPage,
   pendingComponent: () => (
@@ -30,41 +30,41 @@ export const Route = createFileRoute('/global/skills/')({
       </div>
     </AppShell>
   ),
-})
+});
 
 function GlobalSkillsPage() {
-  const { skills } = Route.useLoaderData()
-  const router = useRouter()
-  const { toast } = useToast()
-  const [showCreate, setShowCreate] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const { skills } = Route.useLoaderData();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [showCreate, setShowCreate] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const handleCreate = async (data: {
-    name: string
-    folder?: string
-    frontmatter: Record<string, string>
-    body: string
+    name: string;
+    folder?: string;
+    frontmatter: Record<string, string>;
+    body: string;
   }) => {
-    setSaving(true)
+    setSaving(true);
     try {
       await createResource({
         data: {
-          scope: 'global',
-          type: 'skill',
+          scope: "global",
+          type: "skill",
           name: data.name,
           frontmatter: data.frontmatter,
           body: data.body,
         },
-      })
-      toast('Skill created successfully')
-      setShowCreate(false)
-      router.invalidate()
+      });
+      toast("Skill created successfully");
+      setShowCreate(false);
+      router.invalidate();
     } catch (e) {
-      toast((e as Error).message, 'error')
+      toast((e as Error).message, "error");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   return (
     <AppShell title="Global Skills">
@@ -73,7 +73,7 @@ function GlobalSkillsPage() {
           <div>
             <h1 className="text-2xl font-bold text-text-primary">Global Skills</h1>
             <p className="text-text-secondary mt-1">
-              {skills.length} skill{skills.length !== 1 ? 's' : ''} from{' '}
+              {skills.length} skill{skills.length !== 1 ? "s" : ""} from{" "}
               <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">~/.claude/skills/</code>
             </p>
           </div>
@@ -100,8 +100,8 @@ function GlobalSkillsPage() {
                 fileName={`${skill.folderName}/SKILL.md`}
                 variant="skill"
                 meta={{
-                  ...(skill.allowedTools ? { 'allowed-tools': skill.allowedTools } : {}),
-                  ...(!skill.isEditable ? { source: 'plugin' } : {}),
+                  ...(skill.allowedTools ? { "allowed-tools": skill.allowedTools } : {}),
+                  ...(!skill.isEditable ? { source: "plugin" } : {}),
                 }}
                 preview={skill.bodyPreview}
                 icon={
@@ -125,5 +125,5 @@ function GlobalSkillsPage() {
         onClose={() => setShowCreate(false)}
       />
     </AppShell>
-  )
+  );
 }

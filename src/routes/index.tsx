@@ -1,20 +1,16 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import {
-  FolderOpen,
-  Settings,
-  Radio,
-} from 'lucide-react'
-import { getRegisteredProjects, scanForProjects } from '@/server/functions/projects.js'
-import { AppShell } from '@/components/layout/AppShell.js'
-import type { ProjectInfo } from '@/types/config.js'
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { FolderOpen, Radio, Settings } from "lucide-react";
+import { AppShell } from "@/components/layout/AppShell.js";
+import { getRegisteredProjects, scanForProjects } from "@/server/functions/projects.js";
+import type { ProjectInfo } from "@/types/config.js";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   loader: async () => {
     const [registeredPaths, allProjects] = await Promise.all([
       getRegisteredProjects(),
       scanForProjects(),
-    ])
-    return { registeredPaths, allProjects }
+    ]);
+    return { registeredPaths, allProjects };
   },
   component: DashboardPage,
   pendingComponent: () => (
@@ -32,14 +28,12 @@ export const Route = createFileRoute('/')({
       </div>
     </AppShell>
   ),
-})
+});
 
 function DashboardPage() {
-  const { registeredPaths, allProjects } = Route.useLoaderData()
-  const needsSetup = registeredPaths.length === 0
-  const registeredProjects = allProjects.filter((p) =>
-    registeredPaths.includes(p.decodedPath),
-  )
+  const { registeredPaths, allProjects } = Route.useLoaderData();
+  const needsSetup = registeredPaths.length === 0;
+  const registeredProjects = allProjects.filter((p) => registeredPaths.includes(p.decodedPath));
 
   if (needsSetup) {
     return (
@@ -48,12 +42,10 @@ function DashboardPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-accent-muted mb-6">
             <Radio className="w-10 h-10 text-accent" />
           </div>
-          <h1 className="text-3xl font-bold text-text-primary mb-3">
-            Welcome to Field Station
-          </h1>
+          <h1 className="text-3xl font-bold text-text-primary mb-3">Welcome to Field Station</h1>
           <p className="text-text-secondary text-lg mb-8">
-            Your local Claude Code configuration explorer. Let&apos;s get started by
-            discovering your projects.
+            Your local Claude Code configuration explorer. Let&apos;s get started by discovering
+            your projects.
           </p>
           <Link
             to="/setup"
@@ -64,7 +56,7 @@ function DashboardPage() {
           </Link>
         </div>
       </AppShell>
-    )
+    );
   }
 
   return (
@@ -72,16 +64,12 @@ function DashboardPage() {
       <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Dashboard</h1>
-          <p className="text-text-secondary mt-1">
-            Overview of your Claude Code configuration
-          </p>
+          <p className="text-text-secondary mt-1">Overview of your Claude Code configuration</p>
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-text-primary">
-              Registered Projects
-            </h2>
+            <h2 className="text-lg font-semibold text-text-primary">Registered Projects</h2>
             <Link
               to="/projects"
               className="text-sm text-accent hover:text-accent-hover transition-colors"
@@ -97,11 +85,11 @@ function DashboardPage() {
         </div>
       </div>
     </AppShell>
-  )
+  );
 }
 
 function ProjectCard({ project }: { project: ProjectInfo }) {
-  const name = project.decodedPath.split('/').filter(Boolean).pop() ?? project.decodedPath
+  const name = project.decodedPath.split("/").filter(Boolean).pop() ?? project.decodedPath;
 
   return (
     <Link
@@ -119,9 +107,7 @@ function ProjectCard({ project }: { project: ProjectInfo }) {
           <span className="bg-surface-2 px-2 py-0.5 rounded-full">CLAUDE.md</span>
         )}
         {project.agentCount > 0 && (
-          <span className="bg-surface-2 px-2 py-0.5 rounded-full">
-            {project.agentCount} agents
-          </span>
+          <span className="bg-surface-2 px-2 py-0.5 rounded-full">{project.agentCount} agents</span>
         )}
         {project.commandCount > 0 && (
           <span className="bg-surface-2 px-2 py-0.5 rounded-full">
@@ -130,5 +116,5 @@ function ProjectCard({ project }: { project: ProjectInfo }) {
         )}
       </div>
     </Link>
-  )
+  );
 }

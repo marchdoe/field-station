@@ -1,14 +1,14 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
-import { Check, FolderOpen, Radio, Search } from 'lucide-react'
-import { scanForProjects, registerProjects } from '@/server/functions/projects.js'
-import { cn } from '@/lib/utils.js'
-import type { ProjectInfo } from '@/types/config.js'
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Check, FolderOpen, Radio, Search } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils.js";
+import { registerProjects, scanForProjects } from "@/server/functions/projects.js";
+import type { ProjectInfo } from "@/types/config.js";
 
-export const Route = createFileRoute('/setup')({
+export const Route = createFileRoute("/setup")({
   loader: async () => {
-    const projects = await scanForProjects()
-    return { projects }
+    const projects = await scanForProjects();
+    return { projects };
   },
   component: SetupPage,
   pendingComponent: () => (
@@ -16,32 +16,32 @@ export const Route = createFileRoute('/setup')({
       <div className="animate-pulse text-text-muted">Scanning for projects...</div>
     </div>
   ),
-})
+});
 
 function SetupPage() {
-  const { projects } = Route.useLoaderData()
-  const navigate = useNavigate()
+  const { projects } = Route.useLoaderData();
+  const navigate = useNavigate();
   const [selected, setSelected] = useState<Set<string>>(
     new Set(projects.filter((p) => p.exists).map((p) => p.decodedPath)),
-  )
-  const [saving, setSaving] = useState(false)
+  );
+  const [saving, setSaving] = useState(false);
 
   function toggleProject(path: string) {
     setSelected((prev) => {
-      const next = new Set(prev)
+      const next = new Set(prev);
       if (next.has(path)) {
-        next.delete(path)
+        next.delete(path);
       } else {
-        next.add(path)
+        next.add(path);
       }
-      return next
-    })
+      return next;
+    });
   }
 
   async function handleFinish() {
-    setSaving(true)
-    await registerProjects({ data: { paths: Array.from(selected) } })
-    await navigate({ to: '/' })
+    setSaving(true);
+    await registerProjects({ data: { paths: Array.from(selected) } });
+    await navigate({ to: "/" });
   }
 
   return (
@@ -51,12 +51,10 @@ function SetupPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent-muted mb-4">
             <Radio className="w-8 h-8 text-accent" />
           </div>
-          <h1 className="text-3xl font-bold text-text-primary mb-2">
-            Field Station Setup
-          </h1>
+          <h1 className="text-3xl font-bold text-text-primary mb-2">Field Station Setup</h1>
           <p className="text-text-secondary">
-            We found {projects.length} project{projects.length !== 1 ? 's' : ''} in your
-            Claude Code configuration. Select which ones to track.
+            We found {projects.length} project{projects.length !== 1 ? "s" : ""} in your Claude Code
+            configuration. Select which ones to track.
           </p>
         </div>
 
@@ -82,24 +80,24 @@ function SetupPage() {
 
         <div className="flex items-center justify-between">
           <p className="text-sm text-text-muted">
-            {selected.size} project{selected.size !== 1 ? 's' : ''} selected
+            {selected.size} project{selected.size !== 1 ? "s" : ""} selected
           </p>
           <button
             onClick={handleFinish}
             disabled={saving || selected.size === 0}
             className={cn(
-              'inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-colors',
+              "inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium transition-colors",
               selected.size > 0
-                ? 'bg-accent text-white hover:bg-accent-hover'
-                : 'bg-surface-3 text-text-muted cursor-not-allowed',
+                ? "bg-accent text-white hover:bg-accent-hover"
+                : "bg-surface-3 text-text-muted cursor-not-allowed",
             )}
           >
-            {saving ? 'Saving...' : 'Continue to Dashboard'}
+            {saving ? "Saving..." : "Continue to Dashboard"}
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function ProjectRow({
@@ -107,36 +105,31 @@ function ProjectRow({
   selected,
   onToggle,
 }: {
-  project: ProjectInfo
-  selected: boolean
-  onToggle: () => void
+  project: ProjectInfo;
+  selected: boolean;
+  onToggle: () => void;
 }) {
-  const name = project.decodedPath.split('/').filter(Boolean).pop() ?? project.decodedPath
+  const name = project.decodedPath.split("/").filter(Boolean).pop() ?? project.decodedPath;
 
   return (
     <button
       onClick={onToggle}
       className={cn(
-        'w-full flex items-center gap-3 px-4 py-3 text-left transition-colors',
-        selected ? 'bg-accent-muted/50' : 'hover:bg-surface-2',
-        !project.exists && 'opacity-50',
+        "w-full flex items-center gap-3 px-4 py-3 text-left transition-colors",
+        selected ? "bg-accent-muted/50" : "hover:bg-surface-2",
+        !project.exists && "opacity-50",
       )}
     >
       <div
         className={cn(
-          'w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors',
-          selected
-            ? 'bg-accent border-accent text-white'
-            : 'border-border-default',
+          "w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors",
+          selected ? "bg-accent border-accent text-white" : "border-border-default",
         )}
       >
         {selected && <Check className="w-3 h-3" />}
       </div>
       <FolderOpen
-        className={cn(
-          'w-4 h-4 flex-shrink-0',
-          selected ? 'text-accent' : 'text-text-muted',
-        )}
+        className={cn("w-4 h-4 flex-shrink-0", selected ? "text-accent" : "text-text-muted")}
       />
       <div className="min-w-0 flex-1">
         <p className="font-medium text-text-primary truncate">{name}</p>
@@ -155,5 +148,5 @@ function ProjectRow({
         )}
       </div>
     </button>
-  )
+  );
 }

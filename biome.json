@@ -1,0 +1,48 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.0.6/schema.json",
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "useButtonType": "warn",
+        "noAutofocus": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "warn"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "off"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "assist": {
+    "enabled": true
+  },
+  "files": {
+    "includes": ["src/**", "*.json", "*.ts", "*.tsx"],
+    "ignoreUnknown": true
+  },
+  "css": {
+    "parser": { "cssModules": false },
+    "linter": { "enabled": false },
+    "formatter": { "enabled": false }
+  },
+  "overrides": [
+    {
+      "includes": ["src/routeTree.gen.ts", "**/*.css"],
+      "linter": { "enabled": false },
+      "formatter": { "enabled": false },
+      "assist": { "enabled": false }
+    }
+  ]
+}

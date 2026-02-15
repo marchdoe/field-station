@@ -1,15 +1,15 @@
-import { cn } from '@/lib/utils'
-import ThemeToggle from './ThemeToggle'
+import { cn } from "@/lib/utils";
+import ThemeToggle from "./ThemeToggle";
 
 interface HeaderProps {
-  title?: string
+  title?: string;
 }
 
 export default function Header({ title }: HeaderProps) {
   return (
     <header
       className={cn(
-        'flex h-14 items-center justify-between border-b border-border-default bg-surface-1 px-6',
+        "flex h-14 items-center justify-between border-b border-border-default bg-surface-1 px-6",
       )}
     >
       <nav className="flex items-center gap-2 text-sm">
@@ -26,5 +26,5 @@ export default function Header({ title }: HeaderProps) {
         <ThemeToggle />
       </div>
     </header>
-  )
+  );
 }

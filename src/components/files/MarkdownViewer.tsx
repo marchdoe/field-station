@@ -1,12 +1,12 @@
-import Markdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import remarkBreaks from 'remark-breaks'
-import { cn } from '@/lib/utils'
-import type { Components } from 'react-markdown'
+import type { Components } from "react-markdown";
+import Markdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
+import remarkGfm from "remark-gfm";
+import { cn } from "@/lib/utils";
 
 interface MarkdownViewerProps {
-  content: string
-  className?: string
+  content: string;
+  className?: string;
 }
 
 const components: Components = {
@@ -21,18 +21,12 @@ const components: Components = {
     </h2>
   ),
   h3: ({ children }) => (
-    <h3 className="mb-2 mt-5 first:mt-0 text-lg font-semibold text-text-primary">
-      {children}
-    </h3>
+    <h3 className="mb-2 mt-5 first:mt-0 text-lg font-semibold text-text-primary">{children}</h3>
   ),
   h4: ({ children }) => (
-    <h4 className="mb-2 mt-4 first:mt-0 text-base font-semibold text-text-primary">
-      {children}
-    </h4>
+    <h4 className="mb-2 mt-4 first:mt-0 text-base font-semibold text-text-primary">{children}</h4>
   ),
-  p: ({ children }) => (
-    <p className="mb-3 leading-relaxed text-text-secondary">{children}</p>
-  ),
+  p: ({ children }) => <p className="mb-3 leading-relaxed text-text-secondary">{children}</p>,
   a: ({ href, children }) => (
     <a
       href={href}
@@ -60,49 +54,35 @@ const components: Components = {
     </blockquote>
   ),
   code: ({ className, children }) => {
-    const isBlock = className?.startsWith('language-')
+    const isBlock = className?.startsWith("language-");
     if (isBlock) {
-      return (
-        <code className="text-[13px] leading-relaxed">{children}</code>
-      )
+      return <code className="text-[13px] leading-relaxed">{children}</code>;
     }
     return (
       <code className="rounded bg-surface-2 px-1.5 py-0.5 text-[13px] text-text-primary">
         {children}
       </code>
-    )
+    );
   },
   pre: ({ children }) => (
-    <pre className="mb-3 overflow-x-auto rounded-lg bg-surface-2 p-4">
-      {children}
-    </pre>
+    <pre className="mb-3 overflow-x-auto rounded-lg bg-surface-2 p-4">{children}</pre>
   ),
   table: ({ children }) => (
     <div className="mb-3 overflow-x-auto">
       <table className="w-full border-collapse text-sm">{children}</table>
     </div>
   ),
-  thead: ({ children }) => (
-    <thead className="border-b border-border-default">{children}</thead>
-  ),
+  thead: ({ children }) => <thead className="border-b border-border-default">{children}</thead>,
   th: ({ children }) => (
     <th className="px-3 py-2 text-left text-xs font-semibold text-text-muted uppercase tracking-wide">
       {children}
     </th>
   ),
   td: ({ children }) => (
-    <td className="border-b border-border-muted px-3 py-2 text-text-secondary">
-      {children}
-    </td>
+    <td className="border-b border-border-muted px-3 py-2 text-text-secondary">{children}</td>
   ),
   hr: () => <hr className="my-6 border-border-muted" />,
-  img: ({ src, alt }) => (
-    <img
-      src={src}
-      alt={alt ?? ''}
-      className="my-3 max-w-full rounded-lg"
-    />
-  ),
+  img: ({ src, alt }) => <img src={src} alt={alt ?? ""} className="my-3 max-w-full rounded-lg" />,
   input: ({ checked, disabled, ...props }) => (
     <input
       {...props}
@@ -112,17 +92,14 @@ const components: Components = {
       className="mr-2 accent-accent"
     />
   ),
-}
+};
 
-export function MarkdownViewer({
-  content,
-  className,
-}: MarkdownViewerProps) {
+export function MarkdownViewer({ content, className }: MarkdownViewerProps) {
   return (
-    <div className={cn('text-sm', className)}>
+    <div className={cn("text-sm", className)}>
       <Markdown remarkPlugins={[remarkGfm, remarkBreaks]} components={components}>
         {content}
       </Markdown>
     </div>
-  )
+  );
 }

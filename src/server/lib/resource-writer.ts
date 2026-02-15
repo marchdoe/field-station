@@ -1,19 +1,18 @@
-import { existsSync, writeFileSync, unlinkSync, mkdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import matter from 'gray-matter'
-import { isUserOwned } from './ownership.js'
+import { existsSync, mkdirSync, unlinkSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import matter from "gray-matter";
+import { isUserOwned } from "./ownership.js";
 
-export type ResourceType = 'agent' | 'command' | 'skill'
+export type ResourceType = "agent" | "command" | "skill";
 
-export function serializeMarkdown(
-  frontmatter: Record<string, unknown>,
-  body: string,
-): string {
-  const keys = Object.keys(frontmatter).filter((k) => frontmatter[k] !== undefined && frontmatter[k] !== '')
-  if (keys.length === 0) return body
-  const cleaned: Record<string, unknown> = {}
-  for (const k of keys) cleaned[k] = frontmatter[k]
-  return matter.stringify(body, cleaned)
+export function serializeMarkdown(frontmatter: Record<string, unknown>, body: string): string {
+  const keys = Object.keys(frontmatter).filter(
+    (k) => frontmatter[k] !== undefined && frontmatter[k] !== "",
+  );
+  if (keys.length === 0) return body;
+  const cleaned: Record<string, unknown> = {};
+  for (const k of keys) cleaned[k] = frontmatter[k];
+  return matter.stringify(body, cleaned);
 }
 
 export function resolveResourcePath(
@@ -23,13 +22,13 @@ export function resolveResourcePath(
   folder?: string,
 ): string {
   switch (type) {
-    case 'agent':
-      return join(baseDir, 'agents', `${name}.md`)
-    case 'command':
-      if (!folder) throw new Error('folder is required for commands')
-      return join(baseDir, 'commands', folder, `${name}.md`)
-    case 'skill':
-      return join(baseDir, 'skills', name, 'SKILL.md')
+    case "agent":
+      return join(baseDir, "agents", `${name}.md`);
+    case "command":
+      if (!folder) throw new Error("folder is required for commands");
+      return join(baseDir, "commands", folder, `${name}.md`);
+    case "skill":
+      return join(baseDir, "skills", name, "SKILL.md");
   }
 }
 
@@ -39,16 +38,16 @@ export function createResourceFile(
   body: string,
 ): void {
   if (!isUserOwned(filePath)) {
-    throw new Error(`Path is not user-owned: ${filePath}`)
+    throw new Error(`Path is not user-owned: ${filePath}`);
   }
   if (existsSync(filePath)) {
-    throw new Error(`File already exists: ${filePath}`)
+    throw new Error(`File already exists: ${filePath}`);
   }
-  const dir = dirname(filePath)
+  const dir = dirname(filePath);
   if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true })
+    mkdirSync(dir, { recursive: true });
   }
-  writeFileSync(filePath, serializeMarkdown(frontmatter, body), 'utf-8')
+  writeFileSync(filePath, serializeMarkdown(frontmatter, body), "utf-8");
 }
 
 export function updateResourceFile(
@@ -57,20 +56,20 @@ export function updateResourceFile(
   body: string,
 ): void {
   if (!existsSync(filePath)) {
-    throw new Error(`File does not exist: ${filePath}`)
+    throw new Error(`File does not exist: ${filePath}`);
   }
   if (!isUserOwned(filePath)) {
-    throw new Error(`Path is not user-owned: ${filePath}`)
+    throw new Error(`Path is not user-owned: ${filePath}`);
   }
-  writeFileSync(filePath, serializeMarkdown(frontmatter, body), 'utf-8')
+  writeFileSync(filePath, serializeMarkdown(frontmatter, body), "utf-8");
 }
 
 export function deleteResourceFile(filePath: string): void {
   if (!existsSync(filePath)) {
-    throw new Error(`File does not exist: ${filePath}`)
+    throw new Error(`File does not exist: ${filePath}`);
   }
   if (!isUserOwned(filePath)) {
-    throw new Error(`Path is not user-owned: ${filePath}`)
+    throw new Error(`Path is not user-owned: ${filePath}`);
   }
-  unlinkSync(filePath)
+  unlinkSync(filePath);
 }

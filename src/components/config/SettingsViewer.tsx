@@ -1,47 +1,44 @@
-import { useState } from 'react'
-import { Check, X, Plus } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { LayerBadge } from './LayerBadge'
-import { SettingActions } from './SettingActions'
-import { AddSettingForm } from './AddSettingForm'
-import type { JsonValue, JsonObject, ConfigLayerSource } from '@/types/config'
+import { Check, Plus, X } from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import type { ConfigLayerSource, JsonObject, JsonValue } from "@/types/config";
+import { AddSettingForm } from "./AddSettingForm";
+import { LayerBadge } from "./LayerBadge";
+import { SettingActions } from "./SettingActions";
 
 interface SettingsViewerProps {
-  settings: JsonObject
-  source?: 'global' | 'global-local' | 'project' | 'project-local' | 'merged' | string
-  editable?: boolean
-  onUpdate?: (keyPath: string, value: JsonValue) => void
-  onDelete?: (keyPath: string) => void
-  onMove?: (keyPath: string, targetLayer: ConfigLayerSource) => void
-  onAdd?: (keyPath: string, value: JsonValue) => void
+  settings: JsonObject;
+  source?: "global" | "global-local" | "project" | "project-local" | "merged" | string;
+  editable?: boolean;
+  onUpdate?: (keyPath: string, value: JsonValue) => void;
+  onDelete?: (keyPath: string) => void;
+  onMove?: (keyPath: string, targetLayer: ConfigLayerSource) => void;
+  onAdd?: (keyPath: string, value: JsonValue) => void;
 }
 
 function isObject(value: JsonValue): value is JsonObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function renderValue(value: JsonValue, depth = 0): React.ReactNode {
-  if (typeof value === 'boolean') {
+  if (typeof value === "boolean") {
     return (
       <span
         className={cn(
-          'inline-flex items-center gap-1.5 text-sm',
-          value ? 'text-success' : 'text-danger',
+          "inline-flex items-center gap-1.5 text-sm",
+          value ? "text-success" : "text-danger",
         )}
       >
         <span
-          className={cn(
-            'inline-block h-2 w-2 rounded-full',
-            value ? 'bg-success' : 'bg-danger',
-          )}
+          className={cn("inline-block h-2 w-2 rounded-full", value ? "bg-success" : "bg-danger")}
         />
-        {value ? 'true' : 'false'}
+        {value ? "true" : "false"}
       </span>
-    )
+    );
   }
 
   if (Array.isArray(value)) {
-    const hasObjects = value.some(isObject)
+    const hasObjects = value.some(isObject);
     if (hasObjects) {
       return (
         <div className="mt-1 space-y-2">
@@ -62,7 +59,7 @@ function renderValue(value: JsonValue, depth = 0): React.ReactNode {
             </div>
           ))}
         </div>
-      )
+      );
     }
 
     return (
@@ -75,35 +72,33 @@ function renderValue(value: JsonValue, depth = 0): React.ReactNode {
           </div>
         ))}
       </div>
-    )
+    );
   }
 
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     // Long strings: render as a block
     if (value.length > 120) {
       return (
         <code className="mt-1 block rounded bg-surface-2 px-2 py-1.5 text-xs text-text-secondary break-all">
           {value}
         </code>
-      )
+      );
     }
     return (
-      <code className="rounded bg-surface-2 px-1.5 py-0.5 text-sm text-text-primary">
-        {value}
-      </code>
-    )
+      <code className="rounded bg-surface-2 px-1.5 py-0.5 text-sm text-text-primary">{value}</code>
+    );
   }
 
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return (
       <code className="rounded bg-surface-2 px-1.5 py-0.5 text-sm text-text-primary">
         {String(value)}
       </code>
-    )
+    );
   }
 
   if (value === null || value === undefined) {
-    return <span className="text-sm italic text-text-muted">null</span>
+    return <span className="text-sm italic text-text-muted">null</span>;
   }
 
   // Fallback for any object type not caught above
@@ -117,39 +112,39 @@ function renderValue(value: JsonValue, depth = 0): React.ReactNode {
           </div>
         ))}
       </div>
-    )
+    );
   }
 
-  return null
+  return null;
 }
 
 // Serialize a JsonValue into a string suitable for the inline editor
 function serializeForEdit(value: JsonValue): string {
-  if (typeof value === 'string') return value
-  if (typeof value === 'number') return String(value)
-  if (typeof value === 'boolean') return String(value)
-  return JSON.stringify(value, null, 2)
+  if (typeof value === "string") return value;
+  if (typeof value === "number") return String(value);
+  if (typeof value === "boolean") return String(value);
+  return JSON.stringify(value, null, 2);
 }
 
 // Determine the editor type for a given value
-function editorTypeFor(value: JsonValue): 'string' | 'number' | 'boolean' | 'json' {
-  if (typeof value === 'string') return 'string'
-  if (typeof value === 'number') return 'number'
-  if (typeof value === 'boolean') return 'boolean'
-  return 'json'
+function editorTypeFor(value: JsonValue): "string" | "number" | "boolean" | "json" {
+  if (typeof value === "string") return "string";
+  if (typeof value === "number") return "number";
+  if (typeof value === "boolean") return "boolean";
+  return "json";
 }
 
 // Parse the edited string back to a JsonValue
-function parseEditedValue(raw: string, type: 'string' | 'number' | 'boolean' | 'json'): JsonValue {
+function parseEditedValue(raw: string, type: "string" | "number" | "boolean" | "json"): JsonValue {
   switch (type) {
-    case 'string':
-      return raw
-    case 'number':
-      return Number(raw)
-    case 'boolean':
-      return raw === 'true'
-    case 'json':
-      return JSON.parse(raw) as JsonValue
+    case "string":
+      return raw;
+    case "number":
+      return Number(raw);
+    case "boolean":
+      return raw === "true";
+    case "json":
+      return JSON.parse(raw) as JsonValue;
   }
 }
 
@@ -159,36 +154,36 @@ function InlineEditor({
   onSave,
   onCancel,
 }: {
-  value: JsonValue
-  onSave: (newValue: JsonValue) => void
-  onCancel: () => void
+  value: JsonValue;
+  onSave: (newValue: JsonValue) => void;
+  onCancel: () => void;
 }) {
-  const type = editorTypeFor(value)
-  const [raw, setRaw] = useState(serializeForEdit(value))
-  const [error, setError] = useState<string | null>(null)
+  const type = editorTypeFor(value);
+  const [raw, setRaw] = useState(serializeForEdit(value));
+  const [error, setError] = useState<string | null>(null);
 
   const handleSave = () => {
-    setError(null)
+    setError(null);
     try {
-      const parsed = parseEditedValue(raw, type)
-      onSave(parsed)
+      const parsed = parseEditedValue(raw, type);
+      onSave(parsed);
     } catch {
-      setError('Invalid value')
+      setError("Invalid value");
     }
-  }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSave()
-    } else if (e.key === 'Escape') {
-      onCancel()
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === "Escape") {
+      onCancel();
     }
-  }
+  };
 
   return (
     <span className="inline-flex items-center gap-1.5">
-      {type === 'boolean' ? (
+      {type === "boolean" ? (
         <select
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
@@ -199,12 +194,12 @@ function InlineEditor({
           <option value="true">true</option>
           <option value="false">false</option>
         </select>
-      ) : type === 'json' ? (
+      ) : type === "json" ? (
         <textarea
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Escape') onCancel()
+            if (e.key === "Escape") onCancel();
           }}
           autoFocus
           rows={4}
@@ -212,7 +207,7 @@ function InlineEditor({
         />
       ) : (
         <input
-          type={type === 'number' ? 'number' : 'text'}
+          type={type === "number" ? "number" : "text"}
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -236,18 +231,18 @@ function InlineEditor({
       </button>
       {error && <span className="text-xs text-danger">{error}</span>}
     </span>
-  )
+  );
 }
 
 // Editable context passed through the recursive rendering
 interface EditableContext {
-  editingKey: string | null
-  onStartEdit: (keyPath: string) => void
-  onSaveEdit: (keyPath: string, value: JsonValue) => void
-  onCancelEdit: () => void
-  onDelete: (keyPath: string) => void
-  onMove: (keyPath: string, targetLayer: ConfigLayerSource) => void
-  currentLayer: ConfigLayerSource
+  editingKey: string | null;
+  onStartEdit: (keyPath: string) => void;
+  onSaveEdit: (keyPath: string, value: JsonValue) => void;
+  onCancelEdit: () => void;
+  onDelete: (keyPath: string) => void;
+  onMove: (keyPath: string, targetLayer: ConfigLayerSource) => void;
+  currentLayer: ConfigLayerSource;
 }
 
 // Renders a single key-value pair, optionally editable
@@ -257,12 +252,12 @@ function EditableSettingRow({
   value,
   ctx,
 }: {
-  keyName: string
-  keyPath: string
-  value: JsonValue
-  ctx: EditableContext
+  keyName: string;
+  keyPath: string;
+  value: JsonValue;
+  ctx: EditableContext;
 }) {
-  const isEditing = ctx.editingKey === keyPath
+  const isEditing = ctx.editingKey === keyPath;
 
   return (
     <div className="group/setting flex items-baseline gap-2">
@@ -285,7 +280,7 @@ function EditableSettingRow({
         </>
       )}
     </div>
-  )
+  );
 }
 
 // Editable version of SettingsSection that threads keyPath and edit context
@@ -295,21 +290,19 @@ function EditableSettingsSection({
   keyPathPrefix,
   ctx,
 }: {
-  sectionKey: string
-  value: JsonValue
-  keyPathPrefix: string
-  ctx: EditableContext
+  sectionKey: string;
+  value: JsonValue;
+  keyPathPrefix: string;
+  ctx: EditableContext;
 }) {
-  const fullKeyPath = keyPathPrefix ? `${keyPathPrefix}.${sectionKey}` : sectionKey
+  const fullKeyPath = keyPathPrefix ? `${keyPathPrefix}.${sectionKey}` : sectionKey;
 
   if (isObject(value)) {
-    const entries = Object.entries(value)
+    const entries = Object.entries(value);
     return (
       <div className="space-y-2">
         <div className="group/setting flex items-center gap-2">
-          <h4 className="text-sm font-semibold text-text-primary">
-            {sectionKey}
-          </h4>
+          <h4 className="text-sm font-semibold text-text-primary">{sectionKey}</h4>
           <SettingActions
             currentLayer={ctx.currentLayer}
             onEdit={() => ctx.onStartEdit(fullKeyPath)}
@@ -328,7 +321,7 @@ function EditableSettingsSection({
                   keyPathPrefix={fullKeyPath}
                   ctx={ctx}
                 />
-              )
+              );
             }
             return (
               <EditableSettingRow
@@ -338,18 +331,16 @@ function EditableSettingsSection({
                 value={v}
                 ctx={ctx}
               />
-            )
+            );
           })}
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="group/setting flex items-baseline gap-2">
-      <span className="shrink-0 text-sm font-semibold text-text-primary">
-        {sectionKey}:
-      </span>
+      <span className="shrink-0 text-sm font-semibold text-text-primary">{sectionKey}:</span>
       {ctx.editingKey === fullKeyPath ? (
         <InlineEditor
           value={value}
@@ -368,49 +359,39 @@ function EditableSettingsSection({
         </>
       )}
     </div>
-  )
+  );
 }
 
 // Read-only SettingsSection (original, unchanged)
-function SettingsSection({
-  sectionKey,
-  value,
-}: {
-  sectionKey: string
-  value: JsonValue
-}) {
+function SettingsSection({ sectionKey, value }: { sectionKey: string; value: JsonValue }) {
   if (isObject(value)) {
-    const entries = Object.entries(value)
+    const entries = Object.entries(value);
     return (
       <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-text-primary">
-          {sectionKey}
-        </h4>
+        <h4 className="text-sm font-semibold text-text-primary">{sectionKey}</h4>
         <div className="ml-3 space-y-1.5 border-l border-border-muted pl-3">
           {entries.map(([k, v]) => {
             if (isObject(v)) {
-              return <SettingsSection key={k} sectionKey={k} value={v} />
+              return <SettingsSection key={k} sectionKey={k} value={v} />;
             }
             return (
               <div key={k} className="flex items-baseline gap-2">
                 <span className="shrink-0 text-sm text-text-muted">{k}:</span>
                 {renderValue(v)}
               </div>
-            )
+            );
           })}
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="flex items-baseline gap-2">
-      <span className="shrink-0 text-sm font-semibold text-text-primary">
-        {sectionKey}:
-      </span>
+      <span className="shrink-0 text-sm font-semibold text-text-primary">{sectionKey}:</span>
       {renderValue(value)}
     </div>
-  )
+  );
 }
 
 export function SettingsViewer({
@@ -422,18 +403,20 @@ export function SettingsViewer({
   onMove,
   onAdd,
 }: SettingsViewerProps) {
-  const [editingKey, setEditingKey] = useState<string | null>(null)
-  const [showAddForm, setShowAddForm] = useState(false)
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
 
-  const entries = Object.entries(settings)
+  const entries = Object.entries(settings);
 
   // When not editable, render the original read-only view
   if (!editable) {
     return (
       <div className="rounded-xl border border-border-default bg-surface-1 p-5">
-        {source && source !== 'merged' && (
+        {source && source !== "merged" && (
           <div className="mb-4">
-            <LayerBadge source={source as 'global' | 'global-local' | 'project' | 'project-local'} />
+            <LayerBadge
+              source={source as "global" | "global-local" | "project" | "project-local"}
+            />
           </div>
         )}
 
@@ -447,30 +430,30 @@ export function SettingsViewer({
           </div>
         )}
       </div>
-    )
+    );
   }
 
   // Editable mode
-  const currentLayer = (source && source !== 'merged' ? source : 'global') as ConfigLayerSource
+  const currentLayer = (source && source !== "merged" ? source : "global") as ConfigLayerSource;
 
   const ctx: EditableContext = {
     editingKey,
     onStartEdit: (keyPath) => setEditingKey(keyPath),
     onSaveEdit: (keyPath, value) => {
-      onUpdate?.(keyPath, value)
-      setEditingKey(null)
+      onUpdate?.(keyPath, value);
+      setEditingKey(null);
     },
     onCancelEdit: () => setEditingKey(null),
     onDelete: (keyPath) => onDelete?.(keyPath),
     onMove: (keyPath, targetLayer) => onMove?.(keyPath, targetLayer),
     currentLayer,
-  }
+  };
 
   return (
     <div className="rounded-xl border border-border-default bg-surface-1 p-5">
-      {source && source !== 'merged' && (
+      {source && source !== "merged" && (
         <div className="mb-4">
-          <LayerBadge source={source as 'global' | 'global-local' | 'project' | 'project-local'} />
+          <LayerBadge source={source as "global" | "global-local" | "project" | "project-local"} />
         </div>
       )}
 
@@ -494,8 +477,8 @@ export function SettingsViewer({
         {showAddForm ? (
           <AddSettingForm
             onAdd={(keyPath, value) => {
-              onAdd?.(keyPath, value)
-              setShowAddForm(false)
+              onAdd?.(keyPath, value);
+              setShowAddForm(false);
             }}
             onCancel={() => setShowAddForm(false)}
           />
@@ -510,5 +493,5 @@ export function SettingsViewer({
         )}
       </div>
     </div>
-  )
+  );
 }

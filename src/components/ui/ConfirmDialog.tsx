@@ -39,7 +39,7 @@ export function ConfirmDialog({
     <dialog
       ref={dialogRef}
       onClose={onCancel}
-      className="backdrop:bg-black/50 bg-surface-1 border border-border-default rounded-xl p-0 max-w-md w-full shadow-xl"
+      className="m-auto backdrop:bg-black/50 bg-surface-1 border border-border-default rounded-xl p-0 max-w-md w-full shadow-xl"
     >
       <div className="p-6">
         <div className="flex items-start gap-3">

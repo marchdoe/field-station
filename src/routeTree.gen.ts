@@ -16,6 +16,7 @@ import { Route as GlobalIndexRouteImport } from './routes/global/index'
 import { Route as GlobalSettingsRouteImport } from './routes/global/settings'
 import { Route as GlobalPluginsRouteImport } from './routes/global/plugins'
 import { Route as GlobalHooksRouteImport } from './routes/global/hooks'
+import { Route as GlobalFeaturesRouteImport } from './routes/global/features'
 import { Route as ProjectsProjectIdRouteRouteImport } from './routes/projects/$projectId/route'
 import { Route as GlobalSkillsRouteRouteImport } from './routes/global/skills/route'
 import { Route as GlobalCommandsRouteRouteImport } from './routes/global/commands/route'
@@ -71,6 +72,11 @@ const GlobalPluginsRoute = GlobalPluginsRouteImport.update({
 const GlobalHooksRoute = GlobalHooksRouteImport.update({
   id: '/global/hooks',
   path: '/global/hooks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GlobalFeaturesRoute = GlobalFeaturesRouteImport.update({
+  id: '/global/features',
+  path: '/global/features',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsProjectIdRouteRoute = ProjectsProjectIdRouteRouteImport.update({
@@ -197,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/global/commands': typeof GlobalCommandsRouteRouteWithChildren
   '/global/skills': typeof GlobalSkillsRouteRouteWithChildren
   '/projects/$projectId': typeof ProjectsProjectIdRouteRouteWithChildren
+  '/global/features': typeof GlobalFeaturesRoute
   '/global/hooks': typeof GlobalHooksRoute
   '/global/plugins': typeof GlobalPluginsRoute
   '/global/settings': typeof GlobalSettingsRoute
@@ -223,6 +230,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/setup': typeof SetupRoute
+  '/global/features': typeof GlobalFeaturesRoute
   '/global/hooks': typeof GlobalHooksRoute
   '/global/plugins': typeof GlobalPluginsRoute
   '/global/settings': typeof GlobalSettingsRoute
@@ -251,6 +259,7 @@ export interface FileRoutesById {
   '/global/commands': typeof GlobalCommandsRouteRouteWithChildren
   '/global/skills': typeof GlobalSkillsRouteRouteWithChildren
   '/projects/$projectId': typeof ProjectsProjectIdRouteRouteWithChildren
+  '/global/features': typeof GlobalFeaturesRoute
   '/global/hooks': typeof GlobalHooksRoute
   '/global/plugins': typeof GlobalPluginsRoute
   '/global/settings': typeof GlobalSettingsRoute
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/global/commands'
     | '/global/skills'
     | '/projects/$projectId'
+    | '/global/features'
     | '/global/hooks'
     | '/global/plugins'
     | '/global/settings'
@@ -309,6 +319,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/setup'
+    | '/global/features'
     | '/global/hooks'
     | '/global/plugins'
     | '/global/settings'
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/global/commands'
     | '/global/skills'
     | '/projects/$projectId'
+    | '/global/features'
     | '/global/hooks'
     | '/global/plugins'
     | '/global/settings'
@@ -367,6 +379,7 @@ export interface RootRouteChildren {
   GlobalCommandsRouteRoute: typeof GlobalCommandsRouteRouteWithChildren
   GlobalSkillsRouteRoute: typeof GlobalSkillsRouteRouteWithChildren
   ProjectsProjectIdRouteRoute: typeof ProjectsProjectIdRouteRouteWithChildren
+  GlobalFeaturesRoute: typeof GlobalFeaturesRoute
   GlobalHooksRoute: typeof GlobalHooksRoute
   GlobalPluginsRoute: typeof GlobalPluginsRoute
   GlobalSettingsRoute: typeof GlobalSettingsRoute
@@ -423,6 +436,13 @@ declare module '@tanstack/react-router' {
       path: '/global/hooks'
       fullPath: '/global/hooks'
       preLoaderRoute: typeof GlobalHooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/global/features': {
+      id: '/global/features'
+      path: '/global/features'
+      fullPath: '/global/features'
+      preLoaderRoute: typeof GlobalFeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects/$projectId': {
@@ -697,6 +717,7 @@ const rootRouteChildren: RootRouteChildren = {
   GlobalCommandsRouteRoute: GlobalCommandsRouteRouteWithChildren,
   GlobalSkillsRouteRoute: GlobalSkillsRouteRouteWithChildren,
   ProjectsProjectIdRouteRoute: ProjectsProjectIdRouteRouteWithChildren,
+  GlobalFeaturesRoute: GlobalFeaturesRoute,
   GlobalHooksRoute: GlobalHooksRoute,
   GlobalPluginsRoute: GlobalPluginsRoute,
   GlobalSettingsRoute: GlobalSettingsRoute,
@@ -706,12 +727,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

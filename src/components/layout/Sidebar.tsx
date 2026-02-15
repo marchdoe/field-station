@@ -9,6 +9,7 @@ import {
   Settings,
   Sparkles,
   Terminal,
+  ToggleLeft,
   Webhook,
 } from "lucide-react";
 import { cn, getProjectName } from "@/lib/utils";
@@ -26,6 +27,7 @@ const globalChildren: NavItem[] = [
   { label: "Skills", to: "/global/skills", icon: <Sparkles size={16} /> },
   { label: "Hooks", to: "/global/hooks", icon: <Webhook size={16} /> },
   { label: "Plugins", to: "/global/plugins", icon: <Puzzle size={16} /> },
+  { label: "Features", to: "/global/features", icon: <ToggleLeft size={16} /> },
 ];
 
 const linkBaseClass = cn(

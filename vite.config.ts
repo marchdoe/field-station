@@ -10,7 +10,7 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 
 const config = defineConfig({
   server: {
-    host: "127.0.0.1",
+    host: "localhost",
     port: 3456,
     watch: {
       ignored: ["**/routeTree.gen.ts"],

@@ -1,6 +1,5 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
-import { devtools } from '@tanstack/devtools-vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
@@ -12,6 +11,9 @@ const config = defineConfig({
   server: {
     host: '127.0.0.1',
     port: 3456,
+    watch: {
+      ignored: ['**/routeTree.gen.ts'],
+    },
   },
   resolve: {
     alias: {
@@ -24,7 +26,6 @@ const config = defineConfig({
     include: ['src/**/*.test.ts'],
   },
   plugins: [
-    devtools(),
     nitro({ rollupConfig: { external: [/^@sentry\//] } }),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],

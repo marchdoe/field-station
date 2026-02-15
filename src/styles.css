@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+@theme {
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border-default: var(--border-default);
+  --color-border-muted: var(--border-muted);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-muted: var(--accent-muted);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-badge-success-bg: var(--badge-success-bg);
+  --color-badge-success-text: var(--badge-success-text);
+  --color-badge-danger-bg: var(--badge-danger-bg);
+  --color-badge-danger-text: var(--badge-danger-text);
+  --color-badge-info-bg: var(--badge-info-bg);
+  --color-badge-info-text: var(--badge-info-text);
+  --color-badge-warning-bg: var(--badge-warning-bg);
+  --color-badge-warning-text: var(--badge-warning-text);
+}
+
+:root {
+  --surface-0: #ffffff;
+  --surface-1: #f8f9fa;
+  --surface-2: #f1f3f5;
+  --surface-3: #e9ecef;
+  --border-default: #dee2e6;
+  --border-muted: #e9ecef;
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-muted: #4b5563;
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-muted: #ede9fe;
+  --success: #047857;
+  --warning: #b45309;
+  --danger: #c81e1e;
+  --badge-success-bg: #dcfce7;
+  --badge-success-text: #14532d;
+  --badge-danger-bg: #fee2e2;
+  --badge-danger-text: #7f1d1d;
+  --badge-info-bg: #dbeafe;
+  --badge-info-text: #1e3a5f;
+  --badge-warning-bg: #fef3c7;
+  --badge-warning-text: #92400e;
+}
+
+.dark {
+  --surface-0: #0f1117;
+  --surface-1: #1a1d27;
+  --surface-2: #242837;
+  --surface-3: #2e3347;
+  --border-default: #363b4e;
+  --border-muted: #2e3347;
+  --text-primary: #e8eaed;
+  --text-secondary: #9ca3b0;
+  --text-muted: #a0a8b4;
+  --accent: #a78bfa;
+  --accent-hover: #8b5cf6;
+  --accent-muted: #2e1065;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --badge-success-bg: #05342a;
+  --badge-success-text: #34d399;
+  --badge-danger-bg: #3b1118;
+  --badge-danger-text: #f87171;
+  --badge-info-bg: #172554;
+  --badge-info-text: #60a5fa;
+  --badge-warning-bg: #422006;
+  --badge-warning-text: #fbbf24;
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  @apply m-0 bg-surface-0 text-text-primary antialiased;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+code {
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", Menlo, Monaco,
+    Consolas, "Courier New", monospace;
+}
+
+/* Shiki syntax highlighting — dual theme support */
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+html.dark .shiki,
+html.dark .shiki span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-border-default rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-text-muted;
+}

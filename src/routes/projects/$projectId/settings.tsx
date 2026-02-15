@@ -1,15 +1,14 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { FileText } from "lucide-react";
 import { useState } from "react";
 import { LayerBadge } from "@/components/config/LayerBadge.js";
 import { SettingsViewer } from "@/components/config/SettingsViewer.js";
 import { CodeViewer } from "@/components/files/CodeViewer.js";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog.js";
-import { useToast } from "@/components/ui/Toast.js";
 import { ViewToggle } from "@/components/ui/ViewToggle.js";
 import { decodePath } from "@/lib/utils.js";
+import { type ConfirmState, useSettingsMutations } from "@/lib/useSettingsMutations.js";
 import { getProjectSettings, getProjectSettingsLocal } from "@/server/functions/config.js";
-import { deleteSetting, moveSetting, updateSetting } from "@/server/functions/config-mutations.js";
 import type { ConfigLayer, ConfigLayerSource, JsonValue } from "@/types/config.js";
 
 export const Route = createFileRoute("/projects/$projectId/settings")({
@@ -94,73 +93,9 @@ function LayerSection({ layer, editable, onUpdate, onDelete, onMove, onAdd }: La
 }
 
 function ProjectSettingsPage() {
-  const router = useRouter();
-  const { toast } = useToast();
   const { layers, projectPath } = Route.useLoaderData();
-
-  const [confirmState, setConfirmState] = useState<{
-    open: boolean;
-    title: string;
-    message: string;
-    action: () => Promise<void>;
-  } | null>(null);
-
-  function createHandlers(layer: ConfigLayerSource) {
-    return {
-      onUpdate: async (keyPath: string, value: JsonValue) => {
-        try {
-          await updateSetting({ data: { layer, keyPath, value, projectPath } });
-          toast(`Updated "${keyPath}"`);
-          router.invalidate();
-        } catch (e) {
-          toast(`Failed to update "${keyPath}": ${(e as Error).message}`, "error");
-        }
-      },
-      onDelete: (keyPath: string) => {
-        setConfirmState({
-          open: true,
-          title: "Delete Setting",
-          message: `Are you sure you want to delete "${keyPath}" from the ${layer} layer?`,
-          action: async () => {
-            try {
-              await deleteSetting({ data: { layer, keyPath, projectPath } });
-              toast(`Deleted "${keyPath}"`);
-              router.invalidate();
-            } catch (e) {
-              toast(`Failed to delete "${keyPath}": ${(e as Error).message}`, "error");
-            }
-          },
-        });
-      },
-      onMove: (keyPath: string, targetLayer: ConfigLayerSource) => {
-        setConfirmState({
-          open: true,
-          title: "Move Setting",
-          message: `Move "${keyPath}" from ${layer} to ${targetLayer}?`,
-          action: async () => {
-            try {
-              await moveSetting({
-                data: { fromLayer: layer, toLayer: targetLayer, keyPath, projectPath },
-              });
-              toast(`Moved "${keyPath}" to ${targetLayer}`);
-              router.invalidate();
-            } catch (e) {
-              toast(`Failed to move "${keyPath}": ${(e as Error).message}`, "error");
-            }
-          },
-        });
-      },
-      onAdd: async (keyPath: string, value: JsonValue) => {
-        try {
-          await updateSetting({ data: { layer, keyPath, value, projectPath } });
-          toast(`Added "${keyPath}"`);
-          router.invalidate();
-        } catch (e) {
-          toast(`Failed to add "${keyPath}": ${(e as Error).message}`, "error");
-        }
-      },
-    };
-  }
+  const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
+  const { createHandlers } = useSettingsMutations(projectPath, setConfirmState);
 
   return (
     <div className="space-y-8">

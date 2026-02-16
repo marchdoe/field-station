@@ -10,6 +10,9 @@ import { createResource } from "@/server/functions/resource-mutations.js";
 import { listSkills } from "@/server/functions/skills.js";
 
 export const Route = createFileRoute("/projects/$projectId/skills/")({
+  head: () => ({
+    meta: [{ title: "Project Skills - Field Station" }],
+  }),
   loader: async ({ params }) => {
     const projectPath = decodePath(params.projectId);
     const skills = await listSkills({

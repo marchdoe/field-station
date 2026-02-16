@@ -10,6 +10,13 @@ export const Route = createFileRoute("/projects/$projectId")({
     const summary = await getProjectSummary({ data: { projectPath } });
     return { summary, projectId: params.projectId };
   },
+  head: ({ loaderData }) => ({
+    meta: [
+      {
+        title: `${loaderData ? getProjectName(loaderData.summary.path) : "Project"} - Field Station`,
+      },
+    ],
+  }),
   component: ProjectLayout,
   pendingComponent: () => (
     <AppShell title="Project">

@@ -24,6 +24,9 @@ export const Route = createFileRoute("/projects/$projectId/commands/$folder/$com
     });
     return { command, projectId: params.projectId };
   },
+  head: ({ loaderData }) => ({
+    meta: [{ title: `${loaderData?.command?.name ?? "Command"} - Field Station` }],
+  }),
   component: ProjectCommandDetailPage,
   pendingComponent: () => (
     <div className="flex items-center justify-center h-64">

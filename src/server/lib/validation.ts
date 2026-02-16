@@ -11,9 +11,9 @@ export const encodedPathSchema = z.string().min(1);
 
 export const scopeInput = z.object({
   scope: scopeSchema,
-  projectPath: z.string().optional(),
+  projectPath: projectPathSchema.optional(),
 });
 
 export const projectPathInput = z.object({
-  projectPath: z.string().min(1),
+  projectPath: projectPathSchema,
 });

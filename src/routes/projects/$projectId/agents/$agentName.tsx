@@ -23,6 +23,9 @@ export const Route = createFileRoute("/projects/$projectId/agents/$agentName")({
     });
     return { agent, projectId: params.projectId };
   },
+  head: ({ loaderData }) => ({
+    meta: [{ title: `${loaderData?.agent?.name ?? "Agent"} - Field Station` }],
+  }),
   component: ProjectAgentDetailPage,
   pendingComponent: () => (
     <div className="flex items-center justify-center h-64">

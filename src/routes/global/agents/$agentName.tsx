@@ -21,6 +21,9 @@ export const Route = createFileRoute("/global/agents/$agentName")({
     });
     return agent;
   },
+  head: ({ loaderData }) => ({
+    meta: [{ title: `${loaderData?.name ?? "Agent"} - Field Station` }],
+  }),
   component: GlobalAgentDetailPage,
   pendingComponent: () => (
     <AppShell title="Agent">

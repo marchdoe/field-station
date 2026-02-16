@@ -11,7 +11,7 @@ export const Route = createRootRoute({
       scanForProjects(),
     ]);
     const projects = allProjects.filter((p) => registeredPaths.includes(p.decodedPath));
-    return { projects };
+    return { projects, registeredPaths };
   },
   head: () => ({
     meta: [
@@ -25,10 +25,6 @@ export const Route = createRootRoute({
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/manifest.json" },
       { rel: "stylesheet", href: appCss },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
-      },
     ],
   }),
   shellComponent: RootDocument,

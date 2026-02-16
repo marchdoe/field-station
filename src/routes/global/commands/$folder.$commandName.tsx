@@ -22,6 +22,9 @@ export const Route = createFileRoute("/global/commands/$folder/$commandName")({
     });
     return command;
   },
+  head: ({ loaderData }) => ({
+    meta: [{ title: `${loaderData?.name ?? "Command"} - Field Station` }],
+  }),
   component: GlobalCommandDetailPage,
   pendingComponent: () => (
     <AppShell title="Command">

@@ -10,6 +10,9 @@ import { listAgents } from "@/server/functions/agents.js";
 import { createResource } from "@/server/functions/resource-mutations.js";
 
 export const Route = createFileRoute("/global/agents/")({
+  head: () => ({
+    meta: [{ title: "Agents - Field Station" }],
+  }),
   loader: async () => {
     const agents = await listAgents({ data: { scope: "global" } });
     return { agents };

@@ -23,6 +23,9 @@ export const Route = createFileRoute("/projects/$projectId/skills/$skillName")({
     });
     return { skill, projectId: params.projectId };
   },
+  head: ({ loaderData }) => ({
+    meta: [{ title: `${loaderData?.skill?.name ?? "Skill"} - Field Station` }],
+  }),
   component: ProjectSkillDetailPage,
   pendingComponent: () => (
     <div className="flex items-center justify-center h-64">

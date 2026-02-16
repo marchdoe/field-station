@@ -4,6 +4,9 @@ import { PluginCard } from "@/components/plugins/PluginCard.js";
 import { getInstalledPlugins } from "@/server/functions/plugins.js";
 
 export const Route = createFileRoute("/global/plugins")({
+  head: () => ({
+    meta: [{ title: "Plugins - Field Station" }],
+  }),
   loader: async () => {
     const plugins = await getInstalledPlugins();
     return { plugins };

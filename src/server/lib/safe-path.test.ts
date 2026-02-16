@@ -8,15 +8,18 @@ describe("assertSafePath", () => {
   const allowedRoots = ["/Users/me/.claude", "/Users/me/projects/myapp"];
 
   it("returns resolved path for valid path within allowed root", () => {
-    expect(assertSafePath("/Users/me/.claude/settings.json", allowedRoots)).toBe(
-      "/Users/me/.claude/settings.json",
-    );
+    expect(
+      assertSafePath("/Users/me/.claude/settings.json", allowedRoots),
+    ).toBe("/Users/me/.claude/settings.json");
   });
 
   it("returns resolved path for valid path within project root", () => {
-    expect(assertSafePath("/Users/me/projects/myapp/.claude/settings.json", allowedRoots)).toBe(
-      "/Users/me/projects/myapp/.claude/settings.json",
-    );
+    expect(
+      assertSafePath(
+        "/Users/me/projects/myapp/.claude/settings.json",
+        allowedRoots,
+      ),
+    ).toBe("/Users/me/projects/myapp/.claude/settings.json");
   });
 
   it("normalizes .. sequences and validates containment", () => {
@@ -40,19 +43,21 @@ describe("assertSafePath", () => {
   });
 
   it("normalizes double slashes", () => {
-    expect(assertSafePath("/Users/me/.claude//settings.json", allowedRoots)).toBe(
-      "/Users/me/.claude/settings.json",
-    );
+    expect(
+      assertSafePath("/Users/me/.claude//settings.json", allowedRoots),
+    ).toBe("/Users/me/.claude/settings.json");
   });
 
   it("normalizes . in path", () => {
-    expect(assertSafePath("/Users/me/.claude/./settings.json", allowedRoots)).toBe(
-      "/Users/me/.claude/settings.json",
-    );
+    expect(
+      assertSafePath("/Users/me/.claude/./settings.json", allowedRoots),
+    ).toBe("/Users/me/.claude/settings.json");
   });
 
   it("rejects when allowed roots list is empty", () => {
-    expect(() => assertSafePath("/Users/me/.claude/settings.json", [])).toThrow();
+    expect(() =>
+      assertSafePath("/Users/me/.claude/settings.json", []),
+    ).toThrow();
   });
 
   it("resolves allowed roots before comparing", () => {
@@ -99,7 +104,9 @@ describe("getAllowedRoots", () => {
   });
 
   it("handles missing projects.json gracefully", () => {
-    const roots = getAllowedRoots(join(testDir, "nonexistent", "projects.json"));
+    const roots = getAllowedRoots(
+      join(testDir, "nonexistent", "projects.json"),
+    );
     expect(roots).toContain(fakeClaudeHome);
   });
 
@@ -111,7 +118,10 @@ describe("getAllowedRoots", () => {
 
   it("skips non-string entries in projects.json", () => {
     const projectPath = join(testDir, "valid-project");
-    writeFileSync(fakeProjectsFile, JSON.stringify([projectPath, 123, null, ""]));
+    writeFileSync(
+      fakeProjectsFile,
+      JSON.stringify([projectPath, 123, null, ""]),
+    );
     const roots = getAllowedRoots(fakeProjectsFile);
     expect(roots).toContain(projectPath);
     expect(roots).toHaveLength(2); // claude home + valid project

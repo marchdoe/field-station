@@ -1,4 +1,11 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -17,7 +24,10 @@ import {
 
 describe("serializeMarkdown", () => {
   it("serializes frontmatter + body", () => {
-    const result = serializeMarkdown({ name: "Test", description: "A test" }, "Hello world");
+    const result = serializeMarkdown(
+      { name: "Test", description: "A test" },
+      "Hello world",
+    );
     expect(result).toContain("---");
     expect(result).toContain("name: Test");
     expect(result).toContain("description: A test");
@@ -61,7 +71,11 @@ describe("createResourceFile", () => {
 
   it("creates an agent markdown file with frontmatter", () => {
     const filePath = join(tmpDir, "agents", "test.md");
-    createResourceFile(filePath, { name: "Test Agent", description: "Does things" }, "Agent body");
+    createResourceFile(
+      filePath,
+      { name: "Test Agent", description: "Does things" },
+      "Agent body",
+    );
     expect(existsSync(filePath)).toBe(true);
     const content = readFileSync(filePath, "utf-8");
     expect(content).toContain("name: Test Agent");
@@ -86,12 +100,16 @@ describe("createResourceFile", () => {
     const filePath = join(tmpDir, "existing.md");
     mkdirSync(tmpDir, { recursive: true });
     writeFileSync(filePath, "existing");
-    expect(() => createResourceFile(filePath, {}, "new")).toThrow("already exists");
+    expect(() => createResourceFile(filePath, {}, "new")).toThrow(
+      "already exists",
+    );
   });
 
   it("throws if path is not user-owned", () => {
     const filePath = "/tmp/fake-claude-home/plugins/cache/test.md";
-    expect(() => createResourceFile(filePath, {}, "content")).toThrow("not user-owned");
+    expect(() => createResourceFile(filePath, {}, "content")).toThrow(
+      "not user-owned",
+    );
   });
 });
 
@@ -125,14 +143,18 @@ describe("updateResourceFile", () => {
 
   it("throws if file does not exist", () => {
     const filePath = join(tmpDir, "missing.md");
-    expect(() => updateResourceFile(filePath, {}, "content")).toThrow("does not exist");
+    expect(() => updateResourceFile(filePath, {}, "content")).toThrow(
+      "does not exist",
+    );
   });
 
   it("throws if path is not user-owned", () => {
     const filePath = "/tmp/fake-claude-home/plugins/cache/agent.md";
     mkdirSync("/tmp/fake-claude-home/plugins/cache", { recursive: true });
     writeFileSync(filePath, "content");
-    expect(() => updateResourceFile(filePath, {}, "new")).toThrow("not user-owned");
+    expect(() => updateResourceFile(filePath, {}, "new")).toThrow(
+      "not user-owned",
+    );
   });
 });
 

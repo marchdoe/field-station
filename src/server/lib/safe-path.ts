@@ -12,9 +12,12 @@ export function getAllowedRoots(dataFilePath: string): string[] {
   // Add registered projects from data/projects.json
   if (existsSync(dataFilePath)) {
     try {
-      const paths = JSON.parse(readFileSync(dataFilePath, "utf-8")) as string[];
+      const raw = JSON.parse(readFileSync(dataFilePath, "utf-8"));
+      const paths = Array.isArray(raw) ? raw : [];
       for (const p of paths) {
-        roots.add(resolve(p));
+        if (typeof p === "string" && p.length > 0) {
+          roots.add(resolve(p));
+        }
       }
     } catch {
       // ignore malformed file

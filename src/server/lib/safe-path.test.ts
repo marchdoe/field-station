@@ -102,4 +102,18 @@ describe("getAllowedRoots", () => {
     const roots = getAllowedRoots(join(testDir, "nonexistent", "projects.json"));
     expect(roots).toContain(fakeClaudeHome);
   });
+
+  it("handles malformed projects.json gracefully", () => {
+    writeFileSync(fakeProjectsFile, "not valid json {{{{");
+    const roots = getAllowedRoots(fakeProjectsFile);
+    expect(roots).toContain(fakeClaudeHome);
+  });
+
+  it("skips non-string entries in projects.json", () => {
+    const projectPath = join(testDir, "valid-project");
+    writeFileSync(fakeProjectsFile, JSON.stringify([projectPath, 123, null, ""]));
+    const roots = getAllowedRoots(fakeProjectsFile);
+    expect(roots).toContain(projectPath);
+    expect(roots).toHaveLength(2); // claude home + valid project
+  });
 });

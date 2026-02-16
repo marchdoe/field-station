@@ -19,32 +19,34 @@ export function getAtPath(obj: JsonObject, path: string): JsonValue | undefined 
 
 export function setAtPath(obj: JsonObject, path: string, value: JsonValue): JsonObject {
   const keys = path.split(".");
+  const first = keys[0] as string;
   if (keys.length === 1) {
-    return { ...obj, [keys[0]!]: value };
+    return { ...obj, [first]: value };
   }
 
-  const [first, ...rest] = keys;
-  const child = obj[first!];
+  const rest = keys.slice(1);
+  const child = obj[first];
   const childObj: JsonObject =
     child !== null && child !== undefined && typeof child === "object" && !Array.isArray(child)
       ? (child as JsonObject)
       : {};
 
-  return { ...obj, [first!]: setAtPath(childObj, rest.join("."), value) };
+  return { ...obj, [first]: setAtPath(childObj, rest.join("."), value) };
 }
 
 export function deleteAtPath(obj: JsonObject, path: string): JsonObject {
   const keys = path.split(".");
+  const first = keys[0] as string;
   if (keys.length === 1) {
-    const { [keys[0]!]: _, ...rest } = obj;
+    const { [first]: _, ...rest } = obj;
     return rest;
   }
 
-  const [first, ...remaining] = keys;
-  const child = obj[first!];
+  const remaining = keys.slice(1);
+  const child = obj[first];
   if (child === null || child === undefined || typeof child !== "object" || Array.isArray(child)) {
     return { ...obj };
   }
 
-  return { ...obj, [first!]: deleteAtPath(child as JsonObject, remaining.join(".")) };
+  return { ...obj, [first]: deleteAtPath(child as JsonObject, remaining.join(".")) };
 }

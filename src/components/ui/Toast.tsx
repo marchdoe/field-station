@@ -41,7 +41,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
         <AlertCircle className="w-4 h-4 shrink-0" />
       )}
       <span className="flex-1">{toast.message}</span>
-      <button onClick={onDismiss} className="shrink-0 hover:opacity-70">
+      <button type="button" onClick={onDismiss} className="shrink-0 hover:opacity-70">
         <X className="w-3.5 h-3.5" />
       </button>
     </div>

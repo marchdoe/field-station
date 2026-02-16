@@ -129,6 +129,7 @@ export function ConfigNavigationTree({ stats, projects }: ConfigNavigationTreePr
       <div className="p-2">
         {/* Global root node */}
         <button
+          type="button"
           onClick={() => toggle("global")}
           className={cn(
             "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors",
@@ -225,6 +226,7 @@ export function ConfigNavigationTree({ stats, projects }: ConfigNavigationTreePr
                   <div className="absolute top-[18px] left-[19px] border-t-2 border-border-muted w-3" />
 
                   <button
+                    type="button"
                     onClick={() => toggle(projectKey)}
                     className={cn(
                       "w-full flex items-center gap-2.5 pl-10 pr-3 py-1.5 rounded-lg transition-colors",

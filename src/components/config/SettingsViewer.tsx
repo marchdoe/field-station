@@ -216,6 +216,7 @@ function InlineEditor({
         />
       )}
       <button
+        type="button"
         onClick={handleSave}
         title="Save"
         className="p-0.5 rounded hover:bg-success/20 text-success transition-colors"
@@ -223,6 +224,7 @@ function InlineEditor({
         <Check className="w-3.5 h-3.5" />
       </button>
       <button
+        type="button"
         onClick={onCancel}
         title="Cancel"
         className="p-0.5 rounded hover:bg-danger/20 text-danger transition-colors"
@@ -484,6 +486,7 @@ export function SettingsViewer({
           />
         ) : (
           <button
+            type="button"
             onClick={() => setShowAddForm(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-text-muted hover:text-accent rounded-lg hover:bg-surface-2 transition-colors"
           >

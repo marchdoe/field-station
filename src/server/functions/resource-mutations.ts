@@ -31,11 +31,15 @@ const createResourceInput = z.object({
 export const createResource = createServerFn({ method: "POST" })
   .inputValidator(createResourceInput)
   .handler(async ({ data }) => {
-    if (data.scope === "project" && !data.projectPath) {
-      throw new Error("projectPath is required for project scope");
+    let baseDir: string;
+    if (data.scope === "global") {
+      baseDir = resolveClaudeHome();
+    } else {
+      if (!data.projectPath) {
+        throw new Error("projectPath is required for project scope");
+      }
+      baseDir = join(data.projectPath, ".claude");
     }
-    const baseDir =
-      data.scope === "global" ? resolveClaudeHome() : join(data.projectPath, ".claude");
     const filePath = resolveResourcePath(baseDir, data.type, data.name, data.folder);
     createResourceFile(filePath, data.frontmatter, data.body);
     return { success: true, filePath };

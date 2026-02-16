@@ -1,11 +1,13 @@
+import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
 
 interface HeaderProps {
   title?: string;
+  onMenuClick?: () => void;
 }
 
-export default function Header({ title }: HeaderProps) {
+export default function Header({ title, onMenuClick }: HeaderProps) {
   return (
     <header
       className={cn(
@@ -13,6 +15,9 @@ export default function Header({ title }: HeaderProps) {
       )}
     >
       <nav className="flex items-center gap-2 text-sm">
+        <button type="button" className="mr-2 md:hidden" onClick={onMenuClick}>
+          <Menu size={20} />
+        </button>
         <span className="font-medium text-text-primary">Field Station</span>
         {title && (
           <>

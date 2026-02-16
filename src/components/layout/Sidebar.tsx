@@ -11,6 +11,7 @@ import {
   Terminal,
   ToggleLeft,
   Webhook,
+  X,
 } from "lucide-react";
 import { cn, getProjectName } from "@/lib/utils";
 
@@ -91,7 +92,11 @@ function TreeChild({ item, isLast }: { item: NavItem; isLast: boolean }) {
 
 const rootRouteApi = getRouteApi("__root__");
 
-export default function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+export default function Sidebar({ onClose }: SidebarProps) {
   const { projects } = rootRouteApi.useLoaderData();
 
   return (
@@ -100,6 +105,9 @@ export default function Sidebar() {
       <div className="flex h-14 items-center gap-2.5 border-b border-border-default px-5">
         <Radio size={20} className="text-accent" />
         <span className="text-base font-semibold text-text-primary">Field Station</span>
+        <button type="button" className="ml-auto md:hidden" onClick={onClose}>
+          <X size={20} />
+        </button>
       </div>
 
       {/* Navigation */}

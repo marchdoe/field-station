@@ -110,6 +110,7 @@ function GlobalAgentDetailPage() {
             {agent.isEditable && !editing && (
               <div className="flex items-center gap-1 ml-auto">
                 <button
+                  type="button"
                   onClick={() => setEditing(true)}
                   className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-text-secondary hover:bg-surface-2 transition-colors"
                 >
@@ -117,6 +118,7 @@ function GlobalAgentDetailPage() {
                   Edit
                 </button>
                 <button
+                  type="button"
                   onClick={() => setConfirmDelete(true)}
                   className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-danger hover:bg-danger/10 transition-colors"
                 >

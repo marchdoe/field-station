@@ -9,6 +9,7 @@ export function ViewToggle({ view, onChange }: ViewToggleProps) {
   return (
     <div className="inline-flex rounded-lg bg-surface-2 p-0.5">
       <button
+        type="button"
         onClick={() => onChange("structured")}
         className={cn(
           "rounded-md px-3 py-1 text-xs font-medium transition-colors",
@@ -20,6 +21,7 @@ export function ViewToggle({ view, onChange }: ViewToggleProps) {
         Structured
       </button>
       <button
+        type="button"
         onClick={() => onChange("raw")}
         className={cn(
           "rounded-md px-3 py-1 text-xs font-medium transition-colors",

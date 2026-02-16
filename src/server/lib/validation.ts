@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { z } from "zod";
 
 export const scopeSchema = z.enum(["global", "project"]);
@@ -5,7 +6,10 @@ export const scopeSchema = z.enum(["global", "project"]);
 export const projectPathSchema = z
   .string()
   .min(1)
-  .refine((val) => val.startsWith("/"), { message: "Project path must be absolute" });
+  .refine((val) => val.startsWith("/"), {
+    message: "Project path must be absolute",
+  })
+  .transform((val) => resolve(val));
 
 export const encodedPathSchema = z.string().min(1);
 

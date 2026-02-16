@@ -46,7 +46,11 @@ export function AddSettingForm({ onAdd, onCancel }: AddSettingFormProps) {
     <div className="rounded-lg border border-accent/30 bg-accent/5 p-4 space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-text-primary">Add Setting</span>
-        <button onClick={onCancel} className="p-1 rounded hover:bg-surface-2 text-text-muted">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="p-1 rounded hover:bg-surface-2 text-text-muted"
+        >
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -96,6 +100,7 @@ export function AddSettingForm({ onAdd, onCancel }: AddSettingFormProps) {
       {error && <p className="text-xs text-danger">{error}</p>}
 
       <button
+        type="button"
         onClick={handleSubmit}
         className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-accent text-white hover:bg-accent/90 transition-colors"
       >

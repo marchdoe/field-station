@@ -94,6 +94,7 @@ function SetupPage() {
             {selected.size} project{selected.size !== 1 ? "s" : ""} selected
           </p>
           <button
+            type="button"
             onClick={handleFinish}
             disabled={saving || selected.size === 0}
             className={cn(
@@ -124,6 +125,7 @@ function ProjectRow({
 
   return (
     <button
+      type="button"
       onClick={onToggle}
       className={cn(
         "w-full flex items-center gap-3 px-4 py-3 text-left transition-colors",

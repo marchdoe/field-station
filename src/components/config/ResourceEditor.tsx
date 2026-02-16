@@ -99,6 +99,7 @@ export function ResourceEditor({
 
       <div className="flex items-center gap-2">
         <button
+          type="button"
           onClick={handleSave}
           disabled={saving}
           className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50 transition-colors"
@@ -107,6 +108,7 @@ export function ResourceEditor({
           {saving ? "Saving..." : "Save"}
         </button>
         <button
+          type="button"
           onClick={onCancel}
           disabled={saving}
           className="inline-flex items-center gap-2 rounded-lg border border-border-default bg-surface-1 px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface-2 disabled:opacity-50 transition-colors"

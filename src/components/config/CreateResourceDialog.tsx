@@ -119,6 +119,7 @@ export function CreateResourceDialog({
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text-primary">New {TYPE_LABELS[type]}</h2>
           <button
+            type="button"
             onClick={handleClose}
             className="text-text-muted hover:text-text-primary transition-colors"
           >
@@ -227,6 +228,7 @@ export function CreateResourceDialog({
 
         <div className="flex items-center justify-end gap-2 pt-2">
           <button
+            type="button"
             onClick={handleClose}
             disabled={saving}
             className="rounded-lg border border-border-default bg-surface-1 px-4 py-2 text-sm font-medium text-text-secondary hover:bg-surface-2 disabled:opacity-50 transition-colors"
@@ -234,6 +236,7 @@ export function CreateResourceDialog({
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleSubmit}
             disabled={saving}
             className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50 transition-colors"

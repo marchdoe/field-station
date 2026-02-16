@@ -22,6 +22,7 @@ export default function ThemeToggle() {
 
   return (
     <button
+      type="button"
       onClick={toggle}
       className={cn(
         "flex items-center justify-center rounded-lg p-2",

@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { decodePath } from "@/lib/utils.js";
@@ -13,7 +13,7 @@ import type {
 } from "@/types/config.js";
 import { resolveClaudeHome } from "../lib/claude-home.js";
 import { redactSensitiveValues } from "../lib/redact.js";
-import { projectPathInput } from "../lib/validation.js";
+import { projectPathInput, projectPathSchema } from "../lib/validation.js";
 
 function countMdFiles(dir: string): number {
   if (!existsSync(dir)) return 0;
@@ -67,7 +67,7 @@ export const scanForProjects = createServerFn({ method: "GET" }).handler(
       const entryPath = join(projectsDir, encoded);
       if (!statSync(entryPath).isDirectory()) continue;
 
-      const decoded = decodePath(encoded);
+      const decoded = resolve(decodePath(encoded));
 
       // Skip if this project's .claude/ is the global config directory
       if (decoded === home) continue;
@@ -232,7 +232,7 @@ export const getRegisteredProjects = createServerFn({ method: "GET" }).handler(
 );
 
 export const registerProjects = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ paths: z.array(z.string()) }))
+  .inputValidator(z.object({ paths: z.array(projectPathSchema) }))
   .handler(async ({ data }): Promise<string[]> => {
     const dir = join(process.cwd(), "data");
     if (!existsSync(dir)) {

@@ -10,9 +10,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "lint": "biome lint .",
-    "format": "biome format .",
-    "check": "biome check ."
+    "lint": "biome lint src/",
+    "format": "biome format src/",
+    "check": "biome check src/"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",

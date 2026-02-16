@@ -1,7 +1,12 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("./claude-home.js", () => ({
+  resolveClaudeHome: () => "/tmp/fake-claude-home",
+}));
+
 import {
   createResourceFile,
   deleteResourceFile,
@@ -85,7 +90,7 @@ describe("createResourceFile", () => {
   });
 
   it("throws if path is not user-owned", () => {
-    const filePath = join(tmpDir, "plugins", "cache", "test.md");
+    const filePath = "/tmp/fake-claude-home/plugins/cache/test.md";
     expect(() => createResourceFile(filePath, {}, "content")).toThrow("not user-owned");
   });
 });
@@ -124,8 +129,8 @@ describe("updateResourceFile", () => {
   });
 
   it("throws if path is not user-owned", () => {
-    const filePath = join(tmpDir, "plugins", "cache", "agent.md");
-    mkdirSync(join(tmpDir, "plugins", "cache"), { recursive: true });
+    const filePath = "/tmp/fake-claude-home/plugins/cache/agent.md";
+    mkdirSync("/tmp/fake-claude-home/plugins/cache", { recursive: true });
     writeFileSync(filePath, "content");
     expect(() => updateResourceFile(filePath, {}, "new")).toThrow("not user-owned");
   });
@@ -155,8 +160,8 @@ describe("deleteResourceFile", () => {
   });
 
   it("throws if path is not user-owned", () => {
-    const filePath = join(tmpDir, "plugins", "cache", "agent.md");
-    mkdirSync(join(tmpDir, "plugins", "cache"), { recursive: true });
+    const filePath = "/tmp/fake-claude-home/plugins/cache/agent.md";
+    mkdirSync("/tmp/fake-claude-home/plugins/cache", { recursive: true });
     writeFileSync(filePath, "content");
     expect(() => deleteResourceFile(filePath)).toThrow("not user-owned");
   });

@@ -1,5 +1,9 @@
-const PROTECTED_PATH_SEGMENTS = ["/plugins/cache/"];
+import { join, resolve } from "node:path";
+import { resolveClaudeHome } from "./claude-home.js";
 
 export function isUserOwned(filePath: string): boolean {
-  return !PROTECTED_PATH_SEGMENTS.some((segment) => filePath.includes(segment));
+  const resolved = resolve(filePath);
+  const protectedDir = resolve(join(resolveClaudeHome(), "plugins", "cache"));
+
+  return !resolved.startsWith(`${protectedDir}/`) && resolved !== protectedDir;
 }

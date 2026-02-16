@@ -1,5 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { assertSafePath } from "./safe-path.js";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { assertSafePath, getAllowedRoots } from "./safe-path.js";
 
 describe("assertSafePath", () => {
   const allowedRoots = ["/Users/me/.claude", "/Users/me/projects/myapp"];
@@ -57,5 +60,46 @@ describe("assertSafePath", () => {
     expect(assertSafePath("/Users/me/.claude/settings.json", roots)).toBe(
       "/Users/me/.claude/settings.json",
     );
+  });
+});
+
+describe("getAllowedRoots", () => {
+  const testDir = join(tmpdir(), "safe-path-test");
+  const fakeClaudeHome = join(testDir, ".claude");
+  const fakeProjectsFile = join(testDir, "data", "projects.json");
+
+  beforeEach(() => {
+    mkdirSync(join(fakeClaudeHome, "projects"), { recursive: true });
+    mkdirSync(join(testDir, "data"), { recursive: true });
+    vi.stubEnv("CLAUDE_HOME", fakeClaudeHome);
+  });
+
+  afterEach(() => {
+    rmSync(testDir, { recursive: true, force: true });
+    vi.unstubAllEnvs();
+  });
+
+  it("always includes claude home", () => {
+    const roots = getAllowedRoots(fakeProjectsFile);
+    expect(roots).toContain(fakeClaudeHome);
+  });
+
+  it("includes registered project paths", () => {
+    const projectPath = join(testDir, "my-project");
+    writeFileSync(fakeProjectsFile, JSON.stringify([projectPath]));
+    const roots = getAllowedRoots(fakeProjectsFile);
+    expect(roots).toContain(projectPath);
+  });
+
+  it("includes scanned project directories", () => {
+    const encodedDir = "-Users-me-some-project";
+    mkdirSync(join(fakeClaudeHome, "projects", encodedDir));
+    const roots = getAllowedRoots(fakeProjectsFile);
+    expect(roots).toContain("/Users/me/some/project");
+  });
+
+  it("handles missing projects.json gracefully", () => {
+    const roots = getAllowedRoots(join(testDir, "nonexistent", "projects.json"));
+    expect(roots).toContain(fakeClaudeHome);
   });
 });

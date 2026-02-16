@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { codeToHtml } from "shiki";
+import { getHighlighter } from "@/lib/shiki";
 import { cn } from "@/lib/utils";
 
 interface CodeViewerProps {
@@ -13,14 +13,20 @@ export function CodeViewer({ code, language, className }: CodeViewerProps) {
 
   useEffect(() => {
     let cancelled = false;
-    codeToHtml(code, {
-      lang: language,
-      themes: {
-        light: "github-light",
-        dark: "github-dark",
-      },
-      defaultColor: false,
-    }).then((result) => {
+    getHighlighter().then(async (hl) => {
+      const loaded = hl.getLoadedLanguages();
+      if (!loaded.includes(language)) {
+        await hl.loadLanguage(language as Parameters<typeof hl.loadLanguage>[0]);
+      }
+      if (cancelled) return;
+      const result = hl.codeToHtml(code, {
+        lang: language,
+        themes: {
+          light: "github-light",
+          dark: "github-dark",
+        },
+        defaultColor: false,
+      });
       if (!cancelled) setHtml(result);
     });
     return () => {

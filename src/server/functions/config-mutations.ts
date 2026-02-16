@@ -7,10 +7,11 @@ import {
   applyUpdateSetting,
   resolveLayerPath,
 } from "../lib/config-writer.js";
+import { projectPathSchema } from "../lib/validation.js";
 
 const updateSettingInput = z.object({
   layer: z.enum(["global", "global-local", "project", "project-local"]),
-  projectPath: z.string().optional(),
+  projectPath: projectPathSchema.optional(),
   keyPath: z.string().min(1),
   value: z.unknown(),
 });
@@ -25,7 +26,7 @@ export const updateSetting = createServerFn({ method: "POST" })
 
 const deleteSettingInput = z.object({
   layer: z.enum(["global", "global-local", "project", "project-local"]),
-  projectPath: z.string().optional(),
+  projectPath: projectPathSchema.optional(),
   keyPath: z.string().min(1),
 });
 
@@ -40,7 +41,7 @@ export const deleteSetting = createServerFn({ method: "POST" })
 const moveSettingInput = z.object({
   fromLayer: z.enum(["global", "global-local", "project", "project-local"]),
   toLayer: z.enum(["global", "global-local", "project", "project-local"]),
-  projectPath: z.string().optional(),
+  projectPath: projectPathSchema.optional(),
   keyPath: z.string().min(1),
 });
 

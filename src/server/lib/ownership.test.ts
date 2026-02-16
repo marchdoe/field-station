@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 vi.mock("./claude-home.js", () => ({
   resolveClaudeHome: () => "/Users/me/.claude",

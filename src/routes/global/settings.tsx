@@ -8,6 +8,9 @@ import { type ConfirmState, useSettingsMutations } from "@/lib/useSettingsMutati
 import { getGlobalSettings, getGlobalSettingsLocal } from "@/server/functions/config.js";
 
 export const Route = createFileRoute("/global/settings")({
+  head: () => ({
+    meta: [{ title: "Settings - Field Station" }],
+  }),
   loader: async () => {
     const [settings, settingsLocal] = await Promise.all([
       getGlobalSettings(),

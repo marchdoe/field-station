@@ -10,6 +10,9 @@ import { listCommands } from "@/server/functions/commands.js";
 import { createResource } from "@/server/functions/resource-mutations.js";
 
 export const Route = createFileRoute("/global/commands/")({
+  head: () => ({
+    meta: [{ title: "Commands - Field Station" }],
+  }),
   loader: async () => {
     const result = await listCommands({ data: { scope: "global" } });
     return result;

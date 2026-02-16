@@ -5,6 +5,9 @@ import { cn } from "@/lib/utils";
 import { getHookConfig, listHookScripts } from "@/server/functions/hooks.js";
 
 export const Route = createFileRoute("/global/hooks")({
+  head: () => ({
+    meta: [{ title: "Hooks - Field Station" }],
+  }),
   loader: async () => {
     const [scripts, config] = await Promise.all([listHookScripts(), getHookConfig()]);
     return { scripts, config };

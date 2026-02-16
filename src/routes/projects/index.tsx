@@ -6,6 +6,9 @@ import { getRegisteredProjects, scanForProjects } from "@/server/functions/proje
 import type { ProjectInfo } from "@/types/config.js";
 
 export const Route = createFileRoute("/projects/")({
+  head: () => ({
+    meta: [{ title: "Projects - Field Station" }],
+  }),
   loader: async () => {
     const [projects, registeredPaths] = await Promise.all([
       scanForProjects(),

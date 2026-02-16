@@ -6,6 +6,9 @@ import { registerProjects, scanForProjects } from "@/server/functions/projects.j
 import type { ProjectInfo } from "@/types/config.js";
 
 export const Route = createFileRoute("/setup")({
+  head: () => ({
+    meta: [{ title: "Setup - Field Station" }],
+  }),
   loader: async () => {
     const projects = await scanForProjects();
     return { projects };
@@ -14,6 +17,14 @@ export const Route = createFileRoute("/setup")({
   pendingComponent: () => (
     <div className="min-h-screen bg-surface-0 flex items-center justify-center">
       <div className="animate-pulse text-text-muted">Scanning for projects...</div>
+    </div>
+  ),
+  errorComponent: ({ error }) => (
+    <div className="min-h-screen bg-surface-0 flex items-center justify-center p-6">
+      <div className="rounded-xl border border-danger/30 bg-danger/5 p-6 max-w-lg">
+        <p className="text-danger font-medium">Failed to scan for projects</p>
+        <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
+      </div>
     </div>
   ),
 });

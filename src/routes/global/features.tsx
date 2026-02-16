@@ -8,6 +8,9 @@ import { deleteSetting, updateSetting } from "@/server/functions/config-mutation
 import { getFeatures } from "@/server/functions/features.js";
 
 export const Route = createFileRoute("/global/features")({
+  head: () => ({
+    meta: [{ title: "Features & Experiments - Field Station" }],
+  }),
   loader: async () => {
     return await getFeatures();
   },

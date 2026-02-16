@@ -4,6 +4,9 @@ import { AppShell } from "@/components/layout/AppShell.js";
 import { getGlobalStats } from "@/server/functions/projects.js";
 
 export const Route = createFileRoute("/global/")({
+  head: () => ({
+    meta: [{ title: "Global - Field Station" }],
+  }),
   loader: async () => {
     const stats = await getGlobalStats();
     return { stats };

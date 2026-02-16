@@ -12,6 +12,9 @@ import { getProjectSettings, getProjectSettingsLocal } from "@/server/functions/
 import type { ConfigLayer, ConfigLayerSource, JsonValue } from "@/types/config.js";
 
 export const Route = createFileRoute("/projects/$projectId/settings")({
+  head: () => ({
+    meta: [{ title: "Project Settings - Field Station" }],
+  }),
   loader: async ({ params }) => {
     const projectPath = decodePath(params.projectId);
     const [project, projectLocal] = await Promise.all([

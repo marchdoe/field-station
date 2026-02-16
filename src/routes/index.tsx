@@ -1,39 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, getRouteApi, Link } from "@tanstack/react-router";
 import { FolderOpen, Radio, Settings } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell.js";
-import { getRegisteredProjects, scanForProjects } from "@/server/functions/projects.js";
 import type { ProjectInfo } from "@/types/config.js";
 
+const rootApi = getRouteApi("__root__");
+
 export const Route = createFileRoute("/")({
-  loader: async () => {
-    const [registeredPaths, allProjects] = await Promise.all([
-      getRegisteredProjects(),
-      scanForProjects(),
-    ]);
-    return { registeredPaths, allProjects };
-  },
+  head: () => ({
+    meta: [{ title: "Dashboard - Field Station" }],
+  }),
   component: DashboardPage,
-  pendingComponent: () => (
-    <AppShell title="Dashboard">
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-text-muted">Loading dashboard...</div>
-      </div>
-    </AppShell>
-  ),
-  errorComponent: ({ error }) => (
-    <AppShell title="Dashboard">
-      <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-        <p className="text-danger font-medium">Failed to load dashboard</p>
-        <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-      </div>
-    </AppShell>
-  ),
 });
 
 function DashboardPage() {
-  const { registeredPaths, allProjects } = Route.useLoaderData();
+  const { projects, registeredPaths } = rootApi.useLoaderData();
   const needsSetup = registeredPaths.length === 0;
-  const registeredProjects = allProjects.filter((p) => registeredPaths.includes(p.decodedPath));
 
   if (needsSetup) {
     return (
@@ -78,7 +59,7 @@ function DashboardPage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {registeredProjects.map((project) => (
+            {projects.map((project) => (
               <ProjectCard key={project.encodedPath} project={project} />
             ))}
           </div>

@@ -21,6 +21,9 @@ export const Route = createFileRoute("/global/skills/$skillName")({
     });
     return skill;
   },
+  head: ({ loaderData }) => ({
+    meta: [{ title: `${loaderData?.name ?? "Skill"} - Field Station` }],
+  }),
   component: GlobalSkillDetailPage,
   pendingComponent: () => (
     <AppShell title="Skill">

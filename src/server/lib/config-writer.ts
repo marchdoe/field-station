@@ -1,6 +1,7 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import type { ConfigLayerSource, JsonObject, JsonValue } from "@/types/config.js";
+import { writeFileAtomic } from "./atomic-write.js";
 import { resolveClaudeHome } from "./claude-home.js";
 import { deleteAtPath, getAtPath, setAtPath } from "./json-path.js";
 
@@ -18,7 +19,7 @@ export function writeJsonFileSafe(filePath: string, data: JsonObject): void {
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
-  writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
+  writeFileAtomic(filePath, `${JSON.stringify(data, null, 2)}\n`);
 }
 
 export function resolveLayerPath(layer: ConfigLayerSource, projectPath?: string): string {

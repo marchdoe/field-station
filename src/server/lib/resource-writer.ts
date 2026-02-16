@@ -1,6 +1,7 @@
-import { existsSync, mkdirSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import matter from "gray-matter";
+import { writeFileAtomic } from "./atomic-write.js";
 import { isUserOwned } from "./ownership.js";
 
 export type ResourceType = "agent" | "command" | "skill";
@@ -47,7 +48,7 @@ export function createResourceFile(
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
-  writeFileSync(filePath, serializeMarkdown(frontmatter, body), "utf-8");
+  writeFileAtomic(filePath, serializeMarkdown(frontmatter, body));
 }
 
 export function updateResourceFile(
@@ -61,7 +62,7 @@ export function updateResourceFile(
   if (!isUserOwned(filePath)) {
     throw new Error(`Path is not user-owned: ${filePath}`);
   }
-  writeFileSync(filePath, serializeMarkdown(frontmatter, body), "utf-8");
+  writeFileAtomic(filePath, serializeMarkdown(frontmatter, body));
 }
 
 export function deleteResourceFile(filePath: string): void {

@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { createServerFn } from "@tanstack/react-start";
@@ -11,6 +11,7 @@ import type {
   ProjectInfo,
   ProjectSummary,
 } from "@/types/config.js";
+import { writeFileAtomic } from "../lib/atomic-write.js";
 import { resolveClaudeHome } from "../lib/claude-home.js";
 import { redactSensitiveValues } from "../lib/redact.js";
 import { projectPathInput, projectPathSchema } from "../lib/validation.js";
@@ -239,6 +240,6 @@ export const registerProjects = createServerFn({ method: "POST" })
       const { mkdirSync } = await import("node:fs");
       mkdirSync(dir, { recursive: true });
     }
-    writeFileSync(DATA_FILE, JSON.stringify(data.paths, null, 2));
+    writeFileAtomic(DATA_FILE, JSON.stringify(data.paths, null, 2));
     return data.paths;
   });

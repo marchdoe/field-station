@@ -1,10 +1,4 @@
-import {
-  existsSync,
-  readdirSync,
-  readFileSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { createServerFn } from "@tanstack/react-start";
@@ -53,10 +47,7 @@ function countSkillFolders(dir: string): number {
   try {
     return readdirSync(dir).filter((entry) => {
       const entryPath = join(dir, entry);
-      return (
-        statSync(entryPath).isDirectory() &&
-        existsSync(join(entryPath, "SKILL.md"))
-      );
+      return statSync(entryPath).isDirectory() && existsSync(join(entryPath, "SKILL.md"));
     }).length;
   } catch {
     return 0;
@@ -84,8 +75,7 @@ export const scanForProjects = createServerFn({ method: "GET" }).handler(
       const claudeDir = join(decoded, ".claude");
       const hasClaudeDir = existsSync(claudeDir);
       const hasClaudeMd =
-        existsSync(join(decoded, "CLAUDE.md")) ||
-        existsSync(join(decoded, "claude.md"));
+        existsSync(join(decoded, "CLAUDE.md")) || existsSync(join(decoded, "claude.md"));
 
       projects.push({
         encodedPath: encoded,
@@ -121,8 +111,7 @@ export const getProjectSummary = createServerFn({ method: "GET" })
     if (claudeMdPath) {
       const content = readFileSync(claudeMdPath, "utf-8");
       const lines = content.split("\n");
-      claudeMdPreview =
-        lines.length > 20 ? `${lines.slice(0, 20).join("\n")}\n...` : content;
+      claudeMdPreview = lines.length > 20 ? `${lines.slice(0, 20).join("\n")}\n...` : content;
     }
 
     const settingsPath = join(claudeDir, "settings.json");
@@ -142,9 +131,7 @@ export const getProjectSummary = createServerFn({ method: "GET" })
             source: "project" as const,
             filePath: settingsPath,
             exists: true,
-            content: JSON.parse(
-              readFileSync(settingsPath, "utf-8"),
-            ) as JsonObject,
+            content: JSON.parse(readFileSync(settingsPath, "utf-8")) as JsonObject,
           }
         : null,
       settingsLocal: existsSync(settingsLocalPath)
@@ -152,9 +139,7 @@ export const getProjectSummary = createServerFn({ method: "GET" })
             source: "project-local" as const,
             filePath: settingsLocalPath,
             exists: true,
-            content: JSON.parse(
-              readFileSync(settingsLocalPath, "utf-8"),
-            ) as JsonObject,
+            content: JSON.parse(readFileSync(settingsLocalPath, "utf-8")) as JsonObject,
           }
         : null,
       agentCount: countMdFiles(join(claudeDir, "agents")),
@@ -171,9 +156,7 @@ export const getGlobalStats = createServerFn({ method: "GET" }).handler(
     const claudeHome = resolveClaudeHome();
 
     const settingsExists = existsSync(join(claudeHome, "settings.json"));
-    const settingsLocalExists = existsSync(
-      join(claudeHome, "settings.local.json"),
-    );
+    const settingsLocalExists = existsSync(join(claudeHome, "settings.local.json"));
     const agentCount = countMdFiles(join(claudeHome, "agents"));
     const cmdCounts = countCommandFiles(join(claudeHome, "commands"));
     const skillCount = countSkillFolders(join(claudeHome, "skills"));
@@ -181,9 +164,7 @@ export const getGlobalStats = createServerFn({ method: "GET" }).handler(
     let hookScriptCount = 0;
     const hooksDir = join(claudeHome, "hooks");
     if (existsSync(hooksDir)) {
-      hookScriptCount = readdirSync(hooksDir).filter((f) =>
-        f.endsWith(".js"),
-      ).length;
+      hookScriptCount = readdirSync(hooksDir).filter((f) => f.endsWith(".js")).length;
     }
 
     let pluginCount = 0;
@@ -203,9 +184,7 @@ export const getGlobalStats = createServerFn({ method: "GET" }).handler(
           readFileSync(join(claudeHome, "settings.json"), "utf-8"),
         ) as ClaudeSettings;
         if (settings.enabledPlugins) {
-          enabledPluginCount = Object.values(settings.enabledPlugins).filter(
-            Boolean,
-          ).length;
+          enabledPluginCount = Object.values(settings.enabledPlugins).filter(Boolean).length;
         }
       } catch {
         // ignore

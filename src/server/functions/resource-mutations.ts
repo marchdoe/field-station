@@ -21,10 +21,7 @@ const createResourceInput = z.object({
   name: z
     .string()
     .min(1)
-    .regex(
-      /^[a-zA-Z0-9_-]+$/,
-      "Name must be alphanumeric with hyphens/underscores",
-    ),
+    .regex(/^[a-zA-Z0-9_-]+$/, "Name must be alphanumeric with hyphens/underscores"),
   folder: z.string().optional(),
   projectPath: projectPathSchema.optional(),
   frontmatter: z.record(z.string(), z.unknown()).default({}),
@@ -34,16 +31,12 @@ const createResourceInput = z.object({
 export const createResource = createServerFn({ method: "POST" })
   .inputValidator(createResourceInput)
   .handler(async ({ data }) => {
+    if (data.scope === "project" && !data.projectPath) {
+      throw new Error("projectPath is required for project scope");
+    }
     const baseDir =
-      data.scope === "global"
-        ? resolveClaudeHome()
-        : join(data.projectPath!, ".claude");
-    const filePath = resolveResourcePath(
-      baseDir,
-      data.type,
-      data.name,
-      data.folder,
-    );
+      data.scope === "global" ? resolveClaudeHome() : join(data.projectPath, ".claude");
+    const filePath = resolveResourcePath(baseDir, data.type, data.name, data.folder);
     createResourceFile(filePath, data.frontmatter, data.body);
     return { success: true, filePath };
   });

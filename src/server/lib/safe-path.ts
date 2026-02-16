@@ -42,10 +42,7 @@ export function getAllowedRoots(dataFilePath: string): string[] {
   return [...roots];
 }
 
-export function assertSafePath(
-  rawPath: string,
-  allowedRoots: string[],
-): string {
+export function assertSafePath(rawPath: string, allowedRoots: string[]): string {
   if (!rawPath) {
     throw new Error("Path must not be empty");
   }

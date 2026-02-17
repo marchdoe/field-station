@@ -171,3 +171,15 @@ export interface GlobalStats {
   enabledPluginCount: number;
   projectCount: number;
 }
+
+export interface SearchResult {
+  type: "agent" | "command" | "skill" | "feature" | "plugin" | "hook" | "settings-key";
+  scope: "global" | "project";
+  projectPath?: string;
+  projectName?: string;
+  title: string;
+  description?: string;
+  matchText: string;
+  href: string;
+  icon: string;
+}

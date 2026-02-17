@@ -149,9 +149,13 @@ export function CreateResourceDialog({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="my-resource"
+            aria-required="true"
+            aria-describedby="resource-name-hint"
             className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
           />
-          <p className="text-xs text-text-muted mt-1">Used as filename ({name || "name"}.md)</p>
+          <p id="resource-name-hint" className="text-xs text-text-muted mt-1">
+            Used as filename ({name || "name"}.md)
+          </p>
         </div>
 
         {type === "command" && (
@@ -168,6 +172,7 @@ export function CreateResourceDialog({
                   id="resource-folder"
                   value={folder}
                   onChange={(e) => setFolder(e.target.value)}
+                  aria-required="true"
                   className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
                 >
                   <option value="">Select or type a folder...</option>
@@ -182,6 +187,7 @@ export function CreateResourceDialog({
                   value={folder}
                   onChange={(e) => setFolder(e.target.value)}
                   placeholder="Or enter a new folder name"
+                  aria-required="true"
                   className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
                 />
               </div>
@@ -192,6 +198,7 @@ export function CreateResourceDialog({
                 value={folder}
                 onChange={(e) => setFolder(e.target.value)}
                 placeholder="folder-name"
+                aria-required="true"
                 className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
               />
             )}

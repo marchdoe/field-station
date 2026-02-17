@@ -83,13 +83,19 @@ export function FeatureList({ features, onToggle, onValueChange }: FeatureListPr
   return (
     <div className="space-y-4">
       {/* Search */}
-      <input
-        type="text"
-        placeholder="Search features..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full rounded-lg border border-border-default bg-surface-1 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted"
-      />
+      <div>
+        <label htmlFor="feature-search" className="sr-only">
+          Search features
+        </label>
+        <input
+          id="feature-search"
+          type="text"
+          placeholder="Search features..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-lg border border-border-default bg-surface-1 px-3 py-2 text-sm text-text-primary placeholder:text-text-muted"
+        />
+      </div>
 
       {/* Category chips */}
       {/* biome-ignore lint/a11y/useSemanticElements: role="group" on div is correct for button group */}

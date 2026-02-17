@@ -130,6 +130,7 @@ export function ConfigNavigationTree({ stats, projects }: ConfigNavigationTreePr
         {/* Global root node */}
         <button
           type="button"
+          aria-expanded={expanded.has("global")}
           onClick={() => toggle("global")}
           className={cn(
             "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors",
@@ -227,6 +228,7 @@ export function ConfigNavigationTree({ stats, projects }: ConfigNavigationTreePr
 
                   <button
                     type="button"
+                    aria-expanded={isProjectExpanded}
                     onClick={() => toggle(projectKey)}
                     className={cn(
                       "w-full flex items-center gap-2.5 pl-10 pr-3 py-1.5 rounded-lg transition-colors",

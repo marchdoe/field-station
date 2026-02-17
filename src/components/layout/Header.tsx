@@ -16,7 +16,12 @@ export default function Header({ title, onMenuClick, onSearchClick }: HeaderProp
       )}
     >
       <nav className="flex items-center gap-2 text-sm">
-        <button type="button" className="mr-2 md:hidden" onClick={onMenuClick}>
+        <button
+          type="button"
+          aria-label="Open menu"
+          className="mr-2 md:hidden"
+          onClick={onMenuClick}
+        >
           <Menu size={20} />
         </button>
         <span className="font-medium text-text-primary">Field Station</span>

@@ -149,6 +149,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     <dialog
       ref={dialogRef}
       onClose={onClose}
+      aria-label="Search"
       className="m-auto backdrop:bg-black/50 bg-surface-1 border border-border-default rounded-xl p-0 max-w-xl w-full shadow-xl"
     >
       {/* biome-ignore lint/a11y/noStaticElementInteractions: keyboard navigation wrapper for command palette */}
@@ -164,6 +165,13 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             placeholder="Search agents, commands, skills, settings..."
             autoComplete="off"
             spellCheck={false}
+            role="combobox"
+            aria-expanded={flatItems.length > 0}
+            aria-controls="command-palette-listbox"
+            aria-activedescendant={
+              flatItems.length > 0 ? `command-palette-option-${selectedIndex}` : undefined
+            }
+            aria-label="Search agents, commands, skills, settings"
             className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none"
           />
           <kbd className="text-[10px] text-text-muted bg-surface-2 border border-border-default rounded px-1.5 py-0.5 font-mono">
@@ -172,7 +180,13 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
         </div>
 
         {/* Results area */}
-        <div className="overflow-y-auto" style={{ maxHeight: "400px" }}>
+        <div
+          role="listbox"
+          id="command-palette-listbox"
+          aria-label="Search results"
+          className="overflow-y-auto"
+          style={{ maxHeight: "400px" }}
+        >
           {loading ? (
             <div className="px-4 py-8 text-sm text-text-muted text-center animate-pulse">
               Loading...
@@ -196,6 +210,9 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                     <button
                       key={`${result.type}-${result.href}`}
                       type="button"
+                      role="option"
+                      id={`command-palette-option-${currentFlatIndex}`}
+                      aria-selected={isSelected}
                       data-selected={isSelected}
                       onClick={() => navigateToResult(result)}
                       onMouseEnter={() => setSelectedIndex(currentFlatIndex)}

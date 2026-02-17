@@ -22,6 +22,8 @@ function TreeNode({ item, depth = 0 }: { item: TreeItem; depth?: number }) {
     <div>
       <button
         type="button"
+        role="treeitem"
+        aria-expanded={isDirectory ? expanded : undefined}
         onClick={() => {
           if (isDirectory) setExpanded((prev) => !prev);
         }}
@@ -54,7 +56,8 @@ function TreeNode({ item, depth = 0 }: { item: TreeItem; depth?: number }) {
       </button>
 
       {expanded && hasChildren && (
-        <div>
+        // biome-ignore lint/a11y/useSemanticElements: role="group" on div is correct for tree widget children
+        <div role="group">
           {item.children?.map((child) => (
             <TreeNode key={child.path} item={child} depth={depth + 1} />
           ))}
@@ -66,7 +69,7 @@ function TreeNode({ item, depth = 0 }: { item: TreeItem; depth?: number }) {
 
 export default function ConfigTree({ items }: ConfigTreeProps) {
   return (
-    <div className="space-y-0.5">
+    <div role="tree" aria-label="File tree" className="space-y-0.5">
       {items.map((item) => (
         <TreeNode key={item.path} item={item} />
       ))}

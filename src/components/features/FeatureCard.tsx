@@ -64,6 +64,9 @@ export function FeatureCard({ feature, onToggle, onValueChange }: FeatureCardPro
         ) : (
           <button
             type="button"
+            role="switch"
+            aria-checked={enabled}
+            aria-label={`Toggle ${isDocumented ? def.name : def.key}`}
             onClick={() => onToggle(def.key, !enabled)}
             className={cn(
               "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors",

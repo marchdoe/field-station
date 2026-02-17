@@ -105,7 +105,12 @@ export default function Sidebar({ onClose }: SidebarProps) {
       <div className="flex h-14 items-center gap-2.5 border-b border-border-default px-5">
         <Radio size={20} className="text-accent" />
         <span className="text-base font-semibold text-text-primary">Field Station</span>
-        <button type="button" className="ml-auto md:hidden" onClick={onClose}>
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="ml-auto md:hidden"
+          onClick={onClose}
+        >
           <X size={20} />
         </button>
       </div>

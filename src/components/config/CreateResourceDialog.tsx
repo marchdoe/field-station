@@ -113,11 +113,14 @@ export function CreateResourceDialog({
     <dialog
       ref={ref}
       onCancel={handleClose}
+      aria-labelledby="create-resource-dialog-title"
       className="m-auto backdrop:bg-black/50 bg-surface-1 rounded-xl border border-border-default p-0 w-full max-w-lg shadow-xl"
     >
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-text-primary">New {TYPE_LABELS[type]}</h2>
+          <h2 id="create-resource-dialog-title" className="text-lg font-semibold text-text-primary">
+            New {TYPE_LABELS[type]}
+          </h2>
           <button
             type="button"
             onClick={handleClose}

@@ -24,6 +24,8 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
+      role="switch"
+      aria-checked={isDark}
       className={cn(
         "flex items-center justify-center rounded-lg p-2",
         "bg-surface-2 hover:bg-surface-3",

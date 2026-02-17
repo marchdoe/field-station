@@ -41,7 +41,12 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
         <AlertCircle className="w-4 h-4 shrink-0" />
       )}
       <span className="flex-1">{toast.message}</span>
-      <button type="button" onClick={onDismiss} className="shrink-0 hover:opacity-70">
+      <button
+        type="button"
+        onClick={onDismiss}
+        aria-label="Dismiss notification"
+        className="shrink-0 hover:opacity-70"
+      >
         <X className="w-3.5 h-3.5" />
       </button>
     </div>
@@ -64,7 +69,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext value={{ toast: addToast }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+      {/* biome-ignore lint/a11y/useSemanticElements: role="status" on div is correct for toast notifications container */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-label="Notifications"
+        className="fixed bottom-4 right-4 z-50 flex flex-col gap-2"
+      >
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} onDismiss={() => removeToast(t.id)} />
         ))}

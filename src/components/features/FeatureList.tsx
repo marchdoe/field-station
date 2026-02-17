@@ -76,11 +76,13 @@ export function FeatureList({ features, onToggle, onValueChange }: FeatureListPr
       />
 
       {/* Category chips */}
-      <div className="flex flex-wrap gap-2">
+      {/* biome-ignore lint/a11y/useSemanticElements: role="group" on div is correct for button group */}
+      <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
         {ALL_CATEGORIES.map((cat) => (
           <button
             key={cat.key}
             type="button"
+            aria-pressed={activeCategory === cat.key}
             onClick={() => setActiveCategory(cat.key)}
             className={cn(
               "px-3 py-1 rounded-full text-xs font-medium transition-colors",

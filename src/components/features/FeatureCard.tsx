@@ -41,29 +41,44 @@ export function FeatureCard({ feature, onToggle, onValueChange }: FeatureCardPro
       {/* Toggle or control */}
       <div className="pt-0.5 shrink-0">
         {hasOptions ? (
-          <select
-            value={(feature.currentValue as string) ?? ""}
-            onChange={(e) => onValueChange(def.key, e.target.value)}
-            className="rounded-lg border border-border-default bg-surface-2 px-2 py-1 text-sm text-text-primary"
-          >
-            <option value="">Default{def.defaultValue ? ` (${def.defaultValue})` : ""}</option>
-            {def.options?.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
+          <>
+            <label htmlFor={`feature-${def.key}`} className="sr-only">
+              {def.name} value
+            </label>
+            <select
+              id={`feature-${def.key}`}
+              value={(feature.currentValue as string) ?? ""}
+              onChange={(e) => onValueChange(def.key, e.target.value)}
+              className="rounded-lg border border-border-default bg-surface-2 px-2 py-1 text-sm text-text-primary"
+            >
+              <option value="">Default{def.defaultValue ? ` (${def.defaultValue})` : ""}</option>
+              {def.options?.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </>
         ) : def.valueType === "number" ? (
-          <input
-            type="number"
-            value={(feature.currentValue as string) ?? ""}
-            placeholder={def.defaultValue ?? ""}
-            onChange={(e) => onValueChange(def.key, e.target.value)}
-            className="w-24 rounded-lg border border-border-default bg-surface-2 px-2 py-1 text-sm text-text-primary"
-          />
+          <>
+            <label htmlFor={`feature-${def.key}`} className="sr-only">
+              {def.name} value
+            </label>
+            <input
+              id={`feature-${def.key}`}
+              type="number"
+              value={(feature.currentValue as string) ?? ""}
+              placeholder={def.defaultValue ?? ""}
+              onChange={(e) => onValueChange(def.key, e.target.value)}
+              className="w-24 rounded-lg border border-border-default bg-surface-2 px-2 py-1 text-sm text-text-primary"
+            />
+          </>
         ) : (
           <button
             type="button"
+            role="switch"
+            aria-checked={enabled}
+            aria-label={`Toggle ${isDocumented ? def.name : def.key}`}
             onClick={() => onToggle(def.key, !enabled)}
             className={cn(
               "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors",

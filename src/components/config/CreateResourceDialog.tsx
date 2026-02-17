@@ -50,6 +50,7 @@ export function CreateResourceDialog({
   onClose,
 }: CreateResourceDialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const [name, setName] = useState("");
   const [folder, setFolder] = useState("");
   const [frontmatter, setFrontmatter] = useState<Record<string, string>>({});
@@ -60,9 +61,12 @@ export function CreateResourceDialog({
     const el = ref.current;
     if (!el) return;
     if (open && !el.open) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
       el.showModal();
     } else if (!open && el.open) {
       el.close();
+      previousFocusRef.current?.focus();
+      previousFocusRef.current = null;
     }
   }, [open]);
 
@@ -113,11 +117,14 @@ export function CreateResourceDialog({
     <dialog
       ref={ref}
       onCancel={handleClose}
+      aria-labelledby="create-resource-dialog-title"
       className="m-auto backdrop:bg-black/50 bg-surface-1 rounded-xl border border-border-default p-0 w-full max-w-lg shadow-xl"
     >
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-text-primary">New {TYPE_LABELS[type]}</h2>
+          <h2 id="create-resource-dialog-title" className="text-lg font-semibold text-text-primary">
+            New {TYPE_LABELS[type]}
+          </h2>
           <button
             type="button"
             onClick={handleClose}
@@ -142,9 +149,13 @@ export function CreateResourceDialog({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="my-resource"
+            aria-required="true"
+            aria-describedby="resource-name-hint"
             className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
           />
-          <p className="text-xs text-text-muted mt-1">Used as filename ({name || "name"}.md)</p>
+          <p id="resource-name-hint" className="text-xs text-text-muted mt-1">
+            Used as filename ({name || "name"}.md)
+          </p>
         </div>
 
         {type === "command" && (
@@ -161,6 +172,7 @@ export function CreateResourceDialog({
                   id="resource-folder"
                   value={folder}
                   onChange={(e) => setFolder(e.target.value)}
+                  aria-required="true"
                   className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
                 >
                   <option value="">Select or type a folder...</option>
@@ -175,6 +187,7 @@ export function CreateResourceDialog({
                   value={folder}
                   onChange={(e) => setFolder(e.target.value)}
                   placeholder="Or enter a new folder name"
+                  aria-required="true"
                   className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
                 />
               </div>
@@ -185,6 +198,7 @@ export function CreateResourceDialog({
                 value={folder}
                 onChange={(e) => setFolder(e.target.value)}
                 placeholder="folder-name"
+                aria-required="true"
                 className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
               />
             )}

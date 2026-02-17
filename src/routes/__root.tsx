@@ -52,6 +52,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         />
       </head>
       <body>
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
         {children}
         <Scripts />
       </body>

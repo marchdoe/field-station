@@ -7,14 +7,16 @@ interface ViewToggleProps {
 
 export function ViewToggle({ view, onChange }: ViewToggleProps) {
   return (
-    <div className="inline-flex rounded-lg bg-surface-2 p-0.5">
+    // biome-ignore lint/a11y/useSemanticElements: role="group" on div is correct for toggle button group
+    <div role="group" aria-label="View mode" className="inline-flex rounded-lg bg-surface-2 p-0.5">
       <button
         type="button"
+        aria-pressed={view === "structured"}
         onClick={() => onChange("structured")}
         className={cn(
           "rounded-md px-3 py-1 text-xs font-medium transition-colors",
           view === "structured"
-            ? "bg-surface-0 text-text-primary shadow-sm"
+            ? "bg-surface-0 text-text-primary shadow-sm font-semibold"
             : "text-text-muted hover:text-text-secondary",
         )}
       >
@@ -22,11 +24,12 @@ export function ViewToggle({ view, onChange }: ViewToggleProps) {
       </button>
       <button
         type="button"
+        aria-pressed={view === "raw"}
         onClick={() => onChange("raw")}
         className={cn(
           "rounded-md px-3 py-1 text-xs font-medium transition-colors",
           view === "raw"
-            ? "bg-surface-0 text-text-primary shadow-sm"
+            ? "bg-surface-0 text-text-primary shadow-sm font-semibold"
             : "text-text-muted hover:text-text-secondary",
         )}
       >

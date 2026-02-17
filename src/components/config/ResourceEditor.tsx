@@ -74,6 +74,7 @@ export function ResourceEditor({
                 type="text"
                 value={frontmatter[field.key] ?? ""}
                 onChange={(e) => updateField(field.key, e.target.value)}
+                aria-required={field.required || undefined}
                 className="w-full rounded-lg border border-border-default bg-surface-0 px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
               />
             </div>

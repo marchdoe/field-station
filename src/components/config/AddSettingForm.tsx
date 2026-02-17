@@ -56,16 +56,29 @@ export function AddSettingForm({ onAdd, onCancel }: AddSettingFormProps) {
       </div>
 
       <div className="space-y-2">
-        <input
-          type="text"
-          placeholder="Key path (e.g. permissions.allow)"
-          value={keyPath}
-          onChange={(e) => setKeyPath(e.target.value)}
-          className="w-full bg-surface-0 border border-border-default rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
-        />
+        <div>
+          <label
+            htmlFor="setting-key-path"
+            className="block text-xs font-medium text-text-secondary mb-1"
+          >
+            Key Path
+          </label>
+          <input
+            id="setting-key-path"
+            type="text"
+            placeholder="Key path (e.g. permissions.allow)"
+            value={keyPath}
+            onChange={(e) => setKeyPath(e.target.value)}
+            className="w-full bg-surface-0 border border-border-default rounded-lg px-3 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+        </div>
 
         <div className="flex gap-2">
+          <label htmlFor="setting-value-type" className="sr-only">
+            Value Type
+          </label>
           <select
+            id="setting-value-type"
             value={valueType}
             onChange={(e) => setValueType(e.target.value as ValueType)}
             className="bg-surface-0 border border-border-default rounded-lg px-2 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
@@ -76,8 +89,12 @@ export function AddSettingForm({ onAdd, onCancel }: AddSettingFormProps) {
             <option value="json">JSON</option>
           </select>
 
+          <label htmlFor="setting-value" className="sr-only">
+            Value
+          </label>
           {valueType === "boolean" ? (
             <select
+              id="setting-value"
               value={rawValue}
               onChange={(e) => setRawValue(e.target.value)}
               className="flex-1 bg-surface-0 border border-border-default rounded-lg px-2 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
@@ -87,6 +104,7 @@ export function AddSettingForm({ onAdd, onCancel }: AddSettingFormProps) {
             </select>
           ) : (
             <input
+              id="setting-value"
               type={valueType === "number" ? "number" : "text"}
               placeholder="Value"
               value={rawValue}

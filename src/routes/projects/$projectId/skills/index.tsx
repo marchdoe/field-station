@@ -1,23 +1,16 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { Lock, Plus, Zap } from "lucide-react";
-import { useState } from "react";
-import { CreateResourceDialog } from "@/components/config/CreateResourceDialog.js";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Lock, Zap } from "lucide-react";
 import { FileCard } from "@/components/files/FileCard.js";
 import { FileList } from "@/components/files/FileList.js";
-import { useToast } from "@/components/ui/Toast.js";
+import { ResourceListPage } from "@/components/resources/ResourceListPage.js";
 import { decodePath } from "@/lib/utils.js";
-import { createResource } from "@/server/functions/resource-mutations.js";
 import { listSkills } from "@/server/functions/skills.js";
 
 export const Route = createFileRoute("/projects/$projectId/skills/")({
-  head: () => ({
-    meta: [{ title: "Project Skills - Field Station" }],
-  }),
+  head: () => ({ meta: [{ title: "Project Skills - Field Station" }] }),
   loader: async ({ params }) => {
     const projectPath = decodePath(params.projectId);
-    const skills = await listSkills({
-      data: { scope: "project", projectPath },
-    });
+    const skills = await listSkills({ data: { scope: "project", projectPath } });
     return { skills, projectId: params.projectId, projectPath };
   },
   component: ProjectSkillsPage,
@@ -36,56 +29,20 @@ export const Route = createFileRoute("/projects/$projectId/skills/")({
 
 function ProjectSkillsPage() {
   const { skills, projectId, projectPath } = Route.useLoaderData();
-  const router = useRouter();
-  const { toast } = useToast();
-  const [showCreate, setShowCreate] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const handleCreate = async (data: {
-    name: string;
-    folder?: string;
-    frontmatter: Record<string, string>;
-    body: string;
-  }) => {
-    setSaving(true);
-    try {
-      await createResource({
-        data: {
-          scope: "project",
-          type: "skill",
-          name: data.name,
-          projectPath,
-          frontmatter: data.frontmatter,
-          body: data.body,
-        },
-      });
-      toast("Skill created successfully");
-      setShowCreate(false);
-      router.invalidate();
-    } catch (e) {
-      toast((e as Error).message, "error");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <ResourceListPage
+      scope="project"
+      projectPath={projectPath}
+      resourceType="skill"
+      typeLabel="Skill"
+      subtitle={
         <p className="text-text-secondary">
           {skills.length} skill{skills.length !== 1 ? "s" : ""} from{" "}
           <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">.claude/skills/</code>
         </p>
-        <button
-          type="button"
-          onClick={() => setShowCreate(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          New Skill
-        </button>
-      </div>
-
+      }
+    >
       <FileList emptyMessage="No project-level skills found">
         {skills.map((skill) => (
           <Link
@@ -115,14 +72,6 @@ function ProjectSkillsPage() {
           </Link>
         ))}
       </FileList>
-
-      <CreateResourceDialog
-        type="skill"
-        open={showCreate}
-        saving={saving}
-        onCreate={handleCreate}
-        onClose={() => setShowCreate(false)}
-      />
-    </div>
+    </ResourceListPage>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useFileWatcher } from "@/hooks/useFileWatcher.js";
 import { cn } from "@/lib/utils";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
@@ -10,6 +11,7 @@ interface AppShellProps {
 
 export function AppShell({ children, title }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  useFileWatcher();
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface-0">

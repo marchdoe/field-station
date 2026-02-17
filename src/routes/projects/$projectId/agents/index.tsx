@@ -1,23 +1,16 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { Bot, Lock, Plus } from "lucide-react";
-import { useState } from "react";
-import { CreateResourceDialog } from "@/components/config/CreateResourceDialog.js";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Bot, Lock } from "lucide-react";
 import { FileCard } from "@/components/files/FileCard.js";
 import { FileList } from "@/components/files/FileList.js";
-import { useToast } from "@/components/ui/Toast.js";
+import { ResourceListPage } from "@/components/resources/ResourceListPage.js";
 import { decodePath } from "@/lib/utils.js";
 import { listAgents } from "@/server/functions/agents.js";
-import { createResource } from "@/server/functions/resource-mutations.js";
 
 export const Route = createFileRoute("/projects/$projectId/agents/")({
-  head: () => ({
-    meta: [{ title: "Project Agents - Field Station" }],
-  }),
+  head: () => ({ meta: [{ title: "Project Agents - Field Station" }] }),
   loader: async ({ params }) => {
     const projectPath = decodePath(params.projectId);
-    const agents = await listAgents({
-      data: { scope: "project", projectPath },
-    });
+    const agents = await listAgents({ data: { scope: "project", projectPath } });
     return { agents, projectId: params.projectId, projectPath };
   },
   component: ProjectAgentsPage,
@@ -36,56 +29,20 @@ export const Route = createFileRoute("/projects/$projectId/agents/")({
 
 function ProjectAgentsPage() {
   const { agents, projectId, projectPath } = Route.useLoaderData();
-  const router = useRouter();
-  const { toast } = useToast();
-  const [showCreate, setShowCreate] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const handleCreate = async (data: {
-    name: string;
-    folder?: string;
-    frontmatter: Record<string, string>;
-    body: string;
-  }) => {
-    setSaving(true);
-    try {
-      await createResource({
-        data: {
-          scope: "project",
-          type: "agent",
-          name: data.name,
-          projectPath,
-          frontmatter: data.frontmatter,
-          body: data.body,
-        },
-      });
-      toast("Agent created successfully");
-      setShowCreate(false);
-      router.invalidate();
-    } catch (e) {
-      toast((e as Error).message, "error");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <ResourceListPage
+      scope="project"
+      projectPath={projectPath}
+      resourceType="agent"
+      typeLabel="Agent"
+      subtitle={
         <p className="text-text-secondary">
           {agents.length} agent definition{agents.length !== 1 ? "s" : ""} from{" "}
           <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">.claude/agents/</code>
         </p>
-        <button
-          type="button"
-          onClick={() => setShowCreate(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          New Agent
-        </button>
-      </div>
-
+      }
+    >
       <FileList emptyMessage="No project-level agents found">
         {agents.map((agent) => (
           <Link
@@ -115,14 +72,6 @@ function ProjectAgentsPage() {
           </Link>
         ))}
       </FileList>
-
-      <CreateResourceDialog
-        type="agent"
-        open={showCreate}
-        saving={saving}
-        onCreate={handleCreate}
-        onClose={() => setShowCreate(false)}
-      />
-    </div>
+    </ResourceListPage>
   );
 }

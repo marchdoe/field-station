@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { writeFileAtomic } from "./atomic-write.js";
 
@@ -24,6 +24,7 @@ export function readPersistedVersion(dataDir: string): string | null {
 }
 
 export function writePersistedVersion(dataDir: string, version: string | null): void {
+  mkdirSync(dataDir, { recursive: true });
   const filePath = join(dataDir, VERSION_FILE_NAME);
   writeFileAtomic(filePath, `${JSON.stringify({ version }, null, 2)}\n`);
 }

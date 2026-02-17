@@ -6,10 +6,17 @@ let cachedVersion: string | null = null;
 let cachedEnvVars: string[] | null = null;
 
 export function getClaudeVersion(): string | null {
+  if (cachedVersion) return cachedVersion;
   try {
-    const output = String(execSync("claude --version 2>/dev/null", { encoding: "utf-8" })).trim();
+    const output = String(
+      execSync("claude --version 2>/dev/null", { encoding: "utf-8", timeout: 3000 }),
+    ).trim();
     const match = output.match(/^([\d.]+)/);
-    return match ? match[1] : null;
+    if (match) {
+      cachedVersion = match[1];
+      return match[1];
+    }
+    return null;
   } catch {
     return null;
   }

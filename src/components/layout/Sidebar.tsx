@@ -116,7 +116,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3">
+      <nav className="flex-1 overflow-y-auto p-3" aria-label="Main navigation">
         {/* Dashboard */}
         <div className="space-y-1">
           <NavLink item={{ label: "Dashboard", to: "/", icon: <LayoutDashboard size={18} /> }} />

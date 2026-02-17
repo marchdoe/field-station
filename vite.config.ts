@@ -24,7 +24,7 @@ const config = defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["src/**/*.test.ts"],
+    include: ["src/**/*.test.{ts,tsx}"],
   },
   plugins: [
     nitro({ rollupConfig: { external: [/^@sentry\//] } }),

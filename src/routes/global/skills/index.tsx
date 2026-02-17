@@ -1,18 +1,13 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { Lock, Plus, Zap } from "lucide-react";
-import { useState } from "react";
-import { CreateResourceDialog } from "@/components/config/CreateResourceDialog.js";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Lock, Zap } from "lucide-react";
 import { FileCard } from "@/components/files/FileCard.js";
 import { FileList } from "@/components/files/FileList.js";
 import { AppShell } from "@/components/layout/AppShell.js";
-import { useToast } from "@/components/ui/Toast.js";
-import { createResource } from "@/server/functions/resource-mutations.js";
+import { ResourceListPage } from "@/components/resources/ResourceListPage.js";
 import { listSkills } from "@/server/functions/skills.js";
 
 export const Route = createFileRoute("/global/skills/")({
-  head: () => ({
-    meta: [{ title: "Skills - Field Station" }],
-  }),
+  head: () => ({ meta: [{ title: "Skills - Field Station" }] }),
   loader: async () => {
     const skills = await listSkills({ data: { scope: "global" } });
     return { skills };
@@ -37,42 +32,14 @@ export const Route = createFileRoute("/global/skills/")({
 
 function GlobalSkillsPage() {
   const { skills } = Route.useLoaderData();
-  const router = useRouter();
-  const { toast } = useToast();
-  const [showCreate, setShowCreate] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const handleCreate = async (data: {
-    name: string;
-    folder?: string;
-    frontmatter: Record<string, string>;
-    body: string;
-  }) => {
-    setSaving(true);
-    try {
-      await createResource({
-        data: {
-          scope: "global",
-          type: "skill",
-          name: data.name,
-          frontmatter: data.frontmatter,
-          body: data.body,
-        },
-      });
-      toast("Skill created successfully");
-      setShowCreate(false);
-      router.invalidate();
-    } catch (e) {
-      toast((e as Error).message, "error");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   return (
     <AppShell title="Global Skills">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <ResourceListPage
+        scope="global"
+        resourceType="skill"
+        typeLabel="Skill"
+        subtitle={
           <div>
             <h1 className="text-2xl font-bold text-text-primary">Global Skills</h1>
             <p className="text-text-secondary mt-1">
@@ -80,16 +47,8 @@ function GlobalSkillsPage() {
               <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">~/.claude/skills/</code>
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowCreate(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            New Skill
-          </button>
-        </div>
-
+        }
+      >
         <FileList emptyMessage="No skills found">
           {skills.map((skill) => (
             <Link
@@ -119,15 +78,7 @@ function GlobalSkillsPage() {
             </Link>
           ))}
         </FileList>
-      </div>
-
-      <CreateResourceDialog
-        type="skill"
-        open={showCreate}
-        saving={saving}
-        onCreate={handleCreate}
-        onClose={() => setShowCreate(false)}
-      />
+      </ResourceListPage>
     </AppShell>
   );
 }

@@ -16,7 +16,7 @@ export function ViewToggle({ view, onChange }: ViewToggleProps) {
         className={cn(
           "rounded-md px-3 py-1 text-xs font-medium transition-colors",
           view === "structured"
-            ? "bg-surface-0 text-text-primary shadow-sm"
+            ? "bg-surface-0 text-text-primary shadow-sm font-semibold"
             : "text-text-muted hover:text-text-secondary",
         )}
       >
@@ -29,7 +29,7 @@ export function ViewToggle({ view, onChange }: ViewToggleProps) {
         className={cn(
           "rounded-md px-3 py-1 text-xs font-medium transition-colors",
           view === "raw"
-            ? "bg-surface-0 text-text-primary shadow-sm"
+            ? "bg-surface-0 text-text-primary shadow-sm font-semibold"
             : "text-text-muted hover:text-text-secondary",
         )}
       >

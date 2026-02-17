@@ -115,7 +115,7 @@ export function FeatureList({ features, onToggle, onValueChange }: FeatureListPr
             className={cn(
               "px-3 py-1 rounded-full text-xs font-medium transition-colors",
               activeCategory === cat.key
-                ? "bg-accent text-white"
+                ? "bg-accent text-white font-semibold"
                 : "bg-surface-2 text-text-secondary hover:bg-surface-3",
             )}
           >

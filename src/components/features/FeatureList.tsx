@@ -64,6 +64,22 @@ export function FeatureList({ features, onToggle, onValueChange }: FeatureListPr
     );
   }, [filtered]);
 
+  function handleCategoryKeyDown(e: React.KeyboardEvent) {
+    const buttons = (e.currentTarget as HTMLElement).querySelectorAll<HTMLButtonElement>("button");
+    const arr = Array.from(buttons);
+    const idx = arr.indexOf(e.target as HTMLButtonElement);
+    if (idx === -1) return;
+
+    let next: number | null = null;
+    if (e.key === "ArrowRight") next = idx < arr.length - 1 ? idx + 1 : 0;
+    if (e.key === "ArrowLeft") next = idx > 0 ? idx - 1 : arr.length - 1;
+
+    if (next !== null) {
+      e.preventDefault();
+      arr[next].focus();
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Search */}
@@ -77,12 +93,18 @@ export function FeatureList({ features, onToggle, onValueChange }: FeatureListPr
 
       {/* Category chips */}
       {/* biome-ignore lint/a11y/useSemanticElements: role="group" on div is correct for button group */}
-      <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
+      <div
+        role="group"
+        aria-label="Filter by category"
+        className="flex flex-wrap gap-2"
+        onKeyDown={handleCategoryKeyDown}
+      >
         {ALL_CATEGORIES.map((cat) => (
           <button
             key={cat.key}
             type="button"
             aria-pressed={activeCategory === cat.key}
+            tabIndex={activeCategory === cat.key ? 0 : -1}
             onClick={() => setActiveCategory(cat.key)}
             className={cn(
               "px-3 py-1 rounded-full text-xs font-medium transition-colors",

@@ -26,6 +26,62 @@ npm run build
 npm run preview
 ```
 
+## Running as a Service
+
+Field Station can run as a persistent background service so it survives terminal closes and starts automatically on login.
+
+### Docker
+
+Build and run with docker-compose (mounts `~/.claude/` and the `claude` binary from the host):
+
+```bash
+# Adjust the claude binary path in docker-compose.yml if needed
+# macOS (Homebrew): /opt/homebrew/bin/claude
+# Linux/npm global: /usr/local/bin/claude
+docker compose up -d
+```
+
+Then open http://localhost:3456.
+
+### macOS (launchd)
+
+1. Build the app: `npm run build`
+2. Copy and configure the plist:
+   ```bash
+   cp deploy/field-station.plist ~/Library/LaunchAgents/com.fieldstation.app.plist
+   ```
+3. Edit `~/Library/LaunchAgents/com.fieldstation.app.plist` — set `WorkingDirectory` to the absolute path of this project (e.g. `/Users/you/Projects/field-station`)
+4. Load the service:
+   ```bash
+   mkdir -p ~/Library/Logs/field-station
+   launchctl load ~/Library/LaunchAgents/com.fieldstation.app.plist
+   ```
+
+To stop: `launchctl unload ~/Library/LaunchAgents/com.fieldstation.app.plist`
+
+### Linux (systemd)
+
+1. Build the app: `npm run build`
+2. Copy and configure the unit:
+   ```bash
+   cp deploy/field-station.service ~/.config/systemd/user/field-station.service
+   ```
+3. Edit `~/.config/systemd/user/field-station.service` — set `WorkingDirectory` and `ExecStart` paths
+4. Enable and start:
+   ```bash
+   systemctl --user daemon-reload
+   systemctl --user enable --now field-station
+   ```
+
+### pm2 (alternative)
+
+```bash
+npm run build
+pm2 start "node .output/server/index.mjs" --name field-station
+pm2 save       # persist across reboots
+pm2 startup    # configure autostart (follow the printed instructions)
+```
+
 ## What You Can Do
 
 ### Global Settings

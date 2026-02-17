@@ -1,13 +1,14 @@
-import { Menu } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
 
 interface HeaderProps {
   title?: string;
   onMenuClick?: () => void;
+  onSearchClick?: () => void;
 }
 
-export default function Header({ title, onMenuClick }: HeaderProps) {
+export default function Header({ title, onMenuClick, onSearchClick }: HeaderProps) {
   return (
     <header
       className={cn(
@@ -28,6 +29,17 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
       </nav>
 
       <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onSearchClick}
+          className="hidden md:inline-flex items-center gap-2 px-3 py-1.5 text-sm text-text-muted bg-surface-1 border border-border-muted rounded-lg hover:bg-surface-2 transition-colors"
+        >
+          <Search className="w-3.5 h-3.5" />
+          <span>Search</span>
+          <kbd className="text-[10px] px-1 py-0.5 bg-surface-2 border border-border-muted rounded ml-2 font-mono">
+            ⌘K
+          </kbd>
+        </button>
         <ThemeToggle />
       </div>
     </header>

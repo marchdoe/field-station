@@ -1,0 +1,15 @@
+services:
+  field-station:
+    build: .
+    ports:
+      - "3456:3456"
+    volumes:
+      # Claude config directory (read-only)
+      - ~/.claude:/root/.claude:ro
+      # Claude binary — adjust path if needed:
+      #   macOS (Homebrew): /opt/homebrew/bin/claude
+      #   Linux/npm global: /usr/local/bin/claude
+      - /usr/local/bin/claude:/usr/local/bin/claude:ro
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production

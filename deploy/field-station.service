@@ -1,0 +1,22 @@
+[Unit]
+Description=Field Station — Claude Code visual config manager
+After=network.target
+
+[Service]
+Type=simple
+
+# REQUIRED: Set these to match your environment
+WorkingDirectory=/path/to/field-station
+ExecStart=/usr/local/bin/node .output/server/index.mjs
+
+Restart=on-failure
+RestartSec=5
+
+Environment=NODE_ENV=production
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=field-station
+
+[Install]
+WantedBy=default.target

@@ -1,10 +1,13 @@
 import type { FSWatcher } from "node:fs";
 import { existsSync, readFileSync, watch } from "node:fs";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { createEventStream, defineEventHandler } from "h3";
+import { getClaudeVersion } from "../../lib/claude-binary.js";
 import { resolveClaudeHome } from "../../lib/claude-home.js";
+import { readPersistedVersion, writePersistedVersion } from "../../lib/version-persistence.js";
 
 const DATA_FILE = join(process.cwd(), "data", "projects.json");
+const DATA_DIR = dirname(DATA_FILE);
 
 type ChangeListener = () => void;
 
@@ -75,6 +78,24 @@ export default defineEventHandler(async (event) => {
   listeners.add(onChange);
   if (listeners.size === 1) {
     startWatching();
+  }
+
+  // Check if Claude version changed since last connection
+  const currentVersion = getClaudeVersion();
+  if (currentVersion !== null) {
+    const persistedVersion = readPersistedVersion(DATA_DIR);
+    if (currentVersion !== persistedVersion) {
+      try {
+        writePersistedVersion(DATA_DIR, currentVersion);
+      } catch {
+        // non-fatal: worst case is an extra "change" event on next connect
+      }
+      try {
+        eventStream.push({ event: "change", data: "{}" });
+      } catch {
+        // stream already closed
+      }
+    }
   }
 
   const heartbeat = setInterval(() => {

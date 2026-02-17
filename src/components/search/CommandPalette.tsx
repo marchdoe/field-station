@@ -46,6 +46,7 @@ interface CommandPaletteProps {
 export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const router = useRouter();
 
   const [allResults, setAllResults] = useState<SearchResult[]>([]);
@@ -58,9 +59,12 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     const el = dialogRef.current;
     if (!el) return;
     if (open && !el.open) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
       el.showModal();
     } else if (!open && el.open) {
       el.close();
+      previousFocusRef.current?.focus();
+      previousFocusRef.current = null;
     }
   }, [open]);
 

@@ -24,14 +24,18 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const el = dialogRef.current;
     if (!el) return;
     if (open && !el.open) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
       el.showModal();
     } else if (!open && el.open) {
       el.close();
+      previousFocusRef.current?.focus();
+      previousFocusRef.current = null;
     }
   }, [open]);
 

@@ -50,6 +50,7 @@ export function CreateResourceDialog({
   onClose,
 }: CreateResourceDialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const [name, setName] = useState("");
   const [folder, setFolder] = useState("");
   const [frontmatter, setFrontmatter] = useState<Record<string, string>>({});
@@ -60,9 +61,12 @@ export function CreateResourceDialog({
     const el = ref.current;
     if (!el) return;
     if (open && !el.open) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
       el.showModal();
     } else if (!open && el.open) {
       el.close();
+      previousFocusRef.current?.focus();
+      previousFocusRef.current = null;
     }
   }, [open]);
 

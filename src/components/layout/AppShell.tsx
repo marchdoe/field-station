@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useFileWatcher } from "@/hooks/useFileWatcher.js";
 import { cn } from "@/lib/utils";
+import { CommandPalette } from "../search/CommandPalette";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 
@@ -11,7 +12,23 @@ interface AppShellProps {
 
 export function AppShell({ children, title }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   useFileWatcher();
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const tag = (e.target as HTMLElement).tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      e.preventDefault();
+      setPaletteOpen(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface-0">
@@ -37,9 +54,15 @@ export function AppShell({ children, title }: AppShellProps) {
       </div>
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title={title} onMenuClick={() => setSidebarOpen(true)} />
+        <Header
+          title={title}
+          onMenuClick={() => setSidebarOpen(true)}
+          onSearchClick={() => setPaletteOpen(true)}
+        />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
+
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </div>
   );
 }

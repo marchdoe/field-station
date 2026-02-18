@@ -65,9 +65,9 @@ export default defineEventHandler(async (event) => {
     });
 
     const query = getQuery(event);
+    // getQuery already URL-decodes values
     const rawNext = typeof query.next === "string" ? query.next : null;
-    const decodedNext = rawNext !== null ? decodeURIComponent(rawNext) : null;
-    const next = decodedNext !== null && isSafePath(decodedNext) ? decodedNext : "/";
+    const next = rawNext !== null && isSafePath(rawNext) ? rawNext : "/";
     return sendRedirect(event, next, 302);
   }
 

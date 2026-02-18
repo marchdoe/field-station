@@ -40,19 +40,21 @@ export function resolveLayerPath(layer: ConfigLayerSource, projectPath?: string)
 }
 
 export function applyUpdateSetting(filePath: string, keyPath: string, value: JsonValue): void {
+  const claudeHome = resolveClaudeHome();
   const current = readJsonFileSafe(filePath);
   const updated = setAtPath(current, keyPath, value);
-  backupFile(filePath, "update", resolveClaudeHome());
+  backupFile(filePath, "update", claudeHome);
   writeJsonFileSafe(filePath, updated);
 }
 
 export function applyDeleteSetting(filePath: string, keyPath: string): void {
+  const claudeHome = resolveClaudeHome();
   if (!existsSync(filePath)) {
     throw new Error(`File does not exist: ${filePath}`);
   }
   const current = readJsonFileSafe(filePath);
   const updated = deleteAtPath(current, keyPath);
-  backupFile(filePath, "delete", resolveClaudeHome());
+  backupFile(filePath, "delete", claudeHome);
   writeJsonFileSafe(filePath, updated);
 }
 

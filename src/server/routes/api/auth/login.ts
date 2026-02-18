@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import {
   defineEventHandler,
   deleteCookie,
@@ -10,12 +10,18 @@ import {
   setResponseStatus,
 } from "h3";
 import { createSession } from "../../../lib/auth-session.js";
+import { isSafePath } from "../../../lib/safe-redirect.js";
 
 const COOKIE_NAME = "field-station-session";
 
 function isHttps(event: Parameters<typeof getHeader>[0]): boolean {
   const proto = getHeader(event, "x-forwarded-proto");
   return proto === "https";
+}
+
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
 }
 
 export default defineEventHandler(async (event) => {
@@ -26,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
     // Logout: POST with { action: "logout" }
     if (body.action === "logout") {
-      deleteCookie(event, COOKIE_NAME, { path: "/" });
+      deleteCookie(event, COOKIE_NAME, { path: "/", httpOnly: true, sameSite: "strict" });
       return sendRedirect(event, "/login", 302);
     }
 
@@ -40,9 +46,9 @@ export default defineEventHandler(async (event) => {
     }
 
     // Timing jitter to make brute-force slightly harder
-    await new Promise((r) => setTimeout(r, randomBytes(1)[0]));
+    await new Promise((r) => setTimeout(r, randomBytes(1).readUInt8(0)));
 
-    if (submitted !== configured) {
+    if (!safeCompare(submitted, configured)) {
       setResponseStatus(event, 401);
       return { error: "Invalid token" };
     }
@@ -59,8 +65,10 @@ export default defineEventHandler(async (event) => {
     });
 
     const query = getQuery(event);
-    const next = typeof query.next === "string" ? query.next : "/";
-    return sendRedirect(event, decodeURIComponent(next), 302);
+    const rawNext = typeof query.next === "string" ? query.next : null;
+    const decodedNext = rawNext !== null ? decodeURIComponent(rawNext) : null;
+    const next = decodedNext !== null && isSafePath(decodedNext) ? decodedNext : "/";
+    return sendRedirect(event, next, 302);
   }
 
   setResponseStatus(event, 405);

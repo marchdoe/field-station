@@ -7,20 +7,11 @@ import {
   setResponseStatus,
 } from "h3";
 import { verifySession } from "../lib/auth-session.js";
+import { isSafePath } from "../lib/safe-redirect.js";
 
 const COOKIE_NAME = "field-station-session";
 const LOGIN_PATH = "/login";
 const AUTH_API_PREFIX = "/api/auth/";
-
-/** Ensures the redirect target is a path only (no protocol or host). */
-function isSafePath(value: string): boolean {
-  try {
-    const parsed = new URL(value, "http://x");
-    return parsed.origin === "http://x";
-  } catch {
-    return false;
-  }
-}
 
 /** Pure logic — exported for testing */
 export function shouldAllow(

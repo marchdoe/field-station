@@ -37,4 +37,9 @@ describe("shouldAllow", () => {
     const session = createSession("different-token");
     expect(shouldAllow(token, session, "/")).toBe(false);
   });
+
+  it("does not allow paths that merely start with /login (e.g. /login-settings)", () => {
+    expect(shouldAllow(token, undefined, "/login-settings")).toBe(false);
+    expect(shouldAllow(token, undefined, "/login-other")).toBe(false);
+  });
 });

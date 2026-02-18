@@ -9,7 +9,8 @@ import {
 import { verifySession } from "../lib/auth-session.js";
 
 const COOKIE_NAME = "field-station-session";
-const PUBLIC_PATHS = ["/login", "/api/auth/"];
+const LOGIN_PATH = "/login";
+const AUTH_API_PREFIX = "/api/auth/";
 
 /** Pure logic — exported for testing */
 export function shouldAllow(
@@ -22,7 +23,7 @@ export function shouldAllow(
 
   // Always allow public paths
   const pathOnly = pathname.split("?")[0] ?? pathname;
-  if (PUBLIC_PATHS.some((p) => pathOnly === p || pathOnly.startsWith(p))) return true;
+  if (pathOnly === LOGIN_PATH || pathOnly.startsWith(AUTH_API_PREFIX)) return true;
 
   // Check session cookie
   if (!cookieValue) return false;

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { createSession, verifySession } from "./auth-session.js";
+import { createSession, SESSION_ID_BYTES, verifySession } from "./auth-session.js";
 
 describe("createSession", () => {
   it("returns a string in the format {id}.{hmac}", () => {
     const result = createSession("my-token");
     const parts = result.split(".");
     expect(parts).toHaveLength(2);
-    expect(parts[0]).toMatch(/^[0-9a-f]{32}$/); // 16 bytes hex
+    expect(parts[0]).toMatch(new RegExp(`^[0-9a-f]{${SESSION_ID_BYTES * 2}}$`)); // SESSION_ID_BYTES bytes hex
     expect(parts[1]).toMatch(/^[0-9a-f]{64}$/); // SHA-256 = 32 bytes hex
   });
 
@@ -40,5 +40,22 @@ describe("verifySession", () => {
 
   it("returns false for empty string", () => {
     expect(verifySession("", "secret")).toBe(false);
+  });
+
+  it("returns false for dot-only input", () => {
+    expect(verifySession(".", "secret")).toBe(false);
+  });
+
+  it("returns false for correct-length ID but non-hex HMAC", () => {
+    const session = createSession("secret");
+    const [id] = session.split(".");
+    // Replace HMAC with same-length non-hex string (z is not hex)
+    const fakeHmac = "z".repeat(64);
+    expect(verifySession(`${id}.${fakeHmac}`, "secret")).toBe(false);
+  });
+
+  it("returns false for too-short ID", () => {
+    // ID that is shorter than SESSION_ID_BYTES * 2 chars
+    expect(verifySession(`abc.${createSession("secret").split(".")[1]}`, "secret")).toBe(false);
   });
 });

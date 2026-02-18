@@ -51,8 +51,10 @@ describe("backupFile", () => {
 
   it("returns empty string and does not throw if source file does not exist", () => {
     const filePath = join(sourceDir, "nonexistent.json");
-    expect(() => backupFile(filePath, "update", claudeHome)).not.toThrow();
-    const result = backupFile(filePath, "update", claudeHome);
+    let result = "";
+    expect(() => {
+      result = backupFile(filePath, "update", claudeHome);
+    }).not.toThrow();
     expect(result).toBe("");
   });
 
@@ -114,6 +116,26 @@ describe("listBackups", () => {
     mkdirSync(backupsDir, { recursive: true });
     const bad = join(backupsDir, "2026-01-01T00-00-00-000Z-bad000");
     mkdirSync(bad);
+    expect(listBackups(claudeHome)).toHaveLength(0);
+  });
+
+  it("skips dirs with malformed meta.json (invalid JSON)", () => {
+    const backupsDir = join(claudeHome, "backups");
+    mkdirSync(backupsDir, { recursive: true });
+    const bad = join(backupsDir, "2026-01-01T00-00-00-000Z-bad001");
+    mkdirSync(bad);
+    writeFileSync(join(bad, "meta.json"), "not-valid-json{{{");
+    writeFileSync(join(bad, "file"), "{}");
+    expect(listBackups(claudeHome)).toHaveLength(0);
+  });
+
+  it("skips dirs with meta.json missing required fields", () => {
+    const backupsDir = join(claudeHome, "backups");
+    mkdirSync(backupsDir, { recursive: true });
+    const bad = join(backupsDir, "2026-01-01T00-00-00-000Z-bad002");
+    mkdirSync(bad);
+    writeFileSync(join(bad, "meta.json"), JSON.stringify({ originalPath: "/foo" })); // missing operation and timestamp
+    writeFileSync(join(bad, "file"), "{}");
     expect(listBackups(claudeHome)).toHaveLength(0);
   });
 });

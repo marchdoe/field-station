@@ -31,6 +31,16 @@ function backupsDirPath(claudeHome: string): string {
   return join(claudeHome, "backups");
 }
 
+function isBackupMeta(v: unknown): v is BackupMeta {
+  return (
+    typeof v === "object" &&
+    v !== null &&
+    typeof (v as Record<string, unknown>).originalPath === "string" &&
+    typeof (v as Record<string, unknown>).operation === "string" &&
+    typeof (v as Record<string, unknown>).timestamp === "string"
+  );
+}
+
 /**
  * Copy filePath into a new backup entry before it is mutated.
  * Returns the backup dir path, or "" if the file doesn't exist.
@@ -56,11 +66,14 @@ export function backupFile(
     writeFileSync(join(dir, "meta.json"), JSON.stringify(meta, null, 2));
     copyFileSync(filePath, join(dir, "file"));
 
-    try {
-      pruneOldBackups(claudeHome);
-    } catch {
-      // non-fatal
-    }
+    // Prune fire-and-forget — deferred so it never adds to caller latency
+    setImmediate(() => {
+      try {
+        pruneOldBackups(claudeHome);
+      } catch {
+        // non-fatal
+      }
+    });
 
     return dir;
   } catch {
@@ -80,7 +93,9 @@ export function listBackups(claudeHome: string): BackupEntry[] {
       const metaPath = join(dir, id, "meta.json");
       if (!existsSync(metaPath)) continue;
       try {
-        const meta = JSON.parse(readFileSync(metaPath, "utf-8")) as BackupMeta;
+        const parsed: unknown = JSON.parse(readFileSync(metaPath, "utf-8"));
+        if (!isBackupMeta(parsed)) continue;
+        const meta = parsed;
         entries.push({
           id,
           timestamp: new Date(meta.timestamp),
@@ -107,12 +122,23 @@ export function pruneOldBackups(claudeHome: string): void {
 
   try {
     for (const id of readdirSync(dir)) {
-      const metaPath = join(dir, id, "meta.json");
-      if (!existsSync(metaPath)) continue;
+      const entryDir = join(dir, id);
+      const metaPath = join(entryDir, "meta.json");
+      if (!existsSync(metaPath)) {
+        // Corrupted entry (no meta.json) — always remove
+        try {
+          rmSync(entryDir, { recursive: true });
+        } catch {
+          /* ignore */
+        }
+        continue;
+      }
       try {
-        const meta = JSON.parse(readFileSync(metaPath, "utf-8")) as BackupMeta;
+        const parsed: unknown = JSON.parse(readFileSync(metaPath, "utf-8"));
+        if (!isBackupMeta(parsed)) continue;
+        const meta = parsed;
         if (new Date(meta.timestamp).getTime() < cutoff) {
-          rmSync(join(dir, id), { recursive: true });
+          rmSync(entryDir, { recursive: true });
         }
       } catch {
         // skip unreadable
@@ -129,7 +155,14 @@ export function pruneOldBackups(claudeHome: string): void {
  */
 export function restoreBackup(backupDir: string, claudeHome: string): void {
   const metaPath = join(backupDir, "meta.json");
-  const meta = JSON.parse(readFileSync(metaPath, "utf-8")) as BackupMeta;
+  if (!existsSync(metaPath)) {
+    throw new Error(`Backup is corrupted — missing meta.json: ${backupDir}`);
+  }
+  const parsed: unknown = JSON.parse(readFileSync(metaPath, "utf-8"));
+  if (!isBackupMeta(parsed)) {
+    throw new Error(`Backup is corrupted — invalid meta.json: ${backupDir}`);
+  }
+  const meta = parsed;
 
   // Back up current state first
   backupFile(meta.originalPath, "update", claudeHome);
@@ -139,5 +172,9 @@ export function restoreBackup(backupDir: string, claudeHome: string): void {
     mkdirSync(parentDir, { recursive: true });
   }
 
-  copyFileSync(join(backupDir, "file"), meta.originalPath);
+  const backupFilePath = join(backupDir, "file");
+  if (!existsSync(backupFilePath)) {
+    throw new Error(`Backup is corrupted — missing file: ${backupDir}`);
+  }
+  copyFileSync(backupFilePath, meta.originalPath);
 }

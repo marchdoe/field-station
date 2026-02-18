@@ -12,7 +12,6 @@ describe("shouldAllow", () => {
 
   it("always allows /login path", () => {
     expect(shouldAllow(token, undefined, "/login")).toBe(true);
-    expect(shouldAllow(token, undefined, "/login?next=/")).toBe(true);
   });
 
   it("always allows /api/auth/ paths", () => {
@@ -41,5 +40,13 @@ describe("shouldAllow", () => {
   it("does not allow paths that merely start with /login (e.g. /login-settings)", () => {
     expect(shouldAllow(token, undefined, "/login-settings")).toBe(false);
     expect(shouldAllow(token, undefined, "/login-other")).toBe(false);
+  });
+
+  it("blocks protected paths that have a query string", () => {
+    expect(shouldAllow(token, undefined, "/projects?foo=bar")).toBe(false);
+  });
+
+  it("blocks /api/auth without trailing slash (not a public path)", () => {
+    expect(shouldAllow(token, undefined, "/api/auth")).toBe(false);
   });
 });

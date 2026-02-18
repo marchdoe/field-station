@@ -84,11 +84,14 @@ function LoginPage() {
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-danger" role="alert">
-              {error}
-            </p>
-          )}
+          <p
+            className="text-sm text-danger min-h-[1.25rem]"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
+            {error ?? ""}
+          </p>
 
           <button
             type="submit"

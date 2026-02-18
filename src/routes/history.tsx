@@ -81,6 +81,7 @@ function HistoryPage() {
   const router = useRouter();
   const [restoring, setRestoring] = useState<BackupEntry | null>(null);
   const [busy, setBusy] = useState(false);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
 
   const groups = groupByDay(backups);
 
@@ -89,8 +90,11 @@ function HistoryPage() {
     setBusy(true);
     try {
       await restoreBackupFn({ data: { backupId: restoring.id } });
+      setRestoreError(null);
       setRestoring(null);
       await router.invalidate();
+    } catch (err) {
+      setRestoreError(err instanceof Error ? err.message : "Restore failed. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -162,12 +166,15 @@ function HistoryPage() {
         title="Restore this version?"
         message={
           restoring
-            ? `Restore ${displayPath(restoring.originalPath)} to its state from ${formatTime(restoring.timestamp)}? The current file will be backed up first.`
+            ? `Restore ${displayPath(restoring.originalPath)} to its state from ${formatTime(restoring.timestamp)}? The current file will be backed up first.${restoreError ? `\n\nError: ${restoreError}` : ""}`
             : ""
         }
         confirmLabel={busy ? "Restoring…" : "Restore"}
         onConfirm={handleRestore}
-        onCancel={() => setRestoring(null)}
+        onCancel={() => {
+          setRestoring(null);
+          setRestoreError(null);
+        }}
       />
     </AppShell>
   );

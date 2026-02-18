@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
 import { Route as GlobalIndexRouteImport } from './routes/global/index'
@@ -42,6 +43,11 @@ import { Route as ProjectsProjectIdCommandsFolderCommandNameRouteImport } from '
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -198,6 +204,7 @@ const ProjectsProjectIdCommandsFolderCommandNameRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
   '/global/agents': typeof GlobalAgentsRouteRouteWithChildren
   '/global/commands': typeof GlobalCommandsRouteRouteWithChildren
@@ -229,6 +236,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
   '/global/features': typeof GlobalFeaturesRoute
   '/global/hooks': typeof GlobalHooksRoute
@@ -254,6 +262,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/setup': typeof SetupRoute
   '/global/agents': typeof GlobalAgentsRouteRouteWithChildren
   '/global/commands': typeof GlobalCommandsRouteRouteWithChildren
@@ -287,6 +296,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/setup'
     | '/global/agents'
     | '/global/commands'
@@ -318,6 +328,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
     | '/setup'
     | '/global/features'
     | '/global/hooks'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/login'
     | '/setup'
     | '/global/agents'
     | '/global/commands'
@@ -374,6 +386,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
   SetupRoute: typeof SetupRoute
   GlobalAgentsRouteRoute: typeof GlobalAgentsRouteRouteWithChildren
   GlobalCommandsRouteRoute: typeof GlobalCommandsRouteRouteWithChildren
@@ -394,6 +407,13 @@ declare module '@tanstack/react-router' {
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -712,6 +732,7 @@ const ProjectsProjectIdRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
   SetupRoute: SetupRoute,
   GlobalAgentsRouteRoute: GlobalAgentsRouteRouteWithChildren,
   GlobalCommandsRouteRoute: GlobalCommandsRouteRouteWithChildren,

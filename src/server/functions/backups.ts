@@ -1,8 +1,8 @@
 import { join } from "node:path";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { resolveClaudeHome } from "../lib/claude-home.js";
 import { listBackups, restoreBackup } from "../lib/backup.js";
+import { resolveClaudeHome } from "../lib/claude-home.js";
 import { assertSafePath } from "../lib/safe-path.js";
 
 export const getBackups = createServerFn({ method: "GET" }).handler(async () => {
@@ -17,7 +17,10 @@ export const getBackups = createServerFn({ method: "GET" }).handler(async () => 
 });
 
 const restoreBackupInput = z.object({
-  backupId: z.string().min(1).regex(/^[a-zA-Z0-9-]+$/, "Invalid backup ID format"),
+  backupId: z
+    .string()
+    .min(1)
+    .regex(/^[a-zA-Z0-9-]+$/, "Invalid backup ID format"),
 });
 
 export const restoreBackupFn = createServerFn({ method: "POST" })

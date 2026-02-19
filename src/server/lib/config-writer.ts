@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import type { ConfigLayerSource, JsonObject, JsonValue } from "@/types/config.js";
 import { writeFileAtomic } from "./atomic-write.js";
+import { backupFile } from "./backup.js";
 import { resolveClaudeHome } from "./claude-home.js";
 import { deleteAtPath, getAtPath, setAtPath } from "./json-path.js";
 
@@ -39,17 +40,21 @@ export function resolveLayerPath(layer: ConfigLayerSource, projectPath?: string)
 }
 
 export function applyUpdateSetting(filePath: string, keyPath: string, value: JsonValue): void {
+  const claudeHome = resolveClaudeHome();
   const current = readJsonFileSafe(filePath);
   const updated = setAtPath(current, keyPath, value);
+  backupFile(filePath, "update", claudeHome);
   writeJsonFileSafe(filePath, updated);
 }
 
 export function applyDeleteSetting(filePath: string, keyPath: string): void {
+  const claudeHome = resolveClaudeHome();
   if (!existsSync(filePath)) {
     throw new Error(`File does not exist: ${filePath}`);
   }
   const current = readJsonFileSafe(filePath);
   const updated = deleteAtPath(current, keyPath);
+  backupFile(filePath, "delete", claudeHome);
   writeJsonFileSafe(filePath, updated);
 }
 
@@ -60,6 +65,9 @@ export function applyMoveSetting(fromPath: string, toPath: string, keyPath: stri
     throw new Error(`Key "${keyPath}" not found in source file`);
   }
   const toData = readJsonFileSafe(toPath);
+  const claudeHome = resolveClaudeHome();
+  backupFile(fromPath, "move", claudeHome);
+  backupFile(toPath, "move", claudeHome);
   writeJsonFileSafe(toPath, setAtPath(toData, keyPath, value));
   writeJsonFileSafe(fromPath, deleteAtPath(fromData, keyPath));
 }

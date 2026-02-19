@@ -3,6 +3,7 @@ import {
   Bot,
   FolderOpen,
   Globe,
+  History,
   LayoutDashboard,
   Puzzle,
   Radio,
@@ -162,6 +163,11 @@ export default function Sidebar({ onClose }: SidebarProps) {
               <p className="px-3 py-2 text-xs text-text-muted">No projects registered</p>
             )}
           </div>
+        </div>
+
+        {/* History — de-emphasized, separated from main nav */}
+        <div className="mt-4 pt-4 border-t border-border-muted">
+          <NavLink item={{ label: "History", to: "/history", icon: <History size={16} /> }} />
         </div>
       </nav>
     </aside>

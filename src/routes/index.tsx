@@ -1,5 +1,5 @@
 import { createFileRoute, getRouteApi, Link } from "@tanstack/react-router";
-import { FolderOpen, Radio, Settings } from "lucide-react";
+import { FolderOpen, History, Radio, Settings } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell.js";
 import type { ProjectInfo } from "@/types/config.js";
 
@@ -63,6 +63,17 @@ function DashboardPage() {
               <ProjectCard key={project.encodedPath} project={project} />
             ))}
           </div>
+        </div>
+
+        {/* Change history — muted, rarely needed */}
+        <div className="pt-4 border-t border-border-muted">
+          <Link
+            to="/history"
+            className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-secondary transition-colors"
+          >
+            <History className="w-3.5 h-3.5" />
+            Change history
+          </Link>
         </div>
       </div>
     </AppShell>

@@ -2,6 +2,8 @@ import { existsSync, mkdirSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
 import matter from "gray-matter";
 import { writeFileAtomic } from "./atomic-write.js";
+import { backupFile } from "./backup.js";
+import { resolveClaudeHome } from "./claude-home.js";
 import { isUserOwned } from "./ownership.js";
 
 export type ResourceType = "agent" | "command" | "skill";
@@ -62,6 +64,7 @@ export function updateResourceFile(
   if (!isUserOwned(filePath)) {
     throw new Error(`Path is not user-owned: ${filePath}`);
   }
+  backupFile(filePath, "update", resolveClaudeHome());
   writeFileAtomic(filePath, serializeMarkdown(frontmatter, body));
 }
 
@@ -72,5 +75,6 @@ export function deleteResourceFile(filePath: string): void {
   if (!isUserOwned(filePath)) {
     throw new Error(`Path is not user-owned: ${filePath}`);
   }
+  backupFile(filePath, "delete", resolveClaudeHome());
   unlinkSync(filePath);
 }

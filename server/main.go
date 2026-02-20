@@ -1,21 +1,23 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
+
+	"fieldstation/api"
+	"fieldstation/lib"
 )
 
 func main() {
+	claudeHome := lib.ResolveClaudeHome()
+
+	handler := api.NewHandler(claudeHome)
+	strictHandler := api.NewStrictHandler(handler, nil)
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, `{"status":"ok"}`)
-	})
+	api.HandlerFromMux(strictHandler, mux)
 
 	addr := ":3457"
 	log.Printf("field-station listening on %s", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
-		log.Fatal(err)
-	}
+	log.Fatal(http.ListenAndServe(addr, mux))
 }

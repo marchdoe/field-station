@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -38,6 +39,10 @@ type backupMeta struct {
 }
 
 const retentionDuration = 30 * 24 * time.Hour
+
+// pruneMu ensures only one PruneOldBackups call runs at a time, preventing
+// concurrent os.RemoveAll calls on the same backup directories.
+var pruneMu sync.Mutex
 
 // parseTimestamp parses a timestamp string in RFC3339Nano or RFC3339 format.
 func parseTimestamp(s string) (time.Time, error) {
@@ -103,6 +108,8 @@ func BackupFile(filePath string, operation BackupOperation, claudeHome string) s
 	}
 	// Prune asynchronously — does not add latency to the caller
 	go func() {
+		pruneMu.Lock()
+		defer pruneMu.Unlock()
 		PruneOldBackups(claudeHome)
 	}()
 	return result
@@ -250,9 +257,14 @@ func RestoreBackup(backupDir string, claudeHome string) error {
 		return fmt.Errorf("backup is corrupted — missing file: %s", backupDir)
 	}
 
-	if err := copyFile(backupFilePath, meta.OriginalPath); err != nil {
+	// Read the backup file content
+	fileData, err := os.ReadFile(backupFilePath)
+	if err != nil {
+		return fmt.Errorf("cannot read backup file: %w", err)
+	}
+	// Write atomically to the original path
+	if err := WriteFileAtomic(meta.OriginalPath, fileData); err != nil {
 		return fmt.Errorf("cannot restore file: %w", err)
 	}
-
 	return nil
 }

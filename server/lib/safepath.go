@@ -26,6 +26,9 @@ func DecodePath(encoded string) (string, error) {
 	if strings.HasPrefix(encoded, "-") {
 		withoutLeadingDash = encoded[1:]
 	}
+	if withoutLeadingDash == "" {
+		return "", fmt.Errorf("cannot decode path: decoded to empty string")
+	}
 	return "/" + strings.ReplaceAll(withoutLeadingDash, "-", "/"), nil
 }
 

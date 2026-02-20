@@ -31,12 +31,16 @@ lint:
 	npm run check
 	cd server && go vet ./...
 
-# Regenerate code from openapi.yaml (will be wired up in Task 2.1)
+# Regenerate code from openapi.yaml
 generate:
-	@echo "openapi.yaml not yet written — run after Task 2.1"
+	cd server && go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen \
+		--config api/oapi-codegen.yaml \
+		../server/openapi.yaml
 
 # Verify generated files are up to date (for CI)
-generate-check: generate
+generate-check:
+	@$(MAKE) generate
+	@git diff --exit-code server/api/generated.go || (echo "generated.go is out of date — run make generate" && exit 1)
 
 clean:
 	rm -f field-station

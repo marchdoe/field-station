@@ -68,8 +68,7 @@ func RedactSensitiveValues(obj JsonObject) JsonObject {
 
 		// Sensitive key with a string value.
 		if isSensitiveKey(key) {
-			if strVal, ok := value.(string); ok {
-				_ = strVal
+			if _, ok := value.(string); ok {
 				result[key] = redacted
 				continue
 			}

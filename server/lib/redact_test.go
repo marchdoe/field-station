@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"fieldstation/lib"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRedactSensitiveValues_ApiKey(t *testing.T) {
@@ -212,6 +213,27 @@ func TestRedactSensitiveValues_SensitiveValuePatterns(t *testing.T) {
 			t.Errorf("expected %s value to be redacted, got %q", tc.name, result["someKey"])
 		}
 	}
+}
+
+func TestRedactSensitiveValues_PrimitivesPassThrough(t *testing.T) {
+	// Numbers, booleans, and nil under non-secret keys must pass through unchanged.
+	input := lib.JsonObject{
+		"count":   42,
+		"enabled": true,
+		"missing": nil,
+	}
+	result := lib.RedactSensitiveValues(input)
+	assert.Equal(t, 42, result["count"])
+	assert.Equal(t, true, result["enabled"])
+	assert.Nil(t, result["missing"])
+}
+
+func TestRedactSensitiveValues_NilMap(t *testing.T) {
+	// A nil JsonObject is a valid Go value; ranging over it is a no-op.
+	var nilMap lib.JsonObject
+	result := lib.RedactSensitiveValues(nilMap)
+	assert.NotNil(t, result)
+	assert.Empty(t, result)
 }
 
 func TestRedactSensitiveValues_NilInput(t *testing.T) {

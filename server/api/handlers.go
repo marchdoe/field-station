@@ -23,36 +23,6 @@ func write501(w http.ResponseWriter) error {
 
 // --- 501 stub response types (one per operation) ---
 
-type getAgents501Response struct{}
-
-func (getAgents501Response) VisitGetAgentsResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type createAgent501Response struct{}
-
-func (createAgent501Response) VisitCreateAgentResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type deleteAgent501Response struct{}
-
-func (deleteAgent501Response) VisitDeleteAgentResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type getAgent501Response struct{}
-
-func (getAgent501Response) VisitGetAgentResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type updateAgent501Response struct{}
-
-func (updateAgent501Response) VisitUpdateAgentResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
 type login501Response struct{}
 
 func (login501Response) VisitLoginResponse(w http.ResponseWriter) error {
@@ -74,36 +44,6 @@ func (getBackups501Response) VisitGetBackupsResponse(w http.ResponseWriter) erro
 type restoreBackup501Response struct{}
 
 func (restoreBackup501Response) VisitRestoreBackupResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type getCommands501Response struct{}
-
-func (getCommands501Response) VisitGetCommandsResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type createCommand501Response struct{}
-
-func (createCommand501Response) VisitCreateCommandResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type deleteCommand501Response struct{}
-
-func (deleteCommand501Response) VisitDeleteCommandResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type getCommand501Response struct{}
-
-func (getCommand501Response) VisitGetCommandResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type updateCommand501Response struct{}
-
-func (updateCommand501Response) VisitUpdateCommandResponse(w http.ResponseWriter) error {
 	return write501(w)
 }
 
@@ -161,36 +101,6 @@ func (search501Response) VisitSearchResponse(w http.ResponseWriter) error {
 	return write501(w)
 }
 
-type getSkills501Response struct{}
-
-func (getSkills501Response) VisitGetSkillsResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type createSkill501Response struct{}
-
-func (createSkill501Response) VisitCreateSkillResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type deleteSkill501Response struct{}
-
-func (deleteSkill501Response) VisitDeleteSkillResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type getSkill501Response struct{}
-
-func (getSkill501Response) VisitGetSkillResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type updateSkill501Response struct{}
-
-func (updateSkill501Response) VisitUpdateSkillResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
 type watch501Response struct{}
 
 func (watch501Response) VisitWatchResponse(w http.ResponseWriter) error {
@@ -202,31 +112,6 @@ func (watch501Response) VisitWatchResponse(w http.ResponseWriter) error {
 // GetHealth returns server health status.
 func (h *FieldStationHandler) GetHealth(ctx context.Context, request GetHealthRequestObject) (GetHealthResponseObject, error) {
 	return GetHealth200JSONResponse{Status: "ok"}, nil
-}
-
-// GetAgents is not yet implemented.
-func (h *FieldStationHandler) GetAgents(ctx context.Context, request GetAgentsRequestObject) (GetAgentsResponseObject, error) {
-	return getAgents501Response{}, nil
-}
-
-// CreateAgent is not yet implemented.
-func (h *FieldStationHandler) CreateAgent(ctx context.Context, request CreateAgentRequestObject) (CreateAgentResponseObject, error) {
-	return createAgent501Response{}, nil
-}
-
-// DeleteAgent is not yet implemented.
-func (h *FieldStationHandler) DeleteAgent(ctx context.Context, request DeleteAgentRequestObject) (DeleteAgentResponseObject, error) {
-	return deleteAgent501Response{}, nil
-}
-
-// GetAgent is not yet implemented.
-func (h *FieldStationHandler) GetAgent(ctx context.Context, request GetAgentRequestObject) (GetAgentResponseObject, error) {
-	return getAgent501Response{}, nil
-}
-
-// UpdateAgent is not yet implemented.
-func (h *FieldStationHandler) UpdateAgent(ctx context.Context, request UpdateAgentRequestObject) (UpdateAgentResponseObject, error) {
-	return updateAgent501Response{}, nil
 }
 
 // Login is not yet implemented.
@@ -247,31 +132,6 @@ func (h *FieldStationHandler) GetBackups(ctx context.Context, request GetBackups
 // RestoreBackup is not yet implemented.
 func (h *FieldStationHandler) RestoreBackup(ctx context.Context, request RestoreBackupRequestObject) (RestoreBackupResponseObject, error) {
 	return restoreBackup501Response{}, nil
-}
-
-// GetCommands is not yet implemented.
-func (h *FieldStationHandler) GetCommands(ctx context.Context, request GetCommandsRequestObject) (GetCommandsResponseObject, error) {
-	return getCommands501Response{}, nil
-}
-
-// CreateCommand is not yet implemented.
-func (h *FieldStationHandler) CreateCommand(ctx context.Context, request CreateCommandRequestObject) (CreateCommandResponseObject, error) {
-	return createCommand501Response{}, nil
-}
-
-// DeleteCommand is not yet implemented.
-func (h *FieldStationHandler) DeleteCommand(ctx context.Context, request DeleteCommandRequestObject) (DeleteCommandResponseObject, error) {
-	return deleteCommand501Response{}, nil
-}
-
-// GetCommand is not yet implemented.
-func (h *FieldStationHandler) GetCommand(ctx context.Context, request GetCommandRequestObject) (GetCommandResponseObject, error) {
-	return getCommand501Response{}, nil
-}
-
-// UpdateCommand is not yet implemented.
-func (h *FieldStationHandler) UpdateCommand(ctx context.Context, request UpdateCommandRequestObject) (UpdateCommandResponseObject, error) {
-	return updateCommand501Response{}, nil
 }
 
 // GetFeatures is not yet implemented.
@@ -317,31 +177,6 @@ func (h *FieldStationHandler) GetProjects(ctx context.Context, request GetProjec
 // Search is not yet implemented.
 func (h *FieldStationHandler) Search(ctx context.Context, request SearchRequestObject) (SearchResponseObject, error) {
 	return search501Response{}, nil
-}
-
-// GetSkills is not yet implemented.
-func (h *FieldStationHandler) GetSkills(ctx context.Context, request GetSkillsRequestObject) (GetSkillsResponseObject, error) {
-	return getSkills501Response{}, nil
-}
-
-// CreateSkill is not yet implemented.
-func (h *FieldStationHandler) CreateSkill(ctx context.Context, request CreateSkillRequestObject) (CreateSkillResponseObject, error) {
-	return createSkill501Response{}, nil
-}
-
-// DeleteSkill is not yet implemented.
-func (h *FieldStationHandler) DeleteSkill(ctx context.Context, request DeleteSkillRequestObject) (DeleteSkillResponseObject, error) {
-	return deleteSkill501Response{}, nil
-}
-
-// GetSkill is not yet implemented.
-func (h *FieldStationHandler) GetSkill(ctx context.Context, request GetSkillRequestObject) (GetSkillResponseObject, error) {
-	return getSkill501Response{}, nil
-}
-
-// UpdateSkill is not yet implemented.
-func (h *FieldStationHandler) UpdateSkill(ctx context.Context, request UpdateSkillRequestObject) (UpdateSkillResponseObject, error) {
-	return updateSkill501Response{}, nil
 }
 
 // Watch is not yet implemented.

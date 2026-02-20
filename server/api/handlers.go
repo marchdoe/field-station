@@ -107,30 +107,6 @@ func (updateCommand501Response) VisitUpdateCommandResponse(w http.ResponseWriter
 	return write501(w)
 }
 
-type getConfig501Response struct{}
-
-func (getConfig501Response) VisitGetConfigResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type deleteConfigSetting501Response struct{}
-
-func (deleteConfigSetting501Response) VisitDeleteConfigSettingResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type updateConfigSetting501Response struct{}
-
-func (updateConfigSetting501Response) VisitUpdateConfigSettingResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
-type moveConfigSetting501Response struct{}
-
-func (moveConfigSetting501Response) VisitMoveConfigSettingResponse(w http.ResponseWriter) error {
-	return write501(w)
-}
-
 type getFeatures501Response struct{}
 
 func (getFeatures501Response) VisitGetFeaturesResponse(w http.ResponseWriter) error {

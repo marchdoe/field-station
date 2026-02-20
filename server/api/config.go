@@ -87,8 +87,9 @@ func (h *FieldStationHandler) DeleteConfigSetting(ctx context.Context, request D
 }
 
 // MoveConfigSetting moves a setting between the global and global-local settings files.
-// direction "up" promotes a setting from settings.json to settings.local.json.
-// direction "down" demotes a setting from settings.local.json to settings.json.
+// "up" promotes a setting to the higher-precedence layer (settings.json → settings.local.json,
+// since local overrides base). "down" demotes a setting to the lower-precedence layer
+// (settings.local.json → settings.json).
 func (h *FieldStationHandler) MoveConfigSetting(ctx context.Context, request MoveConfigSettingRequestObject) (MoveConfigSettingResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")

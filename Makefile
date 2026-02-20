@@ -1,4 +1,4 @@
-.PHONY: dev dev-server dev-frontend build test lint generate generate-check clean build-frontend build-server
+.PHONY: dev dev-server dev-frontend build test lint generate generate-ts generate-check clean build-frontend build-server
 
 # Start Go backend + Vite frontend (requires two terminals or a process manager)
 dev:
@@ -36,6 +36,10 @@ generate:
 	cd server && go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen \
 		--config api/oapi-codegen.yaml \
 		../server/openapi.yaml
+
+# Regenerate TypeScript types from openapi.yaml
+generate-ts:
+	npx openapi-typescript server/openapi.yaml -o src/lib/api-types.ts
 
 # Verify generated files are up to date (for CI)
 generate-check:

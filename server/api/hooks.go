@@ -34,6 +34,16 @@ var hookEvents = []string{
 	"SubagentStop",
 }
 
+// validHookEvent reports whether event is one of the recognised hook event names.
+func validHookEvent(event string) bool {
+	for _, e := range hookEvents {
+		if e == event {
+			return true
+		}
+	}
+	return false
+}
+
 // settingsHooksPath returns the path to the settings.json used for hooks.
 // If scope is "project" and projectPath is non-empty, returns the project
 // settings path; otherwise returns the global settings path.
@@ -125,6 +135,10 @@ func (h *FieldStationHandler) GetHooks(ctx context.Context, request GetHooksRequ
 	if request.Params.ProjectPath != nil && *request.Params.ProjectPath != "" {
 		projectPath := *request.Params.ProjectPath
 		projectSettingsPath := filepath.Join(projectPath, ".claude", "settings.json")
+		allowedRoots := []string{h.claudeHome, projectPath}
+		if _, err := lib.AssertSafePath(projectSettingsPath, allowedRoots); err != nil {
+			return nil, fmt.Errorf("invalid project path: %w", err)
+		}
 		projectHooks := readHooksByEvent(projectSettingsPath)
 		projectByEvent := hooksByEventToAPIType(projectHooks)
 		resp.Project = &HookScope{
@@ -189,6 +203,10 @@ func (h *FieldStationHandler) CreateHook(ctx context.Context, request CreateHook
 		return nil, fmt.Errorf("projectPath is required for project scope")
 	}
 
+	if !validHookEvent(body.Event) {
+		return nil, fmt.Errorf("invalid hook event: %q", body.Event)
+	}
+
 	allowedRoots := []string{h.claudeHome}
 	if projectPath != "" {
 		allowedRoots = append(allowedRoots, projectPath)
@@ -239,6 +257,10 @@ func (h *FieldStationHandler) UpdateHook(ctx context.Context, request UpdateHook
 
 	if body.Scope == UpdateHookRequestScopeProject && projectPath == "" {
 		return nil, fmt.Errorf("projectPath is required for project scope")
+	}
+
+	if !validHookEvent(body.Event) {
+		return nil, fmt.Errorf("invalid hook event: %q", body.Event)
 	}
 
 	allowedRoots := []string{h.claudeHome}

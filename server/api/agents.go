@@ -134,6 +134,15 @@ func (h *FieldStationHandler) CreateAgent(ctx context.Context, request CreateAge
 		return nil, err
 	}
 
+	// Validate path safety before write.
+	createAllowedRoots := []string{h.claudeHome}
+	if body.ProjectPath != nil {
+		createAllowedRoots = append(createAllowedRoots, *body.ProjectPath)
+	}
+	if _, err := lib.AssertSafePath(agentDir, createAllowedRoots); err != nil {
+		return nil, err
+	}
+
 	// Build markdown content from the incoming body + optional frontmatter fields.
 	fm := lib.FrontmatterDoc{
 		Frontmatter: map[string]any{},
@@ -174,13 +183,12 @@ func (h *FieldStationHandler) UpdateAgent(ctx context.Context, request UpdateAge
 
 	// Validate path safety before write.
 	filePath := filepath.Join(agentDir, request.Name+".md")
-	if _, err := lib.AssertSafePath(filePath, []string{h.claudeHome}); err != nil {
-		// For project scope the allowed root is the project dir, not claudeHome;
-		// allow any abs path that was resolved from a valid scope + projectPath.
-		// The resolveAgentDir validation above already ensures projectPath is non-empty.
-		if body.ProjectPath == nil {
-			return nil, err
-		}
+	allowedRoots := []string{h.claudeHome}
+	if body.ProjectPath != nil {
+		allowedRoots = append(allowedRoots, *body.ProjectPath)
+	}
+	if _, err := lib.AssertSafePath(filePath, allowedRoots); err != nil {
+		return nil, err
 	}
 
 	fm := lib.FrontmatterDoc{

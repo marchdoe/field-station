@@ -1,37 +1,42 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Lock, Zap } from "lucide-react";
+import { Link } from "react-router";
 import { FileCard } from "@/components/files/FileCard.js";
 import { FileList } from "@/components/files/FileList.js";
 import { AppShell } from "@/components/layout/AppShell.js";
 import { ResourceListPage } from "@/components/resources/ResourceListPage.js";
-import { listSkills } from "@/server/functions/skills.js";
+import * as api from "@/lib/api.js";
 
-export const Route = createFileRoute("/global/skills/")({
-  head: () => ({ meta: [{ title: "Skills - Field Station" }] }),
-  loader: async () => {
-    const skills = await listSkills({ data: { scope: "global" } });
-    return { skills };
-  },
-  component: GlobalSkillsPage,
-  pendingComponent: () => (
-    <AppShell title="Global Skills">
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-text-muted">Loading skills...</div>
-      </div>
-    </AppShell>
-  ),
-  errorComponent: ({ error }) => (
-    <AppShell title="Global Skills">
-      <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-        <p className="text-danger font-medium">Failed to load skills</p>
-        <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-      </div>
-    </AppShell>
-  ),
-});
+export function GlobalSkillsPage() {
+  const {
+    data: skills = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["skills", "global"],
+    queryFn: () => api.getSkills("global"),
+  });
 
-function GlobalSkillsPage() {
-  const { skills } = Route.useLoaderData();
+  if (isLoading) {
+    return (
+      <AppShell title="Global Skills">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-pulse text-text-muted">Loading skills...</div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppShell title="Global Skills">
+        <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
+          <p className="text-danger font-medium">Failed to load skills</p>
+          <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell title="Global Skills">
@@ -53,8 +58,7 @@ function GlobalSkillsPage() {
           {skills.map((skill) => (
             <Link
               key={skill.folderName}
-              to="/global/skills/$skillName"
-              params={{ skillName: skill.folderName }}
+              to={`/global/skills/${skill.folderName}`}
               className="block"
             >
               <FileCard
@@ -63,7 +67,6 @@ function GlobalSkillsPage() {
                 fileName={`${skill.folderName}/SKILL.md`}
                 variant="skill"
                 meta={{
-                  ...(skill.allowedTools ? { "allowed-tools": skill.allowedTools } : {}),
                   ...(!skill.isEditable ? { source: "plugin" } : {}),
                 }}
                 preview={skill.bodyPreview}

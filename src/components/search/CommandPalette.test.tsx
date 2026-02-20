@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { SearchResult } from "@/types/config.js";
+import type { SearchResult } from "@/lib/api.js";
 import { CommandPalette } from "./CommandPalette.js";
 
 // jsdom doesn't implement showModal/close — polyfill them
@@ -14,89 +16,114 @@ HTMLDialogElement.prototype.close = vi.fn(function (this: HTMLDialogElement) {
 });
 
 // Use vi.hoisted to create mocks before vi.mock hoisting
-const { mockNavigate, mockSearchAll } = vi.hoisted(() => ({
+const { mockNavigate, mockSearch } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
-  mockSearchAll: vi.fn(),
+  mockSearch: vi.fn(),
 }));
 
-// Mock TanStack Router
-vi.mock("@tanstack/react-router", () => ({
-  useRouter: () => ({ navigate: mockNavigate }),
-}));
+// Mock react-router useNavigate
+vi.mock("react-router", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-router")>();
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
-// Mock searchAll server function
-vi.mock("@/server/functions/search.js", () => ({
-  searchAll: mockSearchAll,
+// Mock api search function
+vi.mock("@/lib/api.js", () => ({
+  search: mockSearch,
 }));
 
 function makeResult(overrides: Partial<SearchResult> = {}): SearchResult {
   return {
     type: "agent",
-    title: "Test Agent",
+    name: "Test Agent",
     description: "A test agent",
-    href: "/global/agents/test",
-    matchText: "test agent",
-    icon: "Bot",
-    scope: "global",
+    filePath: "/home/user/.claude/agents/test.md",
+    preview: "test agent preview",
     ...overrides,
   };
 }
 
+function renderWithProviders(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>{ui}</MemoryRouter>
+    </QueryClientProvider>,
+  );
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
-  mockSearchAll.mockResolvedValue([]);
+  mockSearch.mockResolvedValue([]);
 });
 
 describe("CommandPalette", () => {
   it("does not show content when closed", () => {
-    render(<CommandPalette open={false} onClose={vi.fn()} />);
+    renderWithProviders(<CommandPalette open={false} onClose={vi.fn()} />);
     const dialog = document.querySelector("dialog");
     expect(dialog?.hasAttribute("open")).toBe(false);
   });
 
-  it("calls searchAll on open", async () => {
-    render(<CommandPalette open={true} onClose={vi.fn()} />);
-    await waitFor(() => expect(mockSearchAll).toHaveBeenCalledTimes(1));
+  it("calls search on open", async () => {
+    renderWithProviders(<CommandPalette open={true} onClose={vi.fn()} />);
+    await waitFor(() => expect(mockSearch).toHaveBeenCalled());
   });
 
   it("shows loading state initially", () => {
-    mockSearchAll.mockReturnValue(new Promise(() => {}));
-    render(<CommandPalette open={true} onClose={vi.fn()} />);
+    mockSearch.mockReturnValue(new Promise(() => {}));
+    renderWithProviders(<CommandPalette open={true} onClose={vi.fn()} />);
     expect(screen.getByText("Loading...")).toBeDefined();
   });
 
   it("renders results after loading", async () => {
-    mockSearchAll.mockResolvedValue([makeResult({ title: "My Agent" })]);
-    render(<CommandPalette open={true} onClose={vi.fn()} />);
+    mockSearch.mockResolvedValue([makeResult({ name: "My Agent" })]);
+    renderWithProviders(<CommandPalette open={true} onClose={vi.fn()} />);
     await waitFor(() => expect(screen.getByText("My Agent")).toBeDefined());
   });
 
   it("filters results by search query", async () => {
-    mockSearchAll.mockResolvedValue([
-      makeResult({ title: "Alpha Agent", matchText: "alpha agent" }),
+    // First call (empty query) returns Alpha and Beta
+    mockSearch.mockResolvedValueOnce([
+      makeResult({ name: "Alpha Agent", preview: "alpha agent" }),
       makeResult({
-        title: "Beta Agent",
-        matchText: "beta agent",
-        href: "/global/agents/beta",
+        name: "Beta Agent",
+        preview: "beta agent",
+        filePath: "/home/user/.claude/agents/beta.md",
       }),
     ]);
-    render(<CommandPalette open={true} onClose={vi.fn()} />);
+    // Second call (query "alpha") returns only Alpha
+    mockSearch.mockResolvedValueOnce([makeResult({ name: "Alpha Agent", preview: "alpha agent" })]);
+
+    renderWithProviders(<CommandPalette open={true} onClose={vi.fn()} />);
     await waitFor(() => screen.getByText("Alpha Agent"));
 
     const input = screen.getByRole("combobox");
     fireEvent.change(input, { target: { value: "alpha" } });
-    expect(screen.getByText("Alpha Agent")).toBeDefined();
-    expect(screen.queryByText("Beta Agent")).toBeNull();
+
+    await waitFor(() => {
+      expect(screen.getByText("Alpha Agent")).toBeDefined();
+      expect(screen.queryByText("Beta Agent")).toBeNull();
+    });
   });
 
   it("shows no results message for unmatched query", async () => {
-    mockSearchAll.mockResolvedValue([
-      makeResult({ title: "Alpha Agent", matchText: "alpha agent" }),
-    ]);
-    render(<CommandPalette open={true} onClose={vi.fn()} />);
+    // First call (empty query) returns Alpha
+    mockSearch.mockResolvedValueOnce([makeResult({ name: "Alpha Agent", preview: "alpha agent" })]);
+    // Second call (unmatched query) returns empty
+    mockSearch.mockResolvedValueOnce([]);
+
+    renderWithProviders(<CommandPalette open={true} onClose={vi.fn()} />);
     await waitFor(() => screen.getByText("Alpha Agent"));
 
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "zzznomatch" } });
-    expect(screen.getByText("No results found")).toBeDefined();
+
+    await waitFor(() => {
+      expect(screen.getByText("No results found")).toBeDefined();
+    });
   });
 });

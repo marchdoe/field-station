@@ -1,13 +1,21 @@
-import { Link, useRouter } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, FileText, Lock, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router";
 import { ResourceEditor } from "@/components/config/ResourceEditor.js";
 import { CodeViewer } from "@/components/files/CodeViewer.js";
 import { MarkdownViewer } from "@/components/files/MarkdownViewer.js";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog.js";
 import { useToast } from "@/components/ui/Toast.js";
 import { ViewToggle } from "@/components/ui/ViewToggle.js";
-import { deleteResource, updateResource } from "@/server/functions/resource-mutations.js";
+import {
+  deleteAgent,
+  deleteCommand,
+  deleteSkill,
+  updateAgent,
+  updateCommand,
+  updateSkill,
+} from "@/lib/api.js";
 
 interface Badge {
   label: string;
@@ -17,6 +25,8 @@ interface Badge {
 
 interface ResourceDetailPageProps {
   resourceType: "agent" | "command" | "skill";
+  scope: "global" | "project";
+  projectPath?: string;
   resource: {
     name: string;
     displayName: string;
@@ -24,13 +34,14 @@ interface ResourceDetailPageProps {
     isEditable: boolean;
     body: string;
     description?: string;
+    folder?: string;
   };
   icon: React.ReactNode;
   iconBgClass: string;
   frontmatter: Record<string, string>;
   badges?: Badge[];
-  backLink: { label: string; to: string; params?: Record<string, string> };
-  deleteNavigate: { to: string; params?: Record<string, string> };
+  backLink: { label: string; to: string };
+  deleteNavigate: { to: string };
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -41,6 +52,8 @@ const TYPE_LABELS: Record<string, string> = {
 
 export function ResourceDetailPage({
   resourceType,
+  scope,
+  projectPath,
   resource,
   icon,
   iconBgClass,
@@ -49,7 +62,8 @@ export function ResourceDetailPage({
   backLink,
   deleteNavigate,
 }: ResourceDetailPageProps) {
-  const router = useRouter();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [view, setView] = useState<"structured" | "raw">("structured");
   const [editing, setEditing] = useState(false);
@@ -61,12 +75,31 @@ export function ResourceDetailPage({
   const handleSave = async (frontmatter: Record<string, string>, body: string) => {
     setSaving(true);
     try {
-      await updateResource({
-        data: { filePath: resource.filePath, frontmatter, body },
-      });
+      if (resourceType === "agent") {
+        await updateAgent(resource.name, {
+          scope,
+          body,
+          description: frontmatter.description,
+          tools: frontmatter.tools,
+          color: frontmatter.color,
+          ...(projectPath ? { projectPath } : {}),
+        });
+      } else if (resourceType === "command") {
+        const folder = resource.folder ?? "";
+        await updateCommand(scope, folder, resource.name, {
+          body,
+          ...(projectPath ? { projectPath } : {}),
+        });
+      } else if (resourceType === "skill") {
+        await updateSkill(scope, resource.name, {
+          body,
+          description: frontmatter.description,
+          ...(projectPath ? { projectPath } : {}),
+        });
+      }
       toast(`${typeLabel} updated successfully`);
       setEditing(false);
-      router.invalidate();
+      await queryClient.invalidateQueries();
     } catch (e) {
       toast((e as Error).message, "error");
     } finally {
@@ -77,9 +110,17 @@ export function ResourceDetailPage({
   const handleDelete = async () => {
     setSaving(true);
     try {
-      await deleteResource({ data: { filePath: resource.filePath } });
+      if (resourceType === "agent") {
+        await deleteAgent(resource.name, scope, projectPath);
+      } else if (resourceType === "command") {
+        const folder = resource.folder ?? "";
+        await deleteCommand(scope, folder, resource.name, projectPath);
+      } else if (resourceType === "skill") {
+        await deleteSkill(scope, resource.name, projectPath);
+      }
       toast(`${typeLabel} deleted`);
-      router.navigate({ to: deleteNavigate.to, params: deleteNavigate.params });
+      await queryClient.invalidateQueries();
+      navigate(deleteNavigate.to);
     } catch (e) {
       toast((e as Error).message, "error");
     } finally {
@@ -92,7 +133,6 @@ export function ResourceDetailPage({
     <div className="space-y-6">
       <Link
         to={backLink.to}
-        params={backLink.params}
         className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-text-primary transition-colors"
       >
         <ArrowLeft className="w-3.5 h-3.5" />

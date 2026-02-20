@@ -1,41 +1,26 @@
-import { useRouter } from "@tanstack/react-router";
-import {
-  Bot,
-  type LucideIcon,
-  Puzzle,
-  Search,
-  Settings,
-  Sparkles,
-  Terminal,
-  Webhook,
-  Zap,
-} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Bot, type LucideIcon, Search, Terminal, Webhook, Zap } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { searchAll } from "@/server/functions/search.js";
-import type { SearchResult } from "@/types/config.js";
+import { useNavigate } from "react-router";
+import type { SearchResult } from "@/lib/api.js";
+import * as api from "@/lib/api.js";
 
-const TYPE_ORDER = ["agent", "command", "skill", "settings-key", "feature", "hook", "plugin"];
+const TYPE_ORDER = ["agent", "command", "skill", "hook"];
 
 const TYPE_LABELS: Record<string, string> = {
   agent: "Agents",
   command: "Commands",
   skill: "Skills",
-  "settings-key": "Settings",
-  feature: "Features",
   hook: "Hooks",
-  plugin: "Plugins",
 };
 
 const MAX_PER_GROUP = 8;
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  Bot,
-  Terminal,
-  Zap,
-  Sparkles,
-  Puzzle,
-  Webhook,
-  Settings,
+  agent: Bot,
+  command: Terminal,
+  skill: Zap,
+  hook: Webhook,
 };
 
 interface CommandPaletteProps {
@@ -43,16 +28,53 @@ interface CommandPaletteProps {
   onClose: () => void;
 }
 
+function computeHref(result: SearchResult): string {
+  const filePath = result.filePath;
+  const parts = filePath.split("/");
+
+  if (result.type === "agent") {
+    const fileName = parts[parts.length - 1] ?? "";
+    const agentName = fileName.replace(/\.md$/, "");
+    return `/global/agents/${agentName}`;
+  }
+
+  if (result.type === "command") {
+    // filePath structure: ...commands/{folder}/{name}.md
+    const fileName = parts[parts.length - 1] ?? "";
+    const folder = parts[parts.length - 2] ?? "";
+    const name = fileName.replace(/\.md$/, "");
+    return `/global/commands/${folder}/${name}`;
+  }
+
+  if (result.type === "skill") {
+    // filePath: ...skills/{folderName}/SKILL.md
+    const folderName = parts[parts.length - 2] ?? "";
+    return `/global/skills/${folderName}`;
+  }
+
+  if (result.type === "hook") {
+    return "/global/hooks";
+  }
+
+  return "/";
+}
+
 export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
-  const router = useRouter();
+  const navigate = useNavigate();
 
-  const [allResults, setAllResults] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // Fetch all results once when open; filter client-side
+  const { data: allResults = [], isLoading: loading } = useQuery({
+    queryKey: ["search"],
+    queryFn: () => api.search(""),
+    enabled: open,
+    staleTime: 30_000,
+  });
 
   // Open / close dialog following ConfirmDialog pattern
   useEffect(() => {
@@ -68,32 +90,32 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     }
   }, [open]);
 
-  // On open: fetch data, reset state, auto-focus input
+  // On open: reset state, auto-focus input
   useEffect(() => {
     if (!open) return;
     setQuery("");
     setSelectedIndex(0);
-    setLoading(true);
-    searchAll().then((results) => {
-      setAllResults(results);
-      setLoading(false);
-    });
     // Auto-focus the input after dialog opens
     requestAnimationFrame(() => {
       inputRef.current?.focus();
     });
   }, [open]);
 
-  // Filter and group results
+  // Filter and group results client-side
   const filtered = useMemo(() => {
     if (!query) return allResults;
     const lower = query.toLowerCase();
-    const matches = allResults.filter((r) => r.matchText.includes(lower));
-    // Rank: title matches above non-title matches
+    const matches = allResults.filter(
+      (r) =>
+        r.name.toLowerCase().includes(lower) ||
+        (r.description ?? "").toLowerCase().includes(lower) ||
+        r.preview.toLowerCase().includes(lower),
+    );
+    // Rank: name matches above non-name matches
     matches.sort((a, b) => {
-      const aTitle = a.title.toLowerCase().includes(lower) ? 0 : 1;
-      const bTitle = b.title.toLowerCase().includes(lower) ? 0 : 1;
-      return aTitle - bTitle;
+      const aName = a.name.toLowerCase().includes(lower) ? 0 : 1;
+      const bName = b.name.toLowerCase().includes(lower) ? 0 : 1;
+      return aName - bName;
     });
     return matches;
   }, [allResults, query]);
@@ -121,7 +143,8 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
   }, [selectedIndex]);
 
   function navigateToResult(result: SearchResult) {
-    router.navigate({ to: result.href });
+    const href = computeHref(result);
+    navigate(href);
     onClose();
   }
 
@@ -166,7 +189,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search agents, commands, skills, settings..."
+            placeholder="Search agents, commands, skills, hooks..."
             autoComplete="off"
             spellCheck={false}
             role="combobox"
@@ -175,7 +198,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
             aria-activedescendant={
               flatItems.length > 0 ? `command-palette-option-${selectedIndex}` : undefined
             }
-            aria-label="Search agents, commands, skills, settings"
+            aria-label="Search agents, commands, skills, hooks"
             className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none"
           />
           <kbd className="text-[10px] text-text-muted bg-surface-2 border border-border-default rounded px-1.5 py-0.5 font-mono">
@@ -208,11 +231,11 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                 {group.items.map((result) => {
                   flatIndex++;
                   const isSelected = flatIndex === selectedIndex;
-                  const IconComponent = ICON_MAP[result.icon];
+                  const IconComponent = ICON_MAP[result.type];
                   const currentFlatIndex = flatIndex;
                   return (
                     <button
-                      key={`${result.type}-${result.href}`}
+                      key={`${result.type}-${result.filePath}`}
                       type="button"
                       role="option"
                       id={`command-palette-option-${currentFlatIndex}`}
@@ -232,7 +255,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                         <Search className="w-4 h-4 shrink-0 text-text-muted" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">{result.title}</div>
+                        <div className="text-sm font-medium truncate">{result.name}</div>
                         {result.description && (
                           <div className="text-xs text-text-muted truncate">
                             {result.description}
@@ -240,9 +263,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                         )}
                       </div>
                       <span className="text-[10px] text-text-muted bg-surface-2 border border-border-default rounded px-1.5 py-0.5 shrink-0">
-                        {result.scope === "project" && result.projectName
-                          ? result.projectName
-                          : "global"}
+                        global
                       </span>
                     </button>
                   );

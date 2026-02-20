@@ -1,71 +1,10 @@
-import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
-import { ToastProvider } from "@/components/ui/Toast.js";
-import { getRegisteredProjects, scanForProjects } from "@/server/functions/projects.js";
-
-import appCss from "../styles.css?url";
-
-export const Route = createRootRoute({
-  loader: async () => {
-    const [registeredPaths, allProjects] = await Promise.all([
-      getRegisteredProjects(),
-      scanForProjects(),
-    ]);
-    const projects = allProjects.filter((p) => registeredPaths.includes(p.decodedPath));
-    return { projects, registeredPaths };
-  },
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Field Station" },
-    ],
-    links: [
-      { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },
-      { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
-      { rel: "manifest", href: "/manifest.json" },
-      { rel: "stylesheet", href: appCss },
-    ],
-  }),
-  shellComponent: RootDocument,
-  component: RootComponent,
-});
-
-function RootDocument({ children }: { children: React.ReactNode }) {
+export function NotFoundPage() {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <HeadContent />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                var theme = localStorage.getItem('field-station-theme') || 'system';
-                var resolved = theme;
-                if (theme === 'system') {
-                  resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                }
-                document.documentElement.classList.add(resolved);
-              })();
-            `,
-          }}
-        />
-      </head>
-      <body>
-        <a href="#main-content" className="skip-link">
-          Skip to content
-        </a>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
-
-function RootComponent() {
-  return (
-    <ToastProvider>
-      <Outlet />
-    </ToastProvider>
+    <div className="min-h-screen bg-surface-0 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-text-primary mb-2">Page not found</h1>
+        <p className="text-text-secondary">The page you&apos;re looking for doesn&apos;t exist.</p>
+      </div>
+    </div>
   );
 }

@@ -1,20 +1,29 @@
-import { createFileRoute, getRouteApi, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { FolderOpen, History, Radio, Settings } from "lucide-react";
+import { Link } from "react-router";
 import { AppShell } from "@/components/layout/AppShell.js";
-import type { ProjectInfo } from "@/types/config.js";
+import type { ProjectFile } from "@/lib/api.js";
+import * as api from "@/lib/api.js";
+import { encodePath, getProjectName } from "@/lib/utils.js";
 
-const rootApi = getRouteApi("__root__");
+export function DashboardPage() {
+  const { data: projects, isLoading } = useQuery({
+    queryKey: ["projects"],
+    queryFn: api.getProjects,
+  });
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [{ title: "Dashboard - Field Station" }],
-  }),
-  component: DashboardPage,
-});
+  if (isLoading) {
+    return (
+      <AppShell title="Dashboard">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-pulse text-text-muted">Loading...</div>
+        </div>
+      </AppShell>
+    );
+  }
 
-function DashboardPage() {
-  const { projects, registeredPaths } = rootApi.useLoaderData();
-  const needsSetup = registeredPaths.length === 0;
+  const projectList = projects ?? [];
+  const needsSetup = projectList.length === 0;
 
   if (needsSetup) {
     return (
@@ -50,7 +59,7 @@ function DashboardPage() {
 
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-text-primary">Registered Projects</h2>
+            <h2 className="text-lg font-semibold text-text-primary">Projects</h2>
             <Link
               to="/projects"
               className="text-sm text-accent hover:text-accent-hover transition-colors"
@@ -59,13 +68,12 @@ function DashboardPage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {projects.map((project) => (
-              <ProjectCard key={project.encodedPath} project={project} />
+            {projectList.map((project) => (
+              <ProjectCard key={project.path} project={project} />
             ))}
           </div>
         </div>
 
-        {/* Change history — muted, rarely needed */}
         <div className="pt-4 border-t border-border-muted">
           <Link
             to="/history"
@@ -80,33 +88,19 @@ function DashboardPage() {
   );
 }
 
-function ProjectCard({ project }: { project: ProjectInfo }) {
-  const name = project.decodedPath.split("/").filter(Boolean).pop() ?? project.decodedPath;
+function ProjectCard({ project }: { project: ProjectFile }) {
+  const name = getProjectName(project.path);
 
   return (
     <Link
-      to="/projects/$projectId"
-      params={{ projectId: project.encodedPath }}
+      to={`/projects/${encodePath(project.path)}`}
       className="bg-surface-1 border border-border-default rounded-xl p-4 hover:border-accent/40 transition-colors"
     >
       <div className="flex items-center gap-3 mb-2">
         <FolderOpen className="w-5 h-5 text-accent" />
         <h3 className="font-semibold text-text-primary truncate">{name}</h3>
       </div>
-      <p className="text-sm text-text-muted truncate mb-3">{project.decodedPath}</p>
-      <div className="flex gap-3 text-xs text-text-muted">
-        {project.hasClaudeMd && (
-          <span className="bg-surface-2 px-2 py-0.5 rounded-full">CLAUDE.md</span>
-        )}
-        {project.agentCount > 0 && (
-          <span className="bg-surface-2 px-2 py-0.5 rounded-full">{project.agentCount} agents</span>
-        )}
-        {project.commandCount > 0 && (
-          <span className="bg-surface-2 px-2 py-0.5 rounded-full">
-            {project.commandCount} commands
-          </span>
-        )}
-      </div>
+      <p className="text-sm text-text-muted truncate">{project.path}</p>
     </Link>
   );
 }

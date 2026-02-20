@@ -1,4 +1,4 @@
-import { getRouteApi, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   Bot,
   FolderOpen,
@@ -14,7 +14,9 @@ import {
   Webhook,
   X,
 } from "lucide-react";
-import { cn, getProjectName } from "@/lib/utils";
+import { Link, NavLink } from "react-router";
+import { getProjects } from "@/lib/api.js";
+import { cn, encodePath, getProjectName } from "@/lib/utils";
 
 interface NavItem {
   label: string;
@@ -42,17 +44,16 @@ const linkActiveClass = cn(
   "bg-accent-muted text-accent font-medium",
 );
 
-function NavLink({ item }: { item: NavItem }) {
+function SidebarNavLink({ item }: { item: NavItem }) {
   return (
-    <Link
+    <NavLink
       to={item.to}
-      className={linkBaseClass}
-      activeProps={{ className: linkActiveClass }}
-      activeOptions={{ exact: true }}
+      className={({ isActive }) => (isActive ? linkActiveClass : linkBaseClass)}
+      end
     >
       {item.icon}
       <span>{item.label}</span>
-    </Link>
+    </NavLink>
   );
 }
 
@@ -70,35 +71,34 @@ function TreeChild({ item, isLast }: { item: NavItem; isLast: boolean }) {
       {/* Horizontal branch */}
       <div className="absolute top-[17px] left-[19px] border-t-2 border-border-muted w-2.5" />
 
-      <Link
+      <NavLink
         to={item.to}
-        className={cn(
-          "flex items-center gap-2.5 rounded-lg py-1.5 pl-10 pr-3 text-sm transition-colors",
-          "text-text-secondary hover:text-text-primary hover:bg-surface-2",
-        )}
-        activeProps={{
-          className: cn(
-            "flex items-center gap-2.5 rounded-lg py-1.5 pl-10 pr-3 text-sm transition-colors",
-            "bg-accent-muted text-accent font-medium",
-          ),
-        }}
-        activeOptions={{ exact: true }}
+        className={({ isActive }) =>
+          isActive
+            ? cn(
+                "flex items-center gap-2.5 rounded-lg py-1.5 pl-10 pr-3 text-sm transition-colors",
+                "bg-accent-muted text-accent font-medium",
+              )
+            : cn(
+                "flex items-center gap-2.5 rounded-lg py-1.5 pl-10 pr-3 text-sm transition-colors",
+                "text-text-secondary hover:text-text-primary hover:bg-surface-2",
+              )
+        }
+        end
       >
         <span className="text-accent">{item.icon}</span>
         <span>{item.label}</span>
-      </Link>
+      </NavLink>
     </div>
   );
 }
-
-const rootRouteApi = getRouteApi("__root__");
 
 interface SidebarProps {
   onClose?: () => void;
 }
 
 export default function Sidebar({ onClose }: SidebarProps) {
-  const { projects } = rootRouteApi.useLoaderData();
+  const projects = useQuery({ queryKey: ["projects"], queryFn: getProjects });
 
   return (
     <aside className={cn("flex h-full w-60 flex-col border-r border-border-default bg-surface-1")}>
@@ -120,20 +120,21 @@ export default function Sidebar({ onClose }: SidebarProps) {
       <nav className="flex-1 overflow-y-auto p-3" aria-label="Main navigation">
         {/* Dashboard */}
         <div className="space-y-1">
-          <NavLink item={{ label: "Dashboard", to: "/", icon: <LayoutDashboard size={18} /> }} />
+          <SidebarNavLink
+            item={{ label: "Dashboard", to: "/", icon: <LayoutDashboard size={18} /> }}
+          />
         </div>
 
         {/* Global with tree children */}
         <div className="mt-4">
-          <Link
+          <NavLink
             to="/global"
-            className={linkBaseClass}
-            activeProps={{ className: linkActiveClass }}
-            activeOptions={{ exact: true }}
+            className={({ isActive }) => (isActive ? linkActiveClass : linkBaseClass)}
+            end
           >
             <Globe size={18} />
             <span>Global</span>
-          </Link>
+          </NavLink>
           <div className="mt-0.5">
             {globalChildren.map((item, i) => (
               <TreeChild key={item.to} item={item} isLast={i === globalChildren.length - 1} />
@@ -147,19 +148,17 @@ export default function Sidebar({ onClose }: SidebarProps) {
             Projects
           </div>
           <div className="space-y-0.5">
-            {projects.map((project) => (
+            {(projects.data ?? []).map((project) => (
               <Link
-                key={project.encodedPath}
-                to="/projects/$projectId"
-                params={{ projectId: project.encodedPath }}
+                key={project.path}
+                to={`/projects/${encodePath(project.path)}`}
                 className={linkBaseClass}
-                activeProps={{ className: linkActiveClass }}
               >
                 <FolderOpen size={16} />
-                <span className="truncate">{getProjectName(project.decodedPath)}</span>
+                <span className="truncate">{getProjectName(project.path)}</span>
               </Link>
             ))}
-            {projects.length === 0 && (
+            {(projects.data ?? []).length === 0 && (
               <p className="px-3 py-2 text-xs text-text-muted">No projects registered</p>
             )}
           </div>
@@ -167,7 +166,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
 
         {/* History — de-emphasized, separated from main nav */}
         <div className="mt-4 pt-4 border-t border-border-muted">
-          <NavLink item={{ label: "History", to: "/history", icon: <History size={16} /> }} />
+          <SidebarNavLink
+            item={{ label: "History", to: "/history", icon: <History size={16} /> }}
+          />
         </div>
       </nav>
     </aside>

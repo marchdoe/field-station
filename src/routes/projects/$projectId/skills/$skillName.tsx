@@ -1,40 +1,42 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Zap } from "lucide-react";
+import { useParams } from "react-router";
 import { ResourceDetailPage } from "@/components/resources/ResourceDetailPage.js";
+import * as api from "@/lib/api.js";
 import { decodePath } from "@/lib/utils.js";
-import { getSkill } from "@/server/functions/skills.js";
 
-export const Route = createFileRoute("/projects/$projectId/skills/$skillName")({
-  loader: async ({ params }) => {
-    const projectPath = decodePath(params.projectId);
-    const skill = await getSkill({
-      data: { scope: "project", projectPath, folderName: params.skillName },
-    });
-    return { skill, projectId: params.projectId };
-  },
-  head: ({ loaderData }) => ({
-    meta: [{ title: `${loaderData?.skill?.name ?? "Skill"} - Field Station` }],
-  }),
-  component: ProjectSkillDetailPage,
-  pendingComponent: () => (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-pulse text-text-muted">Loading skill...</div>
-    </div>
-  ),
-  errorComponent: ({ error }) => (
-    <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-      <p className="text-danger font-medium">Failed to load skill</p>
-      <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-    </div>
-  ),
-});
+export function ProjectSkillDetailPage() {
+  const { projectId, skillName } = useParams<{ projectId: string; skillName: string }>();
+  const projectPath = decodePath(projectId ?? "");
 
-function ProjectSkillDetailPage() {
-  const { skill, projectId } = Route.useLoaderData();
+  const { data: skill, isLoading } = useQuery({
+    queryKey: ["skill", "project", projectPath, skillName],
+    queryFn: () => api.getSkill("project", skillName ?? "", projectPath),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-pulse text-text-muted">Loading skill...</div>
+      </div>
+    );
+  }
+
+  if (!skill) {
+    return (
+      <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
+        <p className="text-danger font-medium">Skill not found</p>
+      </div>
+    );
+  }
+
+  const allowedTools = typeof skill.allowedTools === "string" ? skill.allowedTools : undefined;
 
   return (
     <ResourceDetailPage
       resourceType="skill"
+      scope="project"
+      projectPath={projectPath}
       resource={{
         name: skill.name,
         displayName: skill.name,
@@ -48,15 +50,14 @@ function ProjectSkillDetailPage() {
       frontmatter={{
         name: skill.name,
         description: skill.description,
-        ...(skill.allowedTools ? { "allowed-tools": skill.allowedTools } : {}),
+        ...(allowedTools ? { "allowed-tools": allowedTools } : {}),
       }}
-      badges={skill.allowedTools ? [{ label: "allowed-tools", value: skill.allowedTools }] : []}
+      badges={allowedTools ? [{ label: "allowed-tools", value: allowedTools }] : []}
       backLink={{
         label: "Back to skills",
-        to: "/projects/$projectId/skills",
-        params: { projectId },
+        to: `/projects/${projectId}/skills`,
       }}
-      deleteNavigate={{ to: "/projects/$projectId/skills", params: { projectId } }}
+      deleteNavigate={{ to: `/projects/${projectId}/skills` }}
     />
   );
 }

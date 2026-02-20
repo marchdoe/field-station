@@ -1,41 +1,52 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Bot } from "lucide-react";
+import { useParams } from "react-router";
 import { AppShell } from "@/components/layout/AppShell.js";
 import { ResourceDetailPage } from "@/components/resources/ResourceDetailPage.js";
-import { getAgent } from "@/server/functions/agents.js";
+import * as api from "@/lib/api.js";
 
-export const Route = createFileRoute("/global/agents/$agentName")({
-  loader: async ({ params }) => {
-    return getAgent({ data: { scope: "global", name: params.agentName } });
-  },
-  head: ({ loaderData }) => ({
-    meta: [{ title: `${loaderData?.name ?? "Agent"} - Field Station` }],
-  }),
-  component: GlobalAgentDetailPage,
-  pendingComponent: () => (
-    <AppShell title="Agent">
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-text-muted">Loading agent...</div>
-      </div>
-    </AppShell>
-  ),
-  errorComponent: ({ error }) => (
-    <AppShell title="Agent">
-      <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-        <p className="text-danger font-medium">Failed to load agent</p>
-        <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-      </div>
-    </AppShell>
-  ),
-});
+export function GlobalAgentDetailPage() {
+  const params = useParams();
+  const agentName = params.agentName ?? "";
 
-function GlobalAgentDetailPage() {
-  const agent = Route.useLoaderData();
+  const {
+    data: agent,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["agent", "global", agentName],
+    queryFn: () => api.getAgent(agentName, "global"),
+    enabled: agentName !== "",
+  });
+
+  if (isLoading) {
+    return (
+      <AppShell title="Agent">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-pulse text-text-muted">Loading agent...</div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error || !agent) {
+    return (
+      <AppShell title="Agent">
+        <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
+          <p className="text-danger font-medium">Failed to load agent</p>
+          <p className="text-text-muted text-sm mt-1">
+            {error ? (error as Error).message : "Agent not found"}
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell title={agent.name}>
       <ResourceDetailPage
         resourceType="agent"
+        scope="global"
         resource={{
           name: agent.name,
           displayName: agent.name,

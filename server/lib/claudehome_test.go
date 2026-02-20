@@ -11,7 +11,7 @@ import (
 )
 
 func TestResolveClaudeHome_Default(t *testing.T) {
-	os.Unsetenv("CLAUDE_HOME")
+	t.Setenv("CLAUDE_HOME", "")
 	home, err := os.UserHomeDir()
 	require.NoError(t, err)
 	assert.Equal(t, filepath.Join(home, ".claude"), lib.ResolveClaudeHome())

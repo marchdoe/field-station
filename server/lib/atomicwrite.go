@@ -9,7 +9,9 @@ import (
 )
 
 // WriteFileAtomic writes content to filePath atomically (write-to-temp, rename).
-// Ensures no partial writes are visible.
+// content is []byte (callers should convert strings with []byte(s)).
+// The file is written with permissions 0o644 regardless of the existing file's permissions.
+// Ensures no partial writes are visible to concurrent readers.
 func WriteFileAtomic(filePath string, content []byte) error {
 	dir := filepath.Dir(filePath)
 	b := make([]byte, 6)

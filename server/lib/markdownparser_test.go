@@ -1,6 +1,7 @@
 package lib_test
 
 import (
+	"strings"
 	"testing"
 
 	"fieldstation/lib"
@@ -87,6 +88,13 @@ func TestParseMarkdown_BodyTrimmedLeadingNewline(t *testing.T) {
 	assert.Equal(t, "Paragraph after blank line.", doc.Body)
 }
 
+func TestParseMarkdown_MalformedYAML(t *testing.T) {
+	// Malformed YAML in frontmatter should return an error (not silently fall back).
+	content := "---\n: invalid: yaml: [\n---\nBody."
+	_, err := lib.ParseMarkdownFrontmatter(content)
+	assert.Error(t, err, "malformed YAML should return an error")
+}
+
 func TestTruncateBody_ShortBody(t *testing.T) {
 	body := "line1\nline2\nline3"
 	result := lib.TruncateBody(body, 10)
@@ -98,14 +106,18 @@ func TestTruncateBody_LongBody(t *testing.T) {
 	for i := range lines {
 		lines[i] = "line"
 	}
-	body := "line\nline\nline\nline\nline\nline\nline\nline\nline\nline\nline\nline\nline\nline\nline"
+	body := strings.Join(lines, "\n")
 	result := lib.TruncateBody(body, 10)
 	assert.Equal(t, "line\nline\nline\nline\nline\nline\nline\nline\nline\nline\n...", result)
 }
 
-func TestTruncateBody_DefaultMaxLines(t *testing.T) {
-	// Default is 10 lines
+func TestTruncateBody_ExactLimit(t *testing.T) {
 	body := "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11"
 	result := lib.TruncateBody(body, 10)
 	assert.Equal(t, "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n...", result)
+}
+
+func TestTruncateBody_ZeroMaxLines(t *testing.T) {
+	result := lib.TruncateBody("line1\nline2", 0)
+	assert.Equal(t, "", result)
 }

@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"fmt"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -82,10 +83,7 @@ func ParseMarkdownFrontmatter(content string) (FrontmatterDoc, error) {
 		fm = map[string]any{}
 	} else {
 		if err := yaml.Unmarshal([]byte(yamlContent), &fm); err != nil {
-			return FrontmatterDoc{
-				Frontmatter: map[string]any{},
-				Body:        strings.TrimSpace(content),
-			}, nil
+			return FrontmatterDoc{}, fmt.Errorf("markdownparser: invalid YAML frontmatter: %w", err)
 		}
 		if fm == nil {
 			fm = map[string]any{}
@@ -122,7 +120,11 @@ func SerializeMarkdown(doc FrontmatterDoc) string {
 
 // TruncateBody truncates a markdown body to at most maxLines lines.
 // If the body has more lines than maxLines, it appends "..." on a new line.
+// If maxLines is 0 or negative, an empty string is returned.
 func TruncateBody(body string, maxLines int) string {
+	if maxLines <= 0 {
+		return ""
+	}
 	lines := strings.Split(body, "\n")
 	if len(lines) <= maxLines {
 		return body

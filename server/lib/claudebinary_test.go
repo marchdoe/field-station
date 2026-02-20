@@ -11,9 +11,7 @@ import (
 
 // TestLocateClaudeBinary_NotFound verifies that an empty PATH causes an error.
 func TestLocateClaudeBinary_NotFound(t *testing.T) {
-	orig := os.Getenv("PATH")
 	t.Setenv("PATH", "")
-	defer os.Setenv("PATH", orig)
 
 	path, err := lib.LocateClaudeBinary()
 	if err == nil {
@@ -32,9 +30,7 @@ func TestLocateClaudeBinary_FindsExecutable(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	orig := os.Getenv("PATH")
-	t.Setenv("PATH", dir+":"+orig)
-	defer os.Setenv("PATH", orig)
+	t.Setenv("PATH", dir+":"+os.Getenv("PATH"))
 
 	path, err := lib.LocateClaudeBinary()
 	if err != nil {
@@ -244,9 +240,7 @@ func TestScanClaudeBinary_ReturnsStruct(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	orig := os.Getenv("PATH")
-	t.Setenv("PATH", dir+":"+orig)
-	defer os.Setenv("PATH", orig)
+	t.Setenv("PATH", dir+":"+os.Getenv("PATH"))
 
 	result := lib.ScanClaudeBinary()
 
@@ -259,5 +253,25 @@ func TestScanClaudeBinary_ReturnsStruct(t *testing.T) {
 	// EnvVars should be a non-nil slice (possibly empty for the script).
 	if result.EnvVars == nil {
 		t.Error("expected non-nil EnvVars slice")
+	}
+}
+
+// TestScanClaudeBinary_NoBinaryOnPath verifies zero-value result when claude is absent.
+func TestScanClaudeBinary_NoBinaryOnPath(t *testing.T) {
+	t.Setenv("PATH", "")
+
+	result := lib.ScanClaudeBinary()
+
+	if result.Version != nil {
+		t.Errorf("expected nil Version when binary not found, got %q", *result.Version)
+	}
+	if result.BinaryPath != nil {
+		t.Errorf("expected nil BinaryPath when binary not found, got %q", *result.BinaryPath)
+	}
+	if result.EnvVars == nil {
+		t.Error("expected non-nil EnvVars slice (empty)")
+	}
+	if len(result.EnvVars) != 0 {
+		t.Errorf("expected empty EnvVars, got %v", result.EnvVars)
 	}
 }

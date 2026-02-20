@@ -2,6 +2,7 @@ package lib
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -42,22 +43,14 @@ func LocateClaudeBinary() (string, error) {
 
 // GetClaudeVersion runs <binaryPath> --version and parses the version string.
 // Returns an error if the binary fails or the output does not start with a version number.
+// Times out after 3 seconds (matching the TypeScript 3000ms limit).
 func GetClaudeVersion(binaryPath string) (string, error) {
-	cmd := exec.Command(binaryPath, "--version") //nolint:gosec
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, binaryPath, "--version") //nolint:gosec
 	cmd.Env = os.Environ()
 
-	// Timeout matching TypeScript's 3000ms.
-	done := make(chan struct{})
-	go func() {
-		select {
-		case <-time.After(3 * time.Second):
-			_ = cmd.Process.Kill()
-		case <-done:
-		}
-	}()
-
 	out, err := cmd.Output()
-	close(done)
 	if err != nil {
 		return "", fmt.Errorf("running %s --version: %w", binaryPath, err)
 	}
@@ -70,32 +63,37 @@ func GetClaudeVersion(binaryPath string) (string, error) {
 	return m[1], nil
 }
 
+// maxBinaryScanSize caps the binary size read into memory when scanning for env vars.
+// Mirrors the TypeScript maxBuffer: 10 * 1024 * 1024.
+const maxBinaryScanSize = 10 * 1024 * 1024
+
 // ScanBinaryForEnvVars reads a binary file and extracts strings that look like
 // environment variable names with the CLAUDE_CODE_ or DISABLE_ prefix.
-// It deduplicates and sorts the results.
+// Returns an error if the file exceeds 10MB. Deduplicates and sorts the results.
 func ScanBinaryForEnvVars(binaryPath string) ([]string, error) {
+	info, err := os.Stat(binaryPath) // #nosec G304 — caller controls path
+	if err != nil {
+		return nil, fmt.Errorf("statting binary %s: %w", binaryPath, err)
+	}
+	if info.Size() > maxBinaryScanSize {
+		return nil, fmt.Errorf("binary %s exceeds maximum scan size (%d bytes)", binaryPath, maxBinaryScanSize)
+	}
+
 	data, err := os.ReadFile(binaryPath) // #nosec G304 — caller controls path
 	if err != nil {
 		return nil, fmt.Errorf("reading binary %s: %w", binaryPath, err)
 	}
 
 	seen := map[string]struct{}{}
-	// Split on null bytes and other common string terminators (space, newline, tab, carriage return).
+	// Split on null bytes and common string terminators (space, newline, tab, CR).
+	// envVarPrefixPattern subsumes the general envVarPattern check, so only one match is needed.
 	for _, token := range bytes.FieldsFunc(data, func(r rune) bool {
 		return r == 0 || r == '\n' || r == '\r' || r == '\t' || r == ' '
 	}) {
 		s := string(token)
-		// Must match the full env var pattern first (all-caps, min length 2 after first char → min 2 total
-		// but TypeScript also requires at least one extra char after the leading [A-Z], so min 2 chars.
-		// The grep pattern requires at least one char after the prefix, so effective minimum is >len(prefix).
-		// We check envVarPattern for valid characters, then envVarPrefixPattern for the required prefix.
-		if !envVarPattern.MatchString(s) {
-			continue
+		if envVarPrefixPattern.MatchString(s) {
+			seen[s] = struct{}{}
 		}
-		if !envVarPrefixPattern.MatchString(s) {
-			continue
-		}
-		seen[s] = struct{}{}
 	}
 
 	result := make([]string, 0, len(seen))
@@ -116,32 +114,21 @@ type BinaryScanResult struct {
 // ScanClaudeBinary locates the claude binary, gets its version, and scans for env vars.
 // Fields are nil/empty if the binary is not found or operations fail.
 func ScanClaudeBinary() BinaryScanResult {
-	version, err := func() (string, error) {
-		bin, err := LocateClaudeBinary()
-		if err != nil {
-			return "", err
-		}
-		return GetClaudeVersion(bin)
-	}()
+	result := BinaryScanResult{EnvVars: []string{}}
 
-	binaryPath, _ := LocateClaudeBinary()
+	binaryPath, err := LocateClaudeBinary()
+	if err != nil {
+		return result
+	}
+	result.BinaryPath = &binaryPath
 
-	var envVars []string
-	if binaryPath != "" {
-		envVars, _ = ScanBinaryForEnvVars(binaryPath)
-	}
-	if envVars == nil {
-		envVars = []string{}
-	}
-
-	result := BinaryScanResult{
-		EnvVars: envVars,
-	}
-	if binaryPath != "" {
-		result.BinaryPath = &binaryPath
-	}
-	if err == nil && version != "" {
+	if version, err := GetClaudeVersion(binaryPath); err == nil && version != "" {
 		result.Version = &version
 	}
+
+	if envVars, err := ScanBinaryForEnvVars(binaryPath); err == nil {
+		result.EnvVars = envVars
+	}
+
 	return result
 }

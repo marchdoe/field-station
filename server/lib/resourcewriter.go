@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -26,6 +27,18 @@ type ResourceFile struct {
 	Frontmatter map[string]any // parsed frontmatter
 	Body        string         // markdown body (no frontmatter)
 	FilePath    string         // absolute filesystem path
+}
+
+// validateResourceID rejects IDs that could be used for path traversal.
+// An ID must not contain path separators ('/', '\') or dot-dot sequences.
+func validateResourceID(id string) error {
+	if id == "" {
+		return fmt.Errorf("resourcewriter: resource id must not be empty")
+	}
+	if strings.Contains(id, "/") || strings.Contains(id, "\\") || strings.Contains(id, "..") {
+		return fmt.Errorf("resourcewriter: invalid resource id %q", id)
+	}
+	return nil
 }
 
 // ResolveResourceDir returns the directory where resources of the given type
@@ -124,12 +137,15 @@ func ListResources(resourceType ResourceType, claudeHome string) ([]ResourceFile
 // GetResource retrieves a single resource by its ID (filename without .md).
 // Returns an error if the file does not exist.
 func GetResource(resourceType ResourceType, id string, claudeHome string) (ResourceFile, error) {
+	if err := validateResourceID(id); err != nil {
+		return ResourceFile{}, err
+	}
 	dir := ResolveResourceDir(resourceType, claudeHome)
 	filePath := filepath.Join(dir, id+".md")
 
 	if _, err := os.Stat(filePath); err != nil {
-		if os.IsNotExist(err) {
-			return ResourceFile{}, fmt.Errorf("resourcewriter: resource not found: %s", filePath)
+		if errors.Is(err, os.ErrNotExist) {
+			return ResourceFile{}, fmt.Errorf("resourcewriter: resource not found: %w", err)
 		}
 		return ResourceFile{}, fmt.Errorf("resourcewriter: cannot stat %s: %w", filePath, err)
 	}
@@ -139,20 +155,34 @@ func GetResource(resourceType ResourceType, id string, claudeHome string) (Resou
 
 // CreateResource creates a new resource file with the given content. Returns
 // an error if the file already exists. Creates the parent directory if needed.
+// Uses O_EXCL for atomic create-or-fail to avoid TOCTOU races.
 func CreateResource(resourceType ResourceType, id string, content string, claudeHome string) (ResourceFile, error) {
+	if err := validateResourceID(id); err != nil {
+		return ResourceFile{}, err
+	}
 	dir := ResolveResourceDir(resourceType, claudeHome)
 	filePath := filepath.Join(dir, id+".md")
-
-	if _, err := os.Stat(filePath); err == nil {
-		return ResourceFile{}, fmt.Errorf("resourcewriter: resource already exists: %s", filePath)
-	}
 
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return ResourceFile{}, fmt.Errorf("resourcewriter: cannot create directory %s: %w", dir, err)
 	}
 
-	if err := WriteFileAtomic(filePath, []byte(content)); err != nil {
-		return ResourceFile{}, fmt.Errorf("resourcewriter: cannot write %s: %w", filePath, err)
+	// O_CREATE|O_EXCL atomically creates the file or fails if it already exists.
+	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
+	if err != nil {
+		if errors.Is(err, os.ErrExist) {
+			return ResourceFile{}, fmt.Errorf("resourcewriter: resource already exists: %s", id)
+		}
+		return ResourceFile{}, fmt.Errorf("resourcewriter: cannot create %s: %w", filePath, err)
+	}
+	if _, werr := f.WriteString(content); werr != nil {
+		f.Close()
+		os.Remove(filePath)
+		return ResourceFile{}, fmt.Errorf("resourcewriter: cannot write %s: %w", filePath, werr)
+	}
+	if err := f.Close(); err != nil {
+		os.Remove(filePath)
+		return ResourceFile{}, fmt.Errorf("resourcewriter: cannot close %s: %w", filePath, err)
 	}
 
 	return parseResourceFile(id, filePath)
@@ -161,12 +191,15 @@ func CreateResource(resourceType ResourceType, id string, content string, claude
 // UpdateResource updates an existing resource file. Backs up the file before
 // writing. Returns an error if the file does not exist.
 func UpdateResource(resourceType ResourceType, id string, content string, claudeHome string) (ResourceFile, error) {
+	if err := validateResourceID(id); err != nil {
+		return ResourceFile{}, err
+	}
 	dir := ResolveResourceDir(resourceType, claudeHome)
 	filePath := filepath.Join(dir, id+".md")
 
 	if _, err := os.Stat(filePath); err != nil {
-		if os.IsNotExist(err) {
-			return ResourceFile{}, fmt.Errorf("resourcewriter: resource not found: %s", filePath)
+		if errors.Is(err, os.ErrNotExist) {
+			return ResourceFile{}, fmt.Errorf("resourcewriter: resource not found: %w", err)
 		}
 		return ResourceFile{}, fmt.Errorf("resourcewriter: cannot stat %s: %w", filePath, err)
 	}
@@ -183,12 +216,15 @@ func UpdateResource(resourceType ResourceType, id string, content string, claude
 // DeleteResource deletes a resource file. Backs up the file before deleting.
 // Returns an error if the file does not exist.
 func DeleteResource(resourceType ResourceType, id string, claudeHome string) error {
+	if err := validateResourceID(id); err != nil {
+		return err
+	}
 	dir := ResolveResourceDir(resourceType, claudeHome)
 	filePath := filepath.Join(dir, id+".md")
 
 	if _, err := os.Stat(filePath); err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("resourcewriter: resource not found: %s", filePath)
+		if errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("resourcewriter: resource not found: %w", err)
 		}
 		return fmt.Errorf("resourcewriter: cannot stat %s: %w", filePath, err)
 	}

@@ -201,3 +201,40 @@ func TestDeleteResource_NotFound(t *testing.T) {
 	err := lib.DeleteResource(lib.ResourceTypeAgent, "ghost", claudeHome)
 	require.Error(t, err)
 }
+
+// Path traversal protection
+
+func TestGetResource_PathTraversal(t *testing.T) {
+	claudeHome := t.TempDir()
+	_, err := lib.GetResource(lib.ResourceTypeAgent, "../escape", claudeHome)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid resource id")
+}
+
+func TestCreateResource_PathTraversalDotDot(t *testing.T) {
+	claudeHome := t.TempDir()
+	_, err := lib.CreateResource(lib.ResourceTypeAgent, "../escape", "content", claudeHome)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid resource id")
+}
+
+func TestCreateResource_PathTraversalSlash(t *testing.T) {
+	claudeHome := t.TempDir()
+	_, err := lib.CreateResource(lib.ResourceTypeAgent, "sub/dir", "content", claudeHome)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid resource id")
+}
+
+func TestUpdateResource_PathTraversal(t *testing.T) {
+	claudeHome := t.TempDir()
+	_, err := lib.UpdateResource(lib.ResourceTypeAgent, "../../etc/evil", "bad", claudeHome)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid resource id")
+}
+
+func TestDeleteResource_PathTraversal(t *testing.T) {
+	claudeHome := t.TempDir()
+	err := lib.DeleteResource(lib.ResourceTypeAgent, "../escape", claudeHome)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid resource id")
+}

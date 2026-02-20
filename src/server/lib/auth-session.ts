@@ -13,6 +13,21 @@ export function createSession(token: string): string {
   return `${id}.${sign(id, token)}`;
 }
 
+const LOGIN_PATH = "/login";
+const AUTH_API_PREFIX = "/api/auth/";
+
+/** Pure auth gate logic — no framework dependencies. */
+export function shouldAllow(
+  configuredToken: string | undefined,
+  cookieValue: string | undefined,
+  pathname: string,
+): boolean {
+  if (!configuredToken) return true;
+  if (pathname === LOGIN_PATH || pathname.startsWith(AUTH_API_PREFIX)) return true;
+  if (!cookieValue) return false;
+  return verifySession(cookieValue, configuredToken);
+}
+
 /** Verify a session cookie value against the current token. Constant-time. */
 export function verifySession(cookieValue: string, token: string): boolean {
   const dotIndex = cookieValue.indexOf(".");

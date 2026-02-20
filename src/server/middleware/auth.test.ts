@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createSession } from "../lib/auth-session.js";
-import { shouldAllow } from "./auth.js";
+import { createSession, shouldAllow } from "../lib/auth-session.js";
 
 describe("shouldAllow", () => {
   const token = "test-token";

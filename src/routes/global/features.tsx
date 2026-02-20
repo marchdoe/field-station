@@ -4,8 +4,8 @@ import { useState } from "react";
 import { FeatureList } from "@/components/features/FeatureList.js";
 import { AppShell } from "@/components/layout/AppShell.js";
 import { useToast } from "@/components/ui/Toast.js";
+import type { Feature } from "@/lib/api.js";
 import * as api from "@/lib/api.js";
-import type { Feature } from "@/server/functions/features.js";
 
 export function GlobalFeaturesPage() {
   const queryClient = useQueryClient();

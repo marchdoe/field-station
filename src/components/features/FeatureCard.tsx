@@ -1,5 +1,5 @@
+import type { Feature } from "@/lib/api.js";
 import { cn } from "@/lib/utils";
-import type { Feature } from "@/server/functions/features.js";
 
 interface FeatureCardProps {
   feature: Feature;
@@ -27,7 +27,7 @@ function isEnabled(feature: Feature): boolean {
 export function FeatureCard({ feature, onToggle, onValueChange }: FeatureCardProps) {
   const { definition: def, isDocumented } = feature;
   const enabled = isEnabled(feature);
-  const hasOptions = def.options && def.options.length > 0;
+  const hasOptions = def.values && def.values.length > 0;
 
   return (
     <div
@@ -51,27 +51,13 @@ export function FeatureCard({ feature, onToggle, onValueChange }: FeatureCardPro
               onChange={(e) => onValueChange(def.key, e.target.value)}
               className="rounded-lg border border-border-default bg-surface-2 px-2 py-1 text-sm text-text-primary"
             >
-              <option value="">Default{def.defaultValue ? ` (${def.defaultValue})` : ""}</option>
-              {def.options?.map((opt) => (
+              <option value="">Default</option>
+              {def.values?.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
                 </option>
               ))}
             </select>
-          </>
-        ) : def.valueType === "number" ? (
-          <>
-            <label htmlFor={`feature-${def.key}`} className="sr-only">
-              {def.name} value
-            </label>
-            <input
-              id={`feature-${def.key}`}
-              type="number"
-              value={(feature.currentValue as string) ?? ""}
-              placeholder={def.defaultValue ?? ""}
-              onChange={(e) => onValueChange(def.key, e.target.value)}
-              className="w-24 rounded-lg border border-border-default bg-surface-2 px-2 py-1 text-sm text-text-primary"
-            />
           </>
         ) : (
           <button

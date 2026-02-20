@@ -1,11 +1,16 @@
-.PHONY: dev build test lint generate generate-check clean build-frontend build-server
+.PHONY: dev dev-server dev-frontend build test lint generate generate-check clean build-frontend build-server
 
 # Start Go backend + Vite frontend (requires two terminals or a process manager)
-# For now, document each individually
 dev:
-	@echo "Run in two terminals:"
-	@echo "  Terminal 1: cd server && go run ."
-	@echo "  Terminal 2: npm run dev"
+	@echo "Run in separate terminals:"
+	@echo "  make dev-server   (Go backend on :3457)"
+	@echo "  make dev-frontend (Vite on :3456)"
+
+dev-server:
+	cd server && go run .
+
+dev-frontend:
+	npm run dev
 
 # Build single binary (embeds Vite dist)
 build: build-frontend build-server

@@ -4,23 +4,24 @@ package lib
 type JsonObject = map[string]any
 
 // GetAtPath traverses obj following the dot-separated path and returns the value
-// at that location. Returns nil if any segment is missing or an intermediate
-// value is not a JsonObject.
-func GetAtPath(obj JsonObject, path string) any {
+// at that location. Returns (nil, false) if any segment is missing or an intermediate
+// value is not a JsonObject. Returns (nil, true) when the key is present with a JSON
+// null value, distinguishing it from the "key not found" case.
+func GetAtPath(obj JsonObject, path string) (any, bool) {
 	keys := splitPath(path)
 	var current any = obj
 	for _, key := range keys {
 		m, ok := current.(JsonObject)
 		if !ok {
-			return nil
+			return nil, false
 		}
 		val, exists := m[key]
 		if !exists {
-			return nil
+			return nil, false
 		}
 		current = val
 	}
-	return current
+	return current, true
 }
 
 // SetAtPath returns a new JsonObject with value placed at the dot-separated path.

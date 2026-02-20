@@ -9,7 +9,8 @@ import (
 
 func TestGetAtPath_TopLevel(t *testing.T) {
 	obj := lib.JsonObject{"foo": "bar"}
-	got := lib.GetAtPath(obj, "foo")
+	got, ok := lib.GetAtPath(obj, "foo")
+	assert.True(t, ok)
 	assert.Equal(t, "bar", got)
 }
 
@@ -21,19 +22,28 @@ func TestGetAtPath_DeepNested(t *testing.T) {
 			},
 		},
 	}
-	got := lib.GetAtPath(obj, "a.b.c")
+	got, ok := lib.GetAtPath(obj, "a.b.c")
+	assert.True(t, ok)
 	assert.Equal(t, 42, got)
 }
 
 func TestGetAtPath_MissingKey(t *testing.T) {
 	obj := lib.JsonObject{"a": 1}
-	got := lib.GetAtPath(obj, "b")
-	assert.Nil(t, got)
+	_, ok := lib.GetAtPath(obj, "b")
+	assert.False(t, ok)
 }
 
 func TestGetAtPath_IntermediateNonObject(t *testing.T) {
 	obj := lib.JsonObject{"a": "string-not-object"}
-	got := lib.GetAtPath(obj, "a.b")
+	_, ok := lib.GetAtPath(obj, "a.b")
+	assert.False(t, ok)
+}
+
+func TestGetAtPath_NullValue(t *testing.T) {
+	// JSON null (nil in Go) should be distinguishable from a missing key.
+	obj := lib.JsonObject{"key": nil}
+	got, ok := lib.GetAtPath(obj, "key")
+	assert.True(t, ok, "key is present even though value is null")
 	assert.Nil(t, got)
 }
 

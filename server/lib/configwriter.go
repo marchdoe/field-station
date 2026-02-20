@@ -86,8 +86,8 @@ func ApplyDeleteSetting(filePath string, keyPath string, claudeHome string) erro
 // Backs up both files before writing. Returns an error if keyPath is not found in fromPath.
 func ApplyMoveSetting(fromPath, toPath, keyPath string, claudeHome string) error {
 	fromData := ReadJsonFileSafe(fromPath)
-	value := GetAtPath(fromData, keyPath)
-	if value == nil {
+	value, ok := GetAtPath(fromData, keyPath)
+	if !ok {
 		return fmt.Errorf("key %q not found in source file", keyPath)
 	}
 	toData := ReadJsonFileSafe(toPath)

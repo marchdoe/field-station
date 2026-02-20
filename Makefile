@@ -7,7 +7,7 @@ dev:
 	@echo "  make dev-frontend (Vite on :3456)"
 
 dev-server:
-	cd server && go run .
+	cd server && FIELD_STATION_DEV=1 go run -tags dev .
 
 dev-frontend:
 	npm run dev
@@ -48,4 +48,4 @@ generate-check:
 
 clean:
 	rm -f field-station
-	rm -rf dist
+	rm -rf server/dist

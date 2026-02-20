@@ -7,6 +7,9 @@ import { defineConfig } from "vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
 const config = defineConfig({
+  build: {
+    outDir: "server/dist",
+  },
   server: {
     host: "localhost",
     port: 3456,

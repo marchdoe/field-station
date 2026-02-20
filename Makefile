@@ -33,7 +33,7 @@ lint:
 
 # Regenerate code from openapi.yaml
 generate:
-	cd server && go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen \
+	cd server && go run -tags dev github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen \
 		--config api/oapi-codegen.yaml \
 		../server/openapi.yaml
 

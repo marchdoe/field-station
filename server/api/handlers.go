@@ -298,26 +298,6 @@ func (h *FieldStationHandler) UpdateCommand(ctx context.Context, request UpdateC
 	return updateCommand501Response{}, nil
 }
 
-// GetConfig is not yet implemented.
-func (h *FieldStationHandler) GetConfig(ctx context.Context, request GetConfigRequestObject) (GetConfigResponseObject, error) {
-	return getConfig501Response{}, nil
-}
-
-// DeleteConfigSetting is not yet implemented.
-func (h *FieldStationHandler) DeleteConfigSetting(ctx context.Context, request DeleteConfigSettingRequestObject) (DeleteConfigSettingResponseObject, error) {
-	return deleteConfigSetting501Response{}, nil
-}
-
-// UpdateConfigSetting is not yet implemented.
-func (h *FieldStationHandler) UpdateConfigSetting(ctx context.Context, request UpdateConfigSettingRequestObject) (UpdateConfigSettingResponseObject, error) {
-	return updateConfigSetting501Response{}, nil
-}
-
-// MoveConfigSetting is not yet implemented.
-func (h *FieldStationHandler) MoveConfigSetting(ctx context.Context, request MoveConfigSettingRequestObject) (MoveConfigSettingResponseObject, error) {
-	return moveConfigSetting501Response{}, nil
-}
-
 // GetFeatures is not yet implemented.
 func (h *FieldStationHandler) GetFeatures(ctx context.Context, request GetFeaturesRequestObject) (GetFeaturesResponseObject, error) {
 	return getFeatures501Response{}, nil

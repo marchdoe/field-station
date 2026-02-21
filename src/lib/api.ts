@@ -36,9 +36,9 @@ async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
 }
 
 // Config
-export function getConfig(projectPath?: string): Promise<ConfigResponse> {
-  const url = projectPath
-    ? `/api/config?projectPath=${encodeURIComponent(projectPath)}`
+export function getConfig(projectId?: string): Promise<ConfigResponse> {
+  const url = projectId
+    ? `/api/config?projectId=${projectId}`
     : "/api/config";
   return apiFetch<ConfigResponse>(url);
 }
@@ -46,7 +46,7 @@ export function getConfig(projectPath?: string): Promise<ConfigResponse> {
 export function updateConfigSetting(params: {
   keyPath: string;
   value: unknown;
-  projectPath?: string;
+  projectId?: string;
 }): Promise<void> {
   // Go API expects keyPath as string array
   return apiFetch("/api/config/setting", {
@@ -55,21 +55,21 @@ export function updateConfigSetting(params: {
     body: JSON.stringify({
       keyPath: params.keyPath.split("."),
       value: params.value,
-      ...(params.projectPath ? { projectPath: params.projectPath } : {}),
+      ...(params.projectId ? { projectId: params.projectId } : {}),
     }),
   });
 }
 
 export function deleteConfigSetting(params: {
   keyPath: string;
-  projectPath?: string;
+  projectId?: string;
 }): Promise<void> {
   return apiFetch("/api/config/setting", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       keyPath: params.keyPath.split("."),
-      ...(params.projectPath ? { projectPath: params.projectPath } : {}),
+      ...(params.projectId ? { projectId: params.projectId } : {}),
     }),
   });
 }
@@ -90,19 +90,19 @@ export function moveConfigSetting(params: {
 }
 
 // Agents
-export function getAgents(scope: "global" | "project", projectPath?: string): Promise<AgentFile[]> {
+export function getAgents(scope: "global" | "project", projectId?: string): Promise<AgentFile[]> {
   const params = new URLSearchParams({ scope });
-  if (projectPath) params.set("projectPath", projectPath);
+  if (projectId) params.set("projectId", projectId);
   return apiFetch<AgentFile[]>(`/api/agents?${params}`);
 }
 
 export function getAgent(
   name: string,
   scope: "global" | "project",
-  projectPath?: string,
+  projectId?: string,
 ): Promise<AgentDetail> {
   const params = new URLSearchParams({ scope });
-  if (projectPath) params.set("projectPath", projectPath);
+  if (projectId) params.set("projectId", projectId);
   return apiFetch<AgentDetail>(`/api/agents/${encodeURIComponent(name)}?${params}`);
 }
 
@@ -128,22 +128,22 @@ export function updateAgent(
 export function deleteAgent(
   name: string,
   scope: "global" | "project",
-  projectPath?: string,
+  projectId?: string,
 ): Promise<void> {
   return apiFetch(`/api/agents/${encodeURIComponent(name)}`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ scope, ...(projectPath ? { projectPath } : {}) }),
+    body: JSON.stringify({ scope, ...(projectId ? { projectId } : {}) }),
   });
 }
 
 // Commands (Go API returns flat CommandFile[] — derive folders client-side)
 export function getCommands(
   scope: "global" | "project",
-  projectPath?: string,
+  projectId?: string,
 ): Promise<CommandFile[]> {
   const params = new URLSearchParams({ scope });
-  if (projectPath) params.set("projectPath", projectPath);
+  if (projectId) params.set("projectId", projectId);
   return apiFetch<CommandFile[]>(`/api/commands?${params}`);
 }
 
@@ -151,10 +151,10 @@ export function getCommand(
   scope: string,
   folder: string,
   name: string,
-  projectPath?: string,
+  projectId?: string,
 ): Promise<CommandDetail> {
   const params = new URLSearchParams();
-  if (projectPath) params.set("projectPath", projectPath);
+  if (projectId) params.set("projectId", projectId);
   const qs = params.toString();
   return apiFetch<CommandDetail>(
     `/api/commands/${encodeURIComponent(scope)}/${encodeURIComponent(folder)}/${encodeURIComponent(name)}${qs ? `?${qs}` : ""}`,
@@ -191,10 +191,10 @@ export function deleteCommand(
   scope: string,
   folder: string,
   name: string,
-  projectPath?: string,
+  projectId?: string,
 ): Promise<void> {
   const params = new URLSearchParams();
-  if (projectPath) params.set("projectPath", projectPath);
+  if (projectId) params.set("projectId", projectId);
   const qs = params.toString();
   return apiFetch(
     `/api/commands/${encodeURIComponent(scope)}/${encodeURIComponent(folder)}/${encodeURIComponent(name)}${qs ? `?${qs}` : ""}`,
@@ -203,15 +203,15 @@ export function deleteCommand(
 }
 
 // Skills
-export function getSkills(scope: "global" | "project", projectPath?: string): Promise<SkillFile[]> {
+export function getSkills(scope: "global" | "project", projectId?: string): Promise<SkillFile[]> {
   const params = new URLSearchParams({ scope });
-  if (projectPath) params.set("projectPath", projectPath);
+  if (projectId) params.set("projectId", projectId);
   return apiFetch<SkillFile[]>(`/api/skills?${params}`);
 }
 
-export function getSkill(scope: string, name: string, projectPath?: string): Promise<SkillDetail> {
+export function getSkill(scope: string, name: string, projectId?: string): Promise<SkillDetail> {
   const params = new URLSearchParams();
-  if (projectPath) params.set("projectPath", projectPath);
+  if (projectId) params.set("projectId", projectId);
   const qs = params.toString();
   return apiFetch<SkillDetail>(
     `/api/skills/${encodeURIComponent(scope)}/${encodeURIComponent(name)}${qs ? `?${qs}` : ""}`,
@@ -241,9 +241,9 @@ export function updateSkill(
   );
 }
 
-export function deleteSkill(scope: string, name: string, projectPath?: string): Promise<void> {
+export function deleteSkill(scope: string, name: string, projectId?: string): Promise<void> {
   const params = new URLSearchParams();
-  if (projectPath) params.set("projectPath", projectPath);
+  if (projectId) params.set("projectId", projectId);
   const qs = params.toString();
   return apiFetch(
     `/api/skills/${encodeURIComponent(scope)}/${encodeURIComponent(name)}${qs ? `?${qs}` : ""}`,
@@ -252,9 +252,9 @@ export function deleteSkill(scope: string, name: string, projectPath?: string): 
 }
 
 // Hooks
-export function getHooks(projectPath?: string): Promise<HooksResponse> {
-  const url = projectPath
-    ? `/api/hooks?projectPath=${encodeURIComponent(projectPath)}`
+export function getHooks(projectId?: string): Promise<HooksResponse> {
+  const url = projectId
+    ? `/api/hooks?projectId=${projectId}`
     : "/api/hooks";
   return apiFetch<HooksResponse>(url);
 }
@@ -299,9 +299,9 @@ export function getProjects(): Promise<ProjectFile[]> {
 }
 
 // Search
-export function search(q: string, projectPath?: string): Promise<SearchResult[]> {
+export function search(q: string, projectId?: string): Promise<SearchResult[]> {
   const params = new URLSearchParams({ q });
-  if (projectPath) params.set("projectPath", projectPath);
+  if (projectId) params.set("projectId", projectId);
   return apiFetch<SearchResult[]>(`/api/search?${params}`);
 }
 
@@ -310,11 +310,11 @@ export function createResource(data: {
   type: "agent" | "command" | "skill";
   name: string;
   folder?: string;
-  projectPath?: string;
+  projectId?: string;
   frontmatter: Record<string, string>;
   body: string;
 }): Promise<void> {
-  const { scope, type, name, folder, projectPath, frontmatter, body } = data;
+  const { scope, type, name, folder, projectId, frontmatter, body } = data;
   if (type === "agent") {
     return createAgent({
       scope,
@@ -323,7 +323,7 @@ export function createResource(data: {
       description: frontmatter.description,
       tools: frontmatter.tools,
       color: frontmatter.color,
-      ...(projectPath ? { projectPath } : {}),
+      ...(projectId ? { projectId } : {}),
     }).then(() => undefined);
   }
   if (type === "command") {
@@ -333,7 +333,7 @@ export function createResource(data: {
       name,
       folder,
       body,
-      ...(projectPath ? { projectPath } : {}),
+      ...(projectId ? { projectId } : {}),
     }).then(() => undefined);
   }
   if (type === "skill") {
@@ -342,7 +342,7 @@ export function createResource(data: {
       name,
       body,
       description: frontmatter.description,
-      ...(projectPath ? { projectPath } : {}),
+      ...(projectId ? { projectId } : {}),
     }).then(() => undefined);
   }
   throw new Error(`Unknown resource type: ${type}`);

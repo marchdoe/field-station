@@ -14,9 +14,11 @@ function renderLogin() {
 
 describe("LoginPage form submission", () => {
   it("sends password field (not token) in request body", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue({ ok: false, redirected: false, json: () => Promise.resolve({}) });
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      redirected: false,
+      json: () => Promise.resolve({}),
+    });
     vi.stubGlobal("fetch", fetchMock);
 
     renderLogin();
@@ -27,6 +29,27 @@ describe("LoginPage form submission", () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.password).toBe("my-secret");
     expect(body.token).toBeUndefined();
+
+    vi.unstubAllGlobals();
+  });
+
+  it("navigates to / on successful login", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      redirected: false,
+      json: () => Promise.resolve({ success: true }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    Object.defineProperty(window, "location", { value: { href: "" }, writable: true });
+    window.location.href = "";
+
+    renderLogin();
+    fireEvent.change(screen.getByLabelText(/access token/i), {
+      target: { value: "correct-token" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+
+    await waitFor(() => expect(window.location.href).toBe("/"));
 
     vi.unstubAllGlobals();
   });

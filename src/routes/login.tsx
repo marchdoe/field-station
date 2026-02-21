@@ -36,10 +36,13 @@ export function LoginPage() {
         return;
       }
 
-      if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(body.error ?? "Invalid token");
+      if (res.ok) {
+        window.location.href = next ?? "/";
+        return;
       }
+
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      setError(body.error ?? "Invalid token");
     } catch {
       setError("Network error. Please try again.");
     } finally {

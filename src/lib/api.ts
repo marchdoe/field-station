@@ -292,8 +292,10 @@ export function getProjects(): Promise<ProjectFile[]> {
 }
 
 // Search
-export function search(q: string): Promise<SearchResult[]> {
-  return apiFetch<SearchResult[]>(`/api/search?q=${encodeURIComponent(q)}`);
+export function search(q: string, projectPath?: string): Promise<SearchResult[]> {
+  const params = new URLSearchParams({ q });
+  if (projectPath) params.set("projectPath", projectPath);
+  return apiFetch<SearchResult[]>(`/api/search?${params}`);
 }
 
 export function createResource(data: {

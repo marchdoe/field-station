@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -24,80 +25,115 @@ func searchMatchesQuery(query string, texts ...string) bool {
 }
 
 // Search returns a filtered list of agents, commands, and skills matching the
-// query string. Results are drawn from the global scope only.
+// query string. When projectPath is provided, also includes project-scoped resources.
 func (h *FieldStationHandler) Search(ctx context.Context, request SearchRequestObject) (SearchResponseObject, error) {
 	query := request.Params.Q
 
+	// Validate project path if provided.
+	projectPath := ""
+	if request.Params.ProjectPath != nil && *request.Params.ProjectPath != "" {
+		pp := *request.Params.ProjectPath
+		allowedRoots := lib.GetAllowedRoots(pp)
+		if _, err := lib.AssertSafePath(pp, allowedRoots); err != nil {
+			return nil, fmt.Errorf("search: unsafe project path: %w", err)
+		}
+		projectPath = pp
+	}
+
 	var results []SearchResult
 
-	// --- Agents ---
-	agents, err := lib.ListResources(lib.ResourceTypeAgent, h.claudeHome)
-	if err == nil {
-		for _, a := range agents {
-			preview := lib.TruncateBody(a.Body, 5)
-			if !searchMatchesQuery(query, a.Name, a.Description, preview) {
-				continue
-			}
-			var descPtr *string
-			if a.Description != "" {
-				desc := a.Description
-				descPtr = &desc
-			}
-			results = append(results, SearchResult{
-				Type:        "agent",
-				Name:        a.Name,
-				Description: descPtr,
-				FilePath:    a.FilePath,
-				Preview:     preview,
-			})
-		}
-	}
+	// --- Global Agents ---
+	results = appendAgentResults(results, h.claudeHome, query)
 
-	// --- Commands ---
-	// Commands live under <claudeHome>/commands/<folder>/<name>.md.
-	// Re-use the package-level listCommandsFromDir function from commands.go.
-	commandDir := filepath.Join(h.claudeHome, "commands")
-	commands, err := listCommandsFromDir(commandDir)
-	if err == nil {
-		for _, c := range commands {
-			displayName := "/" + c.Folder + ":" + c.Name
-			if !searchMatchesQuery(query, c.Name, c.Folder, c.BodyPreview) {
-				continue
-			}
-			results = append(results, SearchResult{
-				Type:     "command",
-				Name:     displayName,
-				FilePath: c.FilePath,
-				Preview:  c.BodyPreview,
-			})
-		}
-	}
+	// --- Global Commands ---
+	results = appendCommandResults(results, h.claudeHome, query)
 
-	// --- Skills ---
-	skills, err := lib.ListResources(lib.ResourceTypeSkill, h.claudeHome)
-	if err == nil {
-		for _, s := range skills {
-			preview := lib.TruncateBody(s.Body, 5)
-			if !searchMatchesQuery(query, s.Name, s.Description, preview) {
-				continue
-			}
-			var descPtr *string
-			if s.Description != "" {
-				desc := s.Description
-				descPtr = &desc
-			}
-			results = append(results, SearchResult{
-				Type:        "skill",
-				Name:        s.Name,
-				Description: descPtr,
-				FilePath:    s.FilePath,
-				Preview:     preview,
-			})
-		}
+	// --- Global Skills ---
+	results = appendSkillResults(results, h.claudeHome, query)
+
+	// --- Project resources (if projectPath provided) ---
+	if projectPath != "" {
+		projectClaudeDir := filepath.Join(projectPath, ".claude")
+		results = appendAgentResults(results, projectClaudeDir, query)
+		results = appendCommandResults(results, projectClaudeDir, query)
+		results = appendSkillResults(results, projectClaudeDir, query)
 	}
 
 	if results == nil {
 		results = []SearchResult{}
 	}
 	return Search200JSONResponse(results), nil
+}
+
+func appendAgentResults(results []SearchResult, claudeHome, query string) []SearchResult {
+	agents, err := lib.ListResources(lib.ResourceTypeAgent, claudeHome)
+	if err != nil {
+		return results
+	}
+	for _, a := range agents {
+		preview := lib.TruncateBody(a.Body, 5)
+		if !searchMatchesQuery(query, a.Name, a.Description, preview) {
+			continue
+		}
+		var descPtr *string
+		if a.Description != "" {
+			desc := a.Description
+			descPtr = &desc
+		}
+		results = append(results, SearchResult{
+			Type:        "agent",
+			Name:        a.Name,
+			Description: descPtr,
+			FilePath:    a.FilePath,
+			Preview:     preview,
+		})
+	}
+	return results
+}
+
+func appendCommandResults(results []SearchResult, claudeHome, query string) []SearchResult {
+	commandDir := filepath.Join(claudeHome, "commands")
+	commands, err := listCommandsFromDir(commandDir)
+	if err != nil {
+		return results
+	}
+	for _, c := range commands {
+		displayName := "/" + c.Folder + ":" + c.Name
+		if !searchMatchesQuery(query, c.Name, c.Folder, c.BodyPreview) {
+			continue
+		}
+		results = append(results, SearchResult{
+			Type:     "command",
+			Name:     displayName,
+			FilePath: c.FilePath,
+			Preview:  c.BodyPreview,
+		})
+	}
+	return results
+}
+
+func appendSkillResults(results []SearchResult, claudeHome, query string) []SearchResult {
+	skills, err := lib.ListResources(lib.ResourceTypeSkill, claudeHome)
+	if err != nil {
+		return results
+	}
+	for _, s := range skills {
+		preview := lib.TruncateBody(s.Body, 5)
+		if !searchMatchesQuery(query, s.Name, s.Description, preview) {
+			continue
+		}
+		var descPtr *string
+		if s.Description != "" {
+			desc := s.Description
+			descPtr = &desc
+		}
+		results = append(results, SearchResult{
+			Type:        "skill",
+			Name:        s.Name,
+			Description: descPtr,
+			FilePath:    s.FilePath,
+			Preview:     preview,
+		})
+	}
+	return results
 }

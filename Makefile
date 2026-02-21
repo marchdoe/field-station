@@ -1,3 +1,6 @@
+-include .env
+export
+
 .PHONY: dev dev-server dev-frontend build test lint generate generate-ts generate-check clean build-frontend build-server
 
 # Start Go backend + Vite frontend (requires two terminals or a process manager)

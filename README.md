@@ -62,6 +62,22 @@ make dev-frontend
 
 Open **http://localhost:3456**.
 
+## Authentication
+
+By default Field Station requires no login — suitable for local use. To protect a shared or remote deployment, set `FIELD_STATION_TOKEN` before starting the server:
+
+```bash
+# Generate a secure token (do this once, save the value)
+openssl rand -hex 32
+
+# Start with auth enabled
+FIELD_STATION_TOKEN=<your-token> ./field-station
+```
+
+Anyone opening the UI will be prompted to enter this token. Sessions are HMAC-signed and stored in a cookie — the token never leaves the server.
+
+For development, `make dev-server` starts without auth unless you export `FIELD_STATION_TOKEN` in your shell first.
+
 ## Building
 
 Produces a single self-contained binary with the frontend embedded:

@@ -51,7 +51,7 @@ func main() {
 	addr := ":3457"
 	srv := &http.Server{
 		Addr:              addr,
-		Handler:           maxBytesMiddleware(makeTopHandler(mux, authToken)),
+		Handler:           maxBytesMiddleware(middleware.RequireLocalOrigin(makeTopHandler(mux, authToken))),
 		ReadHeaderTimeout: 30 * time.Second,
 		IdleTimeout:       120 * time.Second,
 	}

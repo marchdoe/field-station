@@ -198,7 +198,7 @@ type CreateAgentRequest struct {
 	Color                *string                 `json:"color,omitempty"`
 	Description          *string                 `json:"description,omitempty"`
 	Name                 string                  `json:"name"`
-	ProjectPath          *string                 `json:"projectPath,omitempty"`
+	ProjectId            *string                 `json:"projectId,omitempty"`
 	Scope                CreateAgentRequestScope `json:"scope"`
 	Tools                *string                 `json:"tools,omitempty"`
 	AdditionalProperties map[string]interface{}  `json:"-"`
@@ -212,7 +212,7 @@ type CreateCommandRequest struct {
 	Body                 string                    `json:"body"`
 	Folder               string                    `json:"folder"`
 	Name                 string                    `json:"name"`
-	ProjectPath          *string                   `json:"projectPath,omitempty"`
+	ProjectId            *string                   `json:"projectId,omitempty"`
 	Scope                CreateCommandRequestScope `json:"scope"`
 	AdditionalProperties map[string]interface{}    `json:"-"`
 }
@@ -225,7 +225,7 @@ type CreateHookRequest struct {
 	Commands             []string               `json:"commands"`
 	Event                string                 `json:"event"`
 	Matcher              *string                `json:"matcher,omitempty"`
-	ProjectPath          *string                `json:"projectPath,omitempty"`
+	ProjectId            *string                `json:"projectId,omitempty"`
 	Scope                CreateHookRequestScope `json:"scope"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
@@ -238,7 +238,7 @@ type CreateSkillRequest struct {
 	Body                 string                  `json:"body"`
 	Description          *string                 `json:"description,omitempty"`
 	Name                 string                  `json:"name"`
-	ProjectPath          *string                 `json:"projectPath,omitempty"`
+	ProjectId            *string                 `json:"projectId,omitempty"`
 	Scope                CreateSkillRequestScope `json:"scope"`
 	AdditionalProperties map[string]interface{}  `json:"-"`
 }
@@ -248,7 +248,7 @@ type CreateSkillRequestScope string
 
 // DeleteAgentRequest defines model for DeleteAgentRequest.
 type DeleteAgentRequest struct {
-	ProjectPath          *string                 `json:"projectPath,omitempty"`
+	ProjectId            *string                 `json:"projectId,omitempty"`
 	Scope                DeleteAgentRequestScope `json:"scope"`
 	AdditionalProperties map[string]interface{}  `json:"-"`
 }
@@ -259,7 +259,7 @@ type DeleteAgentRequestScope string
 // DeleteConfigSettingRequest defines model for DeleteConfigSettingRequest.
 type DeleteConfigSettingRequest struct {
 	KeyPath              []string               `json:"keyPath"`
-	ProjectPath          *string                `json:"projectPath,omitempty"`
+	ProjectId            *string                `json:"projectId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -352,7 +352,7 @@ type LoginRequest struct {
 type MoveConfigSettingRequest struct {
 	Direction            MoveConfigSettingRequestDirection `json:"direction"`
 	KeyPath              []string                          `json:"keyPath"`
-	ProjectPath          *string                           `json:"projectPath,omitempty"`
+	ProjectId            *string                           `json:"projectId,omitempty"`
 	AdditionalProperties map[string]interface{}            `json:"-"`
 }
 
@@ -420,7 +420,7 @@ type UpdateAgentRequest struct {
 	Body                 string                  `json:"body"`
 	Color                *string                 `json:"color,omitempty"`
 	Description          *string                 `json:"description,omitempty"`
-	ProjectPath          *string                 `json:"projectPath,omitempty"`
+	ProjectId            *string                 `json:"projectId,omitempty"`
 	Scope                UpdateAgentRequestScope `json:"scope"`
 	Tools                *string                 `json:"tools,omitempty"`
 	AdditionalProperties map[string]interface{}  `json:"-"`
@@ -432,14 +432,14 @@ type UpdateAgentRequestScope string
 // UpdateCommandRequest defines model for UpdateCommandRequest.
 type UpdateCommandRequest struct {
 	Body                 string                 `json:"body"`
-	ProjectPath          *string                `json:"projectPath,omitempty"`
+	ProjectId            *string                `json:"projectId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
 // UpdateConfigSettingRequest defines model for UpdateConfigSettingRequest.
 type UpdateConfigSettingRequest struct {
 	KeyPath              []string               `json:"keyPath"`
-	ProjectPath          *string                `json:"projectPath,omitempty"`
+	ProjectId            *string                `json:"projectId,omitempty"`
 	Value                interface{}            `json:"value"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
@@ -459,7 +459,7 @@ type UpdateHookRequest struct {
 	Commands             []string               `json:"commands"`
 	Event                string                 `json:"event"`
 	Matcher              *string                `json:"matcher,omitempty"`
-	ProjectPath          *string                `json:"projectPath,omitempty"`
+	ProjectId            *string                `json:"projectId,omitempty"`
 	Scope                UpdateHookRequestScope `json:"scope"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
@@ -471,14 +471,14 @@ type UpdateHookRequestScope string
 type UpdateSkillRequest struct {
 	Body                 string                 `json:"body"`
 	Description          *string                `json:"description,omitempty"`
-	ProjectPath          *string                `json:"projectPath,omitempty"`
+	ProjectId            *string                `json:"projectId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
 // GetAgentsParams defines parameters for GetAgents.
 type GetAgentsParams struct {
-	Scope       *GetAgentsParamsScope `form:"scope,omitempty" json:"scope,omitempty"`
-	ProjectPath *string               `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	Scope     *GetAgentsParamsScope `form:"scope,omitempty" json:"scope,omitempty"`
+	ProjectId *string               `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // GetAgentsParamsScope defines parameters for GetAgents.
@@ -486,14 +486,14 @@ type GetAgentsParamsScope string
 
 // GetAgentParams defines parameters for GetAgent.
 type GetAgentParams struct {
-	Scope       *string `form:"scope,omitempty" json:"scope,omitempty"`
-	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	Scope     *string `form:"scope,omitempty" json:"scope,omitempty"`
+	ProjectId *string `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // GetCommandsParams defines parameters for GetCommands.
 type GetCommandsParams struct {
-	Scope       *GetCommandsParamsScope `form:"scope,omitempty" json:"scope,omitempty"`
-	ProjectPath *string                 `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	Scope     *GetCommandsParamsScope `form:"scope,omitempty" json:"scope,omitempty"`
+	ProjectId *string                 `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // GetCommandsParamsScope defines parameters for GetCommands.
@@ -501,40 +501,40 @@ type GetCommandsParamsScope string
 
 // DeleteCommandParams defines parameters for DeleteCommand.
 type DeleteCommandParams struct {
-	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	ProjectId *string `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // GetCommandParams defines parameters for GetCommand.
 type GetCommandParams struct {
-	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	ProjectId *string `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // GetConfigParams defines parameters for GetConfig.
 type GetConfigParams struct {
-	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	ProjectId *string `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // GetHooksParams defines parameters for GetHooks.
 type GetHooksParams struct {
-	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	ProjectId *string `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // DeleteHookParams defines parameters for DeleteHook.
 type DeleteHookParams struct {
-	Scope       *string `form:"scope,omitempty" json:"scope,omitempty"`
-	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	Scope     *string `form:"scope,omitempty" json:"scope,omitempty"`
+	ProjectId *string `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // SearchParams defines parameters for Search.
 type SearchParams struct {
-	Q           string  `form:"q" json:"q"`
-	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	Q         string  `form:"q" json:"q"`
+	ProjectId *string `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // GetSkillsParams defines parameters for GetSkills.
 type GetSkillsParams struct {
-	Scope       *GetSkillsParamsScope `form:"scope,omitempty" json:"scope,omitempty"`
-	ProjectPath *string               `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	Scope     *GetSkillsParamsScope `form:"scope,omitempty" json:"scope,omitempty"`
+	ProjectId *string               `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // GetSkillsParamsScope defines parameters for GetSkills.
@@ -542,17 +542,17 @@ type GetSkillsParamsScope string
 
 // DeleteSkillParams defines parameters for DeleteSkill.
 type DeleteSkillParams struct {
-	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	ProjectId *string `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // GetSkillParams defines parameters for GetSkill.
 type GetSkillParams struct {
-	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	ProjectId *string `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // WatchParams defines parameters for Watch.
 type WatchParams struct {
-	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+	ProjectId *string `form:"projectId,omitempty" json:"projectId,omitempty"`
 }
 
 // CreateAgentJSONRequestBody defines body for CreateAgent for application/json ContentType.
@@ -1544,12 +1544,12 @@ func (a *CreateAgentRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "name")
 	}
 
-	if raw, found := object["projectPath"]; found {
-		err = json.Unmarshal(raw, &a.ProjectPath)
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
 		if err != nil {
-			return fmt.Errorf("error reading 'projectPath': %w", err)
+			return fmt.Errorf("error reading 'projectId': %w", err)
 		}
-		delete(object, "projectPath")
+		delete(object, "projectId")
 	}
 
 	if raw, found := object["scope"]; found {
@@ -1611,10 +1611,10 @@ func (a CreateAgentRequest) MarshalJSON() ([]byte, error) {
 		return nil, fmt.Errorf("error marshaling 'name': %w", err)
 	}
 
-	if a.ProjectPath != nil {
-		object["projectPath"], err = json.Marshal(a.ProjectPath)
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
 	}
 
@@ -1688,12 +1688,12 @@ func (a *CreateCommandRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "name")
 	}
 
-	if raw, found := object["projectPath"]; found {
-		err = json.Unmarshal(raw, &a.ProjectPath)
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
 		if err != nil {
-			return fmt.Errorf("error reading 'projectPath': %w", err)
+			return fmt.Errorf("error reading 'projectId': %w", err)
 		}
-		delete(object, "projectPath")
+		delete(object, "projectId")
 	}
 
 	if raw, found := object["scope"]; found {
@@ -1738,10 +1738,10 @@ func (a CreateCommandRequest) MarshalJSON() ([]byte, error) {
 		return nil, fmt.Errorf("error marshaling 'name': %w", err)
 	}
 
-	if a.ProjectPath != nil {
-		object["projectPath"], err = json.Marshal(a.ProjectPath)
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
 	}
 
@@ -1808,12 +1808,12 @@ func (a *CreateHookRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "matcher")
 	}
 
-	if raw, found := object["projectPath"]; found {
-		err = json.Unmarshal(raw, &a.ProjectPath)
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
 		if err != nil {
-			return fmt.Errorf("error reading 'projectPath': %w", err)
+			return fmt.Errorf("error reading 'projectId': %w", err)
 		}
-		delete(object, "projectPath")
+		delete(object, "projectId")
 	}
 
 	if raw, found := object["scope"]; found {
@@ -1862,10 +1862,10 @@ func (a CreateHookRequest) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	if a.ProjectPath != nil {
-		object["projectPath"], err = json.Marshal(a.ProjectPath)
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
 	}
 
@@ -1932,12 +1932,12 @@ func (a *CreateSkillRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "name")
 	}
 
-	if raw, found := object["projectPath"]; found {
-		err = json.Unmarshal(raw, &a.ProjectPath)
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
 		if err != nil {
-			return fmt.Errorf("error reading 'projectPath': %w", err)
+			return fmt.Errorf("error reading 'projectId': %w", err)
 		}
-		delete(object, "projectPath")
+		delete(object, "projectId")
 	}
 
 	if raw, found := object["scope"]; found {
@@ -1984,10 +1984,10 @@ func (a CreateSkillRequest) MarshalJSON() ([]byte, error) {
 		return nil, fmt.Errorf("error marshaling 'name': %w", err)
 	}
 
-	if a.ProjectPath != nil {
-		object["projectPath"], err = json.Marshal(a.ProjectPath)
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
 	}
 
@@ -2030,12 +2030,12 @@ func (a *DeleteAgentRequest) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	if raw, found := object["projectPath"]; found {
-		err = json.Unmarshal(raw, &a.ProjectPath)
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
 		if err != nil {
-			return fmt.Errorf("error reading 'projectPath': %w", err)
+			return fmt.Errorf("error reading 'projectId': %w", err)
 		}
-		delete(object, "projectPath")
+		delete(object, "projectId")
 	}
 
 	if raw, found := object["scope"]; found {
@@ -2065,10 +2065,10 @@ func (a DeleteAgentRequest) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
-	if a.ProjectPath != nil {
-		object["projectPath"], err = json.Marshal(a.ProjectPath)
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
 	}
 
@@ -2119,12 +2119,12 @@ func (a *DeleteConfigSettingRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "keyPath")
 	}
 
-	if raw, found := object["projectPath"]; found {
-		err = json.Unmarshal(raw, &a.ProjectPath)
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
 		if err != nil {
-			return fmt.Errorf("error reading 'projectPath': %w", err)
+			return fmt.Errorf("error reading 'projectId': %w", err)
 		}
-		delete(object, "projectPath")
+		delete(object, "projectId")
 	}
 
 	if len(object) != 0 {
@@ -2153,10 +2153,10 @@ func (a DeleteConfigSettingRequest) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	if a.ProjectPath != nil {
-		object["projectPath"], err = json.Marshal(a.ProjectPath)
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
 	}
 
@@ -3147,12 +3147,12 @@ func (a *MoveConfigSettingRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "keyPath")
 	}
 
-	if raw, found := object["projectPath"]; found {
-		err = json.Unmarshal(raw, &a.ProjectPath)
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
 		if err != nil {
-			return fmt.Errorf("error reading 'projectPath': %w", err)
+			return fmt.Errorf("error reading 'projectId': %w", err)
 		}
-		delete(object, "projectPath")
+		delete(object, "projectId")
 	}
 
 	if len(object) != 0 {
@@ -3186,10 +3186,10 @@ func (a MoveConfigSettingRequest) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	if a.ProjectPath != nil {
-		object["projectPath"], err = json.Marshal(a.ProjectPath)
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
 	}
 
@@ -3870,12 +3870,12 @@ func (a *UpdateAgentRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "description")
 	}
 
-	if raw, found := object["projectPath"]; found {
-		err = json.Unmarshal(raw, &a.ProjectPath)
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
 		if err != nil {
-			return fmt.Errorf("error reading 'projectPath': %w", err)
+			return fmt.Errorf("error reading 'projectId': %w", err)
 		}
-		delete(object, "projectPath")
+		delete(object, "projectId")
 	}
 
 	if raw, found := object["scope"]; found {
@@ -3932,10 +3932,10 @@ func (a UpdateAgentRequest) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	if a.ProjectPath != nil {
-		object["projectPath"], err = json.Marshal(a.ProjectPath)
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
 	}
 
@@ -3993,12 +3993,12 @@ func (a *UpdateCommandRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "body")
 	}
 
-	if raw, found := object["projectPath"]; found {
-		err = json.Unmarshal(raw, &a.ProjectPath)
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
 		if err != nil {
-			return fmt.Errorf("error reading 'projectPath': %w", err)
+			return fmt.Errorf("error reading 'projectId': %w", err)
 		}
-		delete(object, "projectPath")
+		delete(object, "projectId")
 	}
 
 	if len(object) != 0 {
@@ -4025,10 +4025,10 @@ func (a UpdateCommandRequest) MarshalJSON() ([]byte, error) {
 		return nil, fmt.Errorf("error marshaling 'body': %w", err)
 	}
 
-	if a.ProjectPath != nil {
-		object["projectPath"], err = json.Marshal(a.ProjectPath)
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
 	}
 
@@ -4074,12 +4074,12 @@ func (a *UpdateConfigSettingRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "keyPath")
 	}
 
-	if raw, found := object["projectPath"]; found {
-		err = json.Unmarshal(raw, &a.ProjectPath)
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
 		if err != nil {
-			return fmt.Errorf("error reading 'projectPath': %w", err)
+			return fmt.Errorf("error reading 'projectId': %w", err)
 		}
-		delete(object, "projectPath")
+		delete(object, "projectId")
 	}
 
 	if raw, found := object["value"]; found {
@@ -4116,10 +4116,10 @@ func (a UpdateConfigSettingRequest) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	if a.ProjectPath != nil {
-		object["projectPath"], err = json.Marshal(a.ProjectPath)
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
 	}
 
@@ -4265,12 +4265,12 @@ func (a *UpdateHookRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "matcher")
 	}
 
-	if raw, found := object["projectPath"]; found {
-		err = json.Unmarshal(raw, &a.ProjectPath)
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
 		if err != nil {
-			return fmt.Errorf("error reading 'projectPath': %w", err)
+			return fmt.Errorf("error reading 'projectId': %w", err)
 		}
-		delete(object, "projectPath")
+		delete(object, "projectId")
 	}
 
 	if raw, found := object["scope"]; found {
@@ -4319,10 +4319,10 @@ func (a UpdateHookRequest) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	if a.ProjectPath != nil {
-		object["projectPath"], err = json.Marshal(a.ProjectPath)
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
 	}
 
@@ -4381,12 +4381,12 @@ func (a *UpdateSkillRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "description")
 	}
 
-	if raw, found := object["projectPath"]; found {
-		err = json.Unmarshal(raw, &a.ProjectPath)
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
 		if err != nil {
-			return fmt.Errorf("error reading 'projectPath': %w", err)
+			return fmt.Errorf("error reading 'projectId': %w", err)
 		}
-		delete(object, "projectPath")
+		delete(object, "projectId")
 	}
 
 	if len(object) != 0 {
@@ -4420,10 +4420,10 @@ func (a UpdateSkillRequest) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	if a.ProjectPath != nil {
-		object["projectPath"], err = json.Marshal(a.ProjectPath)
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
 		}
 	}
 
@@ -4570,11 +4570,11 @@ func (siw *ServerInterfaceWrapper) GetAgents(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 
@@ -4653,11 +4653,11 @@ func (siw *ServerInterfaceWrapper) GetAgent(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 
@@ -4780,11 +4780,11 @@ func (siw *ServerInterfaceWrapper) GetCommands(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 
@@ -4848,11 +4848,11 @@ func (siw *ServerInterfaceWrapper) DeleteCommand(w http.ResponseWriter, r *http.
 	// Parameter object where we will unmarshal all parameters from the context
 	var params DeleteCommandParams
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 
@@ -4902,11 +4902,11 @@ func (siw *ServerInterfaceWrapper) GetCommand(w http.ResponseWriter, r *http.Req
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetCommandParams
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 
@@ -4972,11 +4972,11 @@ func (siw *ServerInterfaceWrapper) GetConfig(w http.ResponseWriter, r *http.Requ
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetConfigParams
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 
@@ -5119,11 +5119,11 @@ func (siw *ServerInterfaceWrapper) GetHooks(w http.ResponseWriter, r *http.Reque
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetHooksParams
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 
@@ -5177,11 +5177,11 @@ func (siw *ServerInterfaceWrapper) DeleteHook(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 
@@ -5272,11 +5272,11 @@ func (siw *ServerInterfaceWrapper) Search(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 
@@ -5307,11 +5307,11 @@ func (siw *ServerInterfaceWrapper) GetSkills(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 
@@ -5366,11 +5366,11 @@ func (siw *ServerInterfaceWrapper) DeleteSkill(w http.ResponseWriter, r *http.Re
 	// Parameter object where we will unmarshal all parameters from the context
 	var params DeleteSkillParams
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 
@@ -5411,11 +5411,11 @@ func (siw *ServerInterfaceWrapper) GetSkill(w http.ResponseWriter, r *http.Reque
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetSkillParams
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 
@@ -5472,11 +5472,11 @@ func (siw *ServerInterfaceWrapper) Watch(w http.ResponseWriter, r *http.Request)
 	// Parameter object where we will unmarshal all parameters from the context
 	var params WatchParams
 
-	// ------------- Optional query parameter "projectPath" -------------
+	// ------------- Optional query parameter "projectId" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
 		return
 	}
 

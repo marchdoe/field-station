@@ -11,7 +11,7 @@ import (
 )
 
 const sessionIDBytes = 16
-const sessionCookieName = "fs_session"
+const sessionCookieName = "field-station-session"
 
 func sign(id, token string) string {
 	mac := hmac.New(sha256.New, []byte(token))

@@ -69,6 +69,13 @@ func TestRequireAuth_Allows_WithValidSession(t *testing.T) {
 	require.Equal(t, http.StatusOK, rr.Code)
 }
 
+// Issue K: Cookie name must stay compatible with existing browser sessions from the
+// TypeScript server, which used "field-station-session".
+func TestSessionCookieName_MatchesTypeScriptServer(t *testing.T) {
+	assert.Equal(t, "field-station-session", middleware.SessionCookieName(),
+		"cookie name must match the TypeScript server's 'field-station-session' to avoid logging out existing users on upgrade")
+}
+
 func TestRequireAuth_Blocks_WithWrongToken(t *testing.T) {
 	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

@@ -8,6 +8,15 @@ import (
 	"fieldstation/lib"
 )
 
+// userHomeDir returns the current user's home directory, or "" if unavailable.
+func userHomeDir() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return home
+}
+
 // GetProjects lists all project directories from ~/.claude/projects/.
 // Each entry is a directory whose name is the encoded project path.
 func (h *FieldStationHandler) GetProjects(ctx context.Context, request GetProjectsRequestObject) (GetProjectsResponseObject, error) {
@@ -19,6 +28,8 @@ func (h *FieldStationHandler) GetProjects(ctx context.Context, request GetProjec
 		return GetProjects200JSONResponse([]ProjectFile{}), nil
 	}
 
+	home := userHomeDir()
+
 	result := make([]ProjectFile, 0, len(entries))
 	for _, entry := range entries {
 		if !entry.IsDir() {
@@ -28,6 +39,11 @@ func (h *FieldStationHandler) GetProjects(ctx context.Context, request GetProjec
 		decoded, err := lib.DecodePath(encoded)
 		if err != nil {
 			// Skip entries that cannot be decoded.
+			continue
+		}
+		// The home directory encodes to the same path as the global claude home,
+		// which would produce a confusing duplicate of the global config view.
+		if home != "" && decoded == home {
 			continue
 		}
 		result = append(result, ProjectFile{

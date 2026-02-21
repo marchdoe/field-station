@@ -161,6 +161,12 @@ func (h *FieldStationHandler) CreateAgent(ctx context.Context, request CreateAge
 		fm.Frontmatter["color"] = *body.Color
 	}
 
+	// Reject writes to plugin-managed files (files not owned by the user).
+	agentFilePath := filepath.Join(agentDir, body.Name+".md")
+	if !lib.IsUserOwned(agentFilePath) {
+		return nil, fmt.Errorf("agents: cannot write plugin-managed file: %s", agentFilePath)
+	}
+
 	content := lib.SerializeMarkdown(fm)
 	rf, err := lib.CreateResource(lib.ResourceTypeAgent, body.Name, content, agentClaudeHomeFor(agentDir))
 	if err != nil {
@@ -191,6 +197,11 @@ func (h *FieldStationHandler) UpdateAgent(ctx context.Context, request UpdateAge
 		return nil, err
 	}
 
+	// Reject writes to plugin-managed files.
+	if !lib.IsUserOwned(filePath) {
+		return nil, fmt.Errorf("agents: cannot write plugin-managed file: %s", filePath)
+	}
+
 	fm := lib.FrontmatterDoc{
 		Frontmatter: map[string]any{},
 		Body:        body.Body,
@@ -208,7 +219,16 @@ func (h *FieldStationHandler) UpdateAgent(ctx context.Context, request UpdateAge
 	}
 
 	content := lib.SerializeMarkdown(fm)
-	rf, err := lib.UpdateResource(lib.ResourceTypeAgent, request.Name, content, agentClaudeHomeFor(agentDir))
+
+	// For project-scope agents, ensure the backup is written to the global claudeHome so
+	// it appears in Change History. lib.UpdateResource backs up to its own claudeHome
+	// argument, which for project agents is the project's .claude/ directory.
+	effectiveClaudeHome := agentClaudeHomeFor(agentDir)
+	if effectiveClaudeHome != h.claudeHome {
+		lib.BackupFile(filePath, lib.BackupOpUpdate, h.claudeHome)
+	}
+
+	rf, err := lib.UpdateResource(lib.ResourceTypeAgent, request.Name, content, effectiveClaudeHome)
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +247,29 @@ func (h *FieldStationHandler) DeleteAgent(ctx context.Context, request DeleteAge
 		return nil, err
 	}
 
-	if err := lib.DeleteResource(lib.ResourceTypeAgent, request.Name, agentClaudeHomeFor(agentDir)); err != nil {
+	// Validate path safety (consistent with CreateAgent and UpdateAgent).
+	deleteAllowedRoots := []string{h.claudeHome}
+	if body.ProjectPath != nil {
+		deleteAllowedRoots = append(deleteAllowedRoots, *body.ProjectPath)
+	}
+	if _, err := lib.AssertSafePath(agentDir, deleteAllowedRoots); err != nil {
+		return nil, err
+	}
+
+	// Reject deletes of plugin-managed files.
+	filePath := filepath.Join(agentDir, request.Name+".md")
+	if !lib.IsUserOwned(filePath) {
+		return nil, fmt.Errorf("agents: cannot delete plugin-managed file: %s", filePath)
+	}
+
+	// For project-scope agents, ensure the backup lands in the global claudeHome
+	// so it is visible in Change History.
+	effectiveClaudeHome := agentClaudeHomeFor(agentDir)
+	if effectiveClaudeHome != h.claudeHome {
+		lib.BackupFile(filePath, lib.BackupOpDelete, h.claudeHome)
+	}
+
+	if err := lib.DeleteResource(lib.ResourceTypeAgent, request.Name, effectiveClaudeHome); err != nil {
 		return nil, err
 	}
 	return DeleteAgent200JSONResponse(SuccessResponse{Success: true}), nil

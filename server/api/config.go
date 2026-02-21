@@ -74,10 +74,6 @@ func (h *FieldStationHandler) UpdateConfigSetting(ctx context.Context, request U
 		return nil, err
 	}
 
-	if _, err := lib.AssertSafePath(filePath, []string{h.claudeHome, filepath.Dir(filePath)}); err != nil {
-		return nil, err
-	}
-
 	keyPath := strings.Join(request.Body.KeyPath, ".")
 
 	if err := lib.ApplyUpdateSetting(filePath, keyPath, request.Body.Value, h.claudeHome); err != nil {
@@ -95,10 +91,6 @@ func (h *FieldStationHandler) DeleteConfigSetting(ctx context.Context, request D
 
 	filePath, err := h.resolveConfigFilePath(request.Body.ProjectPath)
 	if err != nil {
-		return nil, err
-	}
-
-	if _, err := lib.AssertSafePath(filePath, []string{h.claudeHome, filepath.Dir(filePath)}); err != nil {
 		return nil, err
 	}
 
@@ -130,13 +122,6 @@ func (h *FieldStationHandler) MoveConfigSetting(ctx context.Context, request Mov
 	} else {
 		globalPath = filepath.Join(h.claudeHome, "settings.json")
 		localPath = filepath.Join(h.claudeHome, "settings.local.json")
-	}
-
-	if _, err := lib.AssertSafePath(globalPath, []string{h.claudeHome, filepath.Dir(globalPath)}); err != nil {
-		return nil, err
-	}
-	if _, err := lib.AssertSafePath(localPath, []string{h.claudeHome, filepath.Dir(localPath)}); err != nil {
-		return nil, err
 	}
 
 	keyPath := strings.Join(request.Body.KeyPath, ".")

@@ -98,6 +98,12 @@ func (h *FieldStationHandler) GetCommand(ctx context.Context, request GetCommand
 	}
 
 	filePath := filepath.Join(commandDir, request.Folder, request.Name+".md")
+
+	// Validate that the resolved path stays within the commands directory.
+	if _, err := lib.AssertSafePath(filePath, []string{commandDir}); err != nil {
+		return nil, fmt.Errorf("commands: unsafe path: %w", err)
+	}
+
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -133,6 +139,10 @@ func (h *FieldStationHandler) CreateCommand(ctx context.Context, request CreateC
 
 	if _, err := lib.AssertSafePath(filePath, []string{commandDir}); err != nil {
 		return nil, fmt.Errorf("commands: unsafe path: %w", err)
+	}
+
+	if !lib.IsUserOwned(filePath) {
+		return nil, fmt.Errorf("commands: cannot write plugin-managed file: %s", filePath)
 	}
 
 	if err := os.MkdirAll(folderPath, 0o755); err != nil {

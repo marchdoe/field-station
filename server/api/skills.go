@@ -105,6 +105,11 @@ func (h *FieldStationHandler) GetSkill(ctx context.Context, request GetSkillRequ
 	folderName := request.Name
 	skillMdPath := filepath.Join(skillDir, folderName, "SKILL.md")
 
+	// Validate that the resolved path stays within the skills directory.
+	if _, err := lib.AssertSafePath(skillMdPath, []string{skillDir}); err != nil {
+		return nil, fmt.Errorf("skills: unsafe path: %w", err)
+	}
+
 	data, err := os.ReadFile(skillMdPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -154,6 +159,10 @@ func (h *FieldStationHandler) CreateSkill(ctx context.Context, request CreateSki
 
 	if _, err := lib.AssertSafePath(skillMdPath, []string{skillDir}); err != nil {
 		return nil, fmt.Errorf("skills: unsafe path: %w", err)
+	}
+
+	if !lib.IsUserOwned(skillMdPath) {
+		return nil, fmt.Errorf("skills: cannot write plugin-managed file: %s", skillMdPath)
 	}
 
 	if err := os.MkdirAll(folderPath, 0o755); err != nil {

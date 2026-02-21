@@ -65,14 +65,10 @@ export function LoginPage() {
           onSubmit={handleSubmit}
           className="bg-surface-1 border border-border-default rounded-xl p-6"
         >
-          <div className="mb-5">
+          <div className="mb-4">
             <label htmlFor="token" className="block text-sm font-medium text-text-primary mb-1">
               Access token
             </label>
-            <p className="text-xs text-text-muted mb-2">
-              The <code className="font-mono text-accent">FIELD_STATION_TOKEN</code> value from
-              server startup
-            </p>
             <input
               id="token"
               type="password"

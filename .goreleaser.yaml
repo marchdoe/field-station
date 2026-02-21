@@ -1,0 +1,33 @@
+version: 2
+
+builds:
+  - id: field-station
+    dir: server
+    binary: field-station
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+    hooks:
+      pre: npm run build  # Always build frontend before Go binary
+
+archives:
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: "checksums.txt"
+
+release:
+  github:
+    owner: dougmarch
+    name: field-station

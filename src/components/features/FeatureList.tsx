@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
+import type { Feature, FeatureCategory } from "@/lib/api.js";
 import { cn } from "@/lib/utils";
-import type { Feature } from "@/server/functions/features.js";
-import type { FeatureCategory } from "@/server/lib/feature-registry.js";
 import { FeatureCard } from "./FeatureCard.js";
 
 const ALL_CATEGORIES: Array<{ key: FeatureCategory | "undocumented" | "all"; label: string }> = [

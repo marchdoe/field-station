@@ -1,19 +1,19 @@
-import { useRouter } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 export function useFileWatcher() {
-  const router = useRouter();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (typeof EventSource === "undefined") return;
     const sse = new EventSource("/api/watch");
 
     sse.addEventListener("change", () => {
-      router.invalidate();
+      queryClient.invalidateQueries();
     });
 
     return () => {
       sse.close();
     };
-  }, [router]);
+  }, [queryClient]);
 }

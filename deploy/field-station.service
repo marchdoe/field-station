@@ -5,14 +5,17 @@ After=network.target
 [Service]
 Type=simple
 
-# REQUIRED: Set these to match your environment
-WorkingDirectory=/path/to/field-station
-ExecStart=/usr/local/bin/node .output/server/index.mjs
+# REQUIRED: Set ExecStart to the absolute path of the field-station binary
+ExecStart=/usr/local/bin/field-station
 
 Restart=on-failure
 RestartSec=5
 
-Environment=NODE_ENV=production
+# Optional: set auth token for password protection
+# Environment=FIELD_STATION_TOKEN=your-secret-token
+
+# Optional: enable secure cookies when behind an HTTPS proxy
+# Environment=FIELD_STATION_SECURE_COOKIES=1
 
 StandardOutput=journal
 StandardError=journal

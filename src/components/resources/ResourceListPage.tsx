@@ -1,13 +1,13 @@
-import { useRouter } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { CreateResourceDialog } from "@/components/config/CreateResourceDialog.js";
 import { useToast } from "@/components/ui/Toast.js";
-import { createResource } from "@/server/functions/resource-mutations.js";
+import { createResource } from "@/lib/api.js";
 
 interface ResourceListPageProps {
   scope: "global" | "project";
-  projectPath?: string;
+  projectId?: string;
   resourceType: "agent" | "command" | "skill";
   typeLabel: string;
   subtitle: React.ReactNode;
@@ -17,14 +17,14 @@ interface ResourceListPageProps {
 
 export function ResourceListPage({
   scope,
-  projectPath,
+  projectId,
   resourceType,
   typeLabel,
   subtitle,
   existingFolders,
   children,
 }: ResourceListPageProps) {
-  const router = useRouter();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const [showCreate, setShowCreate] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -38,21 +38,19 @@ export function ResourceListPage({
     setSaving(true);
     try {
       await createResource({
-        data: {
-          scope,
-          type: resourceType,
-          name: data.name,
-          ...(data.folder ? { folder: data.folder } : {}),
-          ...(projectPath ? { projectPath } : {}),
-          frontmatter: resourceType === "command" ? {} : data.frontmatter,
-          body: data.body,
-        },
+        scope,
+        type: resourceType,
+        name: data.name,
+        ...(data.folder ? { folder: data.folder } : {}),
+        ...(projectId ? { projectId } : {}),
+        frontmatter: resourceType === "command" ? {} : data.frontmatter,
+        body: data.body,
       });
       toast(`${typeLabel} created successfully`);
       setShowCreate(false);
-      router.invalidate();
+      await queryClient.invalidateQueries({ queryKey: [`${resourceType}s`] });
     } catch (e) {
-      toast((e as Error).message, "error");
+      toast(e instanceof Error ? e.message : String(e), "error");
     } finally {
       setSaving(false);
     }

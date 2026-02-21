@@ -1,0 +1,1292 @@
+openapi: "3.0.3"
+info:
+  title: Field Station API
+  version: "1.0.0"
+  description: Local web UI for managing Claude Code ~/.claude/ configuration
+
+paths:
+
+  # Health
+  /api/health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  # Config
+  /api/config:
+    get:
+      operationId: getConfig
+      summary: Get merged config with layers
+      parameters:
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfigResponse"
+
+  /api/config/setting:
+    post:
+      operationId: updateConfigSetting
+      summary: Update a config setting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateConfigSettingRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    delete:
+      operationId: deleteConfigSetting
+      summary: Delete a config setting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteConfigSettingRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /api/config/setting/move:
+    post:
+      operationId: moveConfigSetting
+      summary: Move a config setting up or down
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MoveConfigSettingRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # Agents
+  /api/agents:
+    get:
+      operationId: getAgents
+      summary: List agents
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [global, project]
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgentFile"
+    post:
+      operationId: createAgent
+      summary: Create an agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAgentRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentFile"
+
+  /api/agents/{name}:
+    get:
+      operationId: getAgent
+      summary: Get agent detail
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentDetail"
+    put:
+      operationId: updateAgent
+      summary: Update an agent
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAgentRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentDetail"
+    delete:
+      operationId: deleteAgent
+      summary: Delete an agent
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteAgentRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # Commands
+  /api/commands:
+    get:
+      operationId: getCommands
+      summary: List commands
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [global, project]
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommandFile"
+    post:
+      operationId: createCommand
+      summary: Create a command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCommandRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommandFile"
+
+  /api/commands/{scope}/{folder}/{name}:
+    get:
+      operationId: getCommand
+      summary: Get command detail
+      parameters:
+        - name: scope
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: folder
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommandDetail"
+    put:
+      operationId: updateCommand
+      summary: Update a command
+      parameters:
+        - name: scope
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: folder
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCommandRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommandDetail"
+    delete:
+      operationId: deleteCommand
+      summary: Delete a command
+      parameters:
+        - name: scope
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: folder
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # Skills
+  /api/skills:
+    get:
+      operationId: getSkills
+      summary: List skills
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [global, project]
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SkillFile"
+    post:
+      operationId: createSkill
+      summary: Create a skill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSkillRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillFile"
+
+  /api/skills/{scope}/{name}:
+    get:
+      operationId: getSkill
+      summary: Get skill detail
+      parameters:
+        - name: scope
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillDetail"
+    put:
+      operationId: updateSkill
+      summary: Update a skill
+      parameters:
+        - name: scope
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSkillRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkillDetail"
+    delete:
+      operationId: deleteSkill
+      summary: Delete a skill
+      parameters:
+        - name: scope
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # Hooks
+  /api/hooks:
+    get:
+      operationId: getHooks
+      summary: List hooks
+      parameters:
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HooksResponse"
+    post:
+      operationId: createHook
+      summary: Create a hook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHookRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /api/hooks/{id}:
+    put:
+      operationId: updateHook
+      summary: Update a hook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateHookRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    delete:
+      operationId: deleteHook
+      summary: Delete a hook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # Backups
+  /api/backups:
+    get:
+      operationId: getBackups
+      summary: List backups
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BackupFile"
+
+  /api/backups/{id}/restore:
+    post:
+      operationId: restoreBackup
+      summary: Restore a backup
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # Projects
+  /api/projects:
+    get:
+      operationId: getProjects
+      summary: List projects
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectFile"
+
+  # Plugins
+  /api/plugins:
+    get:
+      operationId: getPlugins
+      summary: List plugins
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PluginFile"
+
+  # Features
+  /api/features:
+    get:
+      operationId: getFeatures
+      summary: Get features data
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeaturesData"
+
+  /api/features/{key}:
+    put:
+      operationId: updateFeature
+      summary: Update a feature value
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFeatureRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+    delete:
+      operationId: deleteFeature
+      summary: Delete (reset) a feature value
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # Search
+  /api/search:
+    get:
+      operationId: search
+      summary: Search across all resources
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SearchResult"
+
+  # Watch (SSE)
+  /api/watch:
+    get:
+      operationId: watch
+      summary: SSE file watcher stream
+      parameters:
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: SSE stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  # Auth
+  /api/auth/login:
+    post:
+      operationId: login
+      summary: Login with password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /api/auth/logout:
+    post:
+      operationId: logout
+      summary: Logout
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+components:
+  schemas:
+
+    HealthResponse:
+      type: object
+      required: [status]
+      additionalProperties: true
+      properties:
+        status:
+          type: string
+
+    SuccessResponse:
+      type: object
+      required: [success]
+      additionalProperties: true
+      properties:
+        success:
+          type: boolean
+
+    ConfigLayer:
+      type: object
+      required: [source, filePath, exists]
+      additionalProperties: true
+      properties:
+        source:
+          type: string
+          enum: [global, global-local, project, project-local]
+        filePath:
+          type: string
+        exists:
+          type: boolean
+        content:
+          type: object
+          additionalProperties: true
+          nullable: true
+
+    ConfigResponse:
+      type: object
+      required: [merged, layers]
+      additionalProperties: true
+      properties:
+        merged:
+          type: object
+          additionalProperties: true
+        layers:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConfigLayer"
+
+    UpdateConfigSettingRequest:
+      type: object
+      required: [keyPath, value]
+      additionalProperties: true
+      properties:
+        keyPath:
+          type: array
+          items:
+            type: string
+        value: {}
+        projectId:
+          type: string
+
+    DeleteConfigSettingRequest:
+      type: object
+      required: [keyPath]
+      additionalProperties: true
+      properties:
+        keyPath:
+          type: array
+          items:
+            type: string
+        projectId:
+          type: string
+
+    MoveConfigSettingRequest:
+      type: object
+      required: [keyPath, direction]
+      additionalProperties: true
+      properties:
+        keyPath:
+          type: array
+          items:
+            type: string
+        direction:
+          type: string
+          enum: [up, down]
+        projectId:
+          type: string
+
+    AgentFile:
+      type: object
+      required: [name, description, fileName, filePath, bodyPreview, isEditable]
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        fileName:
+          type: string
+        filePath:
+          type: string
+        tools:
+          type: string
+        color:
+          type: string
+        bodyPreview:
+          type: string
+        isEditable:
+          type: boolean
+
+    AgentDetail:
+      type: object
+      required: [name, description, fileName, filePath, body, isEditable]
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        fileName:
+          type: string
+        filePath:
+          type: string
+        tools:
+          type: string
+        color:
+          type: string
+        body:
+          type: string
+        isEditable:
+          type: boolean
+
+    CreateAgentRequest:
+      type: object
+      required: [name, body, scope]
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        tools:
+          type: string
+        color:
+          type: string
+        body:
+          type: string
+        scope:
+          type: string
+          enum: [global, project]
+        projectId:
+          type: string
+
+    UpdateAgentRequest:
+      type: object
+      required: [body, scope]
+      additionalProperties: true
+      properties:
+        description:
+          type: string
+        tools:
+          type: string
+        color:
+          type: string
+        body:
+          type: string
+        scope:
+          type: string
+          enum: [global, project]
+        projectId:
+          type: string
+
+    DeleteAgentRequest:
+      type: object
+      required: [scope]
+      additionalProperties: true
+      properties:
+        scope:
+          type: string
+          enum: [global, project]
+        projectId:
+          type: string
+
+    CommandFile:
+      type: object
+      required: [name, fileName, filePath, folder, bodyPreview, isEditable]
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        fileName:
+          type: string
+        filePath:
+          type: string
+        folder:
+          type: string
+        bodyPreview:
+          type: string
+        isEditable:
+          type: boolean
+
+    CommandDetail:
+      type: object
+      required: [name, fileName, filePath, folder, body, isEditable]
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        fileName:
+          type: string
+        filePath:
+          type: string
+        folder:
+          type: string
+        body:
+          type: string
+        isEditable:
+          type: boolean
+
+    CreateCommandRequest:
+      type: object
+      required: [name, folder, body, scope]
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        folder:
+          type: string
+        body:
+          type: string
+        scope:
+          type: string
+          enum: [global, project]
+        projectId:
+          type: string
+
+    UpdateCommandRequest:
+      type: object
+      required: [body]
+      additionalProperties: true
+      properties:
+        body:
+          type: string
+        projectId:
+          type: string
+
+    SkillFile:
+      type: object
+      required: [name, description, folderName, filePath, bodyPreview, isEditable]
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        folderName:
+          type: string
+        filePath:
+          type: string
+        bodyPreview:
+          type: string
+        isEditable:
+          type: boolean
+
+    SkillDetail:
+      type: object
+      required: [name, description, folderName, filePath, body, isEditable]
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        folderName:
+          type: string
+        filePath:
+          type: string
+        body:
+          type: string
+        isEditable:
+          type: boolean
+
+    CreateSkillRequest:
+      type: object
+      required: [name, body, scope]
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        body:
+          type: string
+        scope:
+          type: string
+          enum: [global, project]
+        projectId:
+          type: string
+
+    UpdateSkillRequest:
+      type: object
+      required: [body]
+      additionalProperties: true
+      properties:
+        description:
+          type: string
+        body:
+          type: string
+        projectId:
+          type: string
+
+    HookCommand:
+      type: object
+      required: [type, command]
+      additionalProperties: true
+      properties:
+        type:
+          type: string
+          enum: [command]
+        command:
+          type: string
+
+    HookDefinition:
+      type: object
+      required: [hooks]
+      additionalProperties: true
+      properties:
+        hooks:
+          type: array
+          items:
+            $ref: "#/components/schemas/HookCommand"
+        matcher:
+          type: string
+
+    HooksByEvent:
+      type: object
+      additionalProperties: true
+      properties:
+        SessionStart:
+          type: array
+          items:
+            $ref: "#/components/schemas/HookDefinition"
+        UserPromptSubmit:
+          type: array
+          items:
+            $ref: "#/components/schemas/HookDefinition"
+        PreToolUse:
+          type: array
+          items:
+            $ref: "#/components/schemas/HookDefinition"
+        PostToolUse:
+          type: array
+          items:
+            $ref: "#/components/schemas/HookDefinition"
+        Notification:
+          type: array
+          items:
+            $ref: "#/components/schemas/HookDefinition"
+        Stop:
+          type: array
+          items:
+            $ref: "#/components/schemas/HookDefinition"
+        SubagentStop:
+          type: array
+          items:
+            $ref: "#/components/schemas/HookDefinition"
+
+    HookScope:
+      type: object
+      additionalProperties: true
+      properties:
+        hooks:
+          $ref: "#/components/schemas/HooksByEvent"
+
+    HooksResponse:
+      type: object
+      additionalProperties: true
+      properties:
+        global:
+          $ref: "#/components/schemas/HookScope"
+        project:
+          $ref: "#/components/schemas/HookScope"
+
+    CreateHookRequest:
+      type: object
+      required: [event, commands, scope]
+      additionalProperties: true
+      properties:
+        event:
+          type: string
+        matcher:
+          type: string
+        commands:
+          type: array
+          items:
+            type: string
+        scope:
+          type: string
+          enum: [global, project]
+        projectId:
+          type: string
+
+    UpdateHookRequest:
+      type: object
+      required: [event, commands, scope]
+      additionalProperties: true
+      properties:
+        event:
+          type: string
+        matcher:
+          type: string
+        commands:
+          type: array
+          items:
+            type: string
+        scope:
+          type: string
+          enum: [global, project]
+        projectId:
+          type: string
+
+    BackupFile:
+      type: object
+      required: [id, filePath, originalPath, createdAt, size]
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        filePath:
+          type: string
+        originalPath:
+          type: string
+        createdAt:
+          type: string
+        size:
+          type: integer
+          format: int64
+
+    ProjectFile:
+      type: object
+      required: [name, path]
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+
+    PluginFile:
+      type: object
+      required: [name, path, isUserOwned]
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        isUserOwned:
+          type: boolean
+
+    FeatureDefinition:
+      type: object
+      required: [key, name, description, type, category]
+      additionalProperties: true
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [env, setting]
+        category:
+          type: string
+        values:
+          type: array
+          items:
+            type: string
+
+    Feature:
+      type: object
+      required: [definition, isDocumented]
+      additionalProperties: true
+      properties:
+        definition:
+          $ref: "#/components/schemas/FeatureDefinition"
+        currentValue: {}
+        isDocumented:
+          type: boolean
+
+    FeaturesData:
+      type: object
+      required: [features, totalDiscovered, totalDocumented]
+      additionalProperties: true
+      properties:
+        version:
+          type: string
+          nullable: true
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/Feature"
+        totalDiscovered:
+          type: integer
+        totalDocumented:
+          type: integer
+
+    UpdateFeatureRequest:
+      type: object
+      required: [value, type]
+      additionalProperties: true
+      properties:
+        value: {}
+        type:
+          type: string
+          enum: [env, setting]
+
+    SearchResult:
+      type: object
+      required: [type, name, filePath, preview]
+      additionalProperties: true
+      properties:
+        type:
+          type: string
+          enum: [agent, command, skill, hook]
+        name:
+          type: string
+        description:
+          type: string
+        filePath:
+          type: string
+        preview:
+          type: string
+
+    LoginRequest:
+      type: object
+      required: [password]
+      additionalProperties: true
+      properties:
+        password:
+          type: string

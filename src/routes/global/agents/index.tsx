@@ -1,37 +1,44 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Bot, Lock } from "lucide-react";
+import { Link } from "react-router";
 import { FileCard } from "@/components/files/FileCard.js";
 import { FileList } from "@/components/files/FileList.js";
 import { AppShell } from "@/components/layout/AppShell.js";
 import { ResourceListPage } from "@/components/resources/ResourceListPage.js";
-import { listAgents } from "@/server/functions/agents.js";
+import * as api from "@/lib/api.js";
 
-export const Route = createFileRoute("/global/agents/")({
-  head: () => ({ meta: [{ title: "Agents - Field Station" }] }),
-  loader: async () => {
-    const agents = await listAgents({ data: { scope: "global" } });
-    return { agents };
-  },
-  component: GlobalAgentsPage,
-  pendingComponent: () => (
-    <AppShell title="Global Agents">
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-text-muted">Loading agents...</div>
-      </div>
-    </AppShell>
-  ),
-  errorComponent: ({ error }) => (
-    <AppShell title="Global Agents">
-      <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-        <p className="text-danger font-medium">Failed to load agents</p>
-        <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-      </div>
-    </AppShell>
-  ),
-});
+export function GlobalAgentsPage() {
+  const {
+    data: agents = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["agents", "global"],
+    queryFn: () => api.getAgents("global"),
+  });
 
-function GlobalAgentsPage() {
-  const { agents } = Route.useLoaderData();
+  if (isLoading) {
+    return (
+      <AppShell title="Global Agents">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-pulse text-text-muted">Loading agents...</div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppShell title="Global Agents">
+        <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
+          <p className="text-danger font-medium">Failed to load agents</p>
+          <p className="text-text-muted text-sm mt-1">
+            {error instanceof Error ? error.message : String(error)}
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell title="Global Agents">
@@ -53,8 +60,7 @@ function GlobalAgentsPage() {
           {agents.map((agent) => (
             <Link
               key={agent.fileName}
-              to="/global/agents/$agentName"
-              params={{ agentName: agent.fileName.replace(".md", "") }}
+              to={`/global/agents/${agent.fileName.replace(".md", "")}`}
               className="block"
             >
               <FileCard

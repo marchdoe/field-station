@@ -1,68 +1,66 @@
-import { Link } from "@tanstack/react-router";
 import { Bot, Settings, Terminal, Zap } from "lucide-react";
-import type { ProjectSummary } from "@/types/config.js";
+import { NavLink } from "react-router";
 
 const inactive = "text-text-muted hover:text-text-primary border-b-2 border-transparent";
 const active = "border-b-2 border-accent text-accent";
 
-export function ProjectTabs({
-  projectId,
-  summary,
-}: {
+interface ProjectTabsProps {
   projectId: string;
-  summary: ProjectSummary;
-}) {
+  counts?: {
+    settings: number;
+    agents: number;
+    commands: number;
+    skills: number;
+  };
+}
+
+export function ProjectTabs({ projectId, counts }: ProjectTabsProps) {
   const tabs = [
     {
       label: "Settings",
-      to: "/projects/$projectId/settings" as const,
+      to: `/projects/${projectId}/settings`,
       icon: Settings,
-      exact: false,
-      count: (summary.settings ? 1 : 0) + (summary.settingsLocal ? 1 : 0),
+      count: counts?.settings,
     },
     {
       label: "Agents",
-      to: "/projects/$projectId/agents" as const,
+      to: `/projects/${projectId}/agents`,
       icon: Bot,
-      exact: false,
-      count: summary.agentCount,
+      count: counts?.agents,
     },
     {
       label: "Commands",
-      to: "/projects/$projectId/commands" as const,
+      to: `/projects/${projectId}/commands`,
       icon: Terminal,
-      exact: false,
-      count: summary.commandCount,
+      count: counts?.commands,
     },
     {
       label: "Skills",
-      to: "/projects/$projectId/skills" as const,
+      to: `/projects/${projectId}/skills`,
       icon: Zap,
-      exact: false,
-      count: summary.skillCount,
+      count: counts?.skills,
     },
   ];
 
   return (
     <nav className="flex gap-1 border-b border-border-default">
       {tabs.map((tab) => (
-        <Link
+        <NavLink
           key={tab.label}
           to={tab.to}
-          params={{ projectId }}
-          activeOptions={{ exact: tab.exact }}
-          activeProps={{ className: active }}
-          inactiveProps={{ className: inactive }}
-          className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors"
+          end={false}
+          className={({ isActive }) =>
+            `flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${isActive ? active : inactive}`
+          }
         >
           <tab.icon className="w-4 h-4" />
           {tab.label}
-          {tab.count > 0 && (
+          {tab.count !== undefined && tab.count > 0 && (
             <span className="ml-1 text-xs bg-surface-2 text-text-muted px-1.5 py-0.5 rounded-full">
               {tab.count}
             </span>
           )}
-        </Link>
+        </NavLink>
       ))}
     </nav>
   );

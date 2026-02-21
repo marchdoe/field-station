@@ -1,54 +1,60 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Lock, Zap } from "lucide-react";
+import { Link, useParams } from "react-router";
 import { FileCard } from "@/components/files/FileCard.js";
 import { FileList } from "@/components/files/FileList.js";
 import { ResourceListPage } from "@/components/resources/ResourceListPage.js";
-import { decodePath } from "@/lib/utils.js";
-import { listSkills } from "@/server/functions/skills.js";
+import type { SkillFile } from "@/lib/api.js";
+import * as api from "@/lib/api.js";
 
-export const Route = createFileRoute("/projects/$projectId/skills/")({
-  head: () => ({ meta: [{ title: "Project Skills - Field Station" }] }),
-  loader: async ({ params }) => {
-    const projectPath = decodePath(params.projectId);
-    const skills = await listSkills({ data: { scope: "project", projectPath } });
-    return { skills, projectId: params.projectId, projectPath };
-  },
-  component: ProjectSkillsPage,
-  pendingComponent: () => (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-pulse text-text-muted">Loading skills...</div>
-    </div>
-  ),
-  errorComponent: ({ error }) => (
-    <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-      <p className="text-danger font-medium">Failed to load skills</p>
-      <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-    </div>
-  ),
-});
+function buildSkillMeta(skill: SkillFile): Record<string, string> {
+  const meta: Record<string, string> = {};
+  const allowedTools = (skill as Record<string, unknown>).allowedTools;
+  if (typeof allowedTools === "string") {
+    meta["allowed-tools"] = allowedTools;
+  }
+  if (!skill.isEditable) {
+    meta.source = "plugin";
+  }
+  return meta;
+}
 
-function ProjectSkillsPage() {
-  const { skills, projectId, projectPath } = Route.useLoaderData();
+export function ProjectSkillsPage() {
+  const { projectId } = useParams<{ projectId: string }>();
+
+  const { data: skills, isLoading } = useQuery({
+    queryKey: ["skills", "project", projectId],
+    queryFn: () => api.getSkills("project", projectId),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-pulse text-text-muted">Loading skills...</div>
+      </div>
+    );
+  }
+
+  const skillList = skills ?? [];
 
   return (
     <ResourceListPage
       scope="project"
-      projectPath={projectPath}
+      projectId={projectId}
       resourceType="skill"
       typeLabel="Skill"
       subtitle={
         <p className="text-text-secondary">
-          {skills.length} skill{skills.length !== 1 ? "s" : ""} from{" "}
+          {skillList.length} skill{skillList.length !== 1 ? "s" : ""} from{" "}
           <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">.claude/skills/</code>
         </p>
       }
     >
       <FileList emptyMessage="No project-level skills found">
-        {skills.map((skill) => (
+        {skillList.map((skill) => (
           <Link
             key={skill.folderName}
-            to="/projects/$projectId/skills/$skillName"
-            params={{ projectId, skillName: skill.folderName }}
+            to={`/projects/${projectId}/skills/${skill.folderName}`}
             className="block"
           >
             <FileCard
@@ -56,10 +62,7 @@ function ProjectSkillsPage() {
               description={skill.description}
               fileName={`${skill.folderName}/SKILL.md`}
               variant="skill"
-              meta={{
-                ...(skill.allowedTools ? { "allowed-tools": skill.allowedTools } : {}),
-                ...(!skill.isEditable ? { source: "plugin" } : {}),
-              }}
+              meta={buildSkillMeta(skill)}
               preview={skill.bodyPreview}
               icon={
                 skill.isEditable ? (

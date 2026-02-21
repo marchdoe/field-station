@@ -1,22 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { Radio } from "lucide-react";
 import { useState } from "react";
-import { z } from "zod";
+import { useSearchParams } from "react-router";
 
-const searchSchema = z.object({
-  next: z.string().optional(),
-});
-
-export const Route = createFileRoute("/login")({
-  validateSearch: searchSchema,
-  head: () => ({
-    meta: [{ title: "Sign In - Field Station" }],
-  }),
-  component: LoginPage,
-});
-
-function LoginPage() {
-  const { next } = Route.useSearch();
+export function LoginPage() {
+  const [searchParams] = useSearchParams();
+  const next = searchParams.get("next") ?? undefined;
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -38,7 +26,13 @@ function LoginPage() {
       });
 
       if (res.redirected) {
-        window.location.href = res.url;
+        // Validate the redirect is same-origin to prevent open redirect attacks.
+        const redirectUrl = new URL(res.url);
+        if (redirectUrl.origin === window.location.origin) {
+          window.location.href = res.url;
+        } else {
+          window.location.href = "/";
+        }
         return;
       }
 

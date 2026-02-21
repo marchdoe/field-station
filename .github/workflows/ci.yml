@@ -12,6 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: server/go.mod
+          cache-dependency-path: server/go.sum
+
       - uses: actions/setup-node@v4
         with:
           node-version-file: .tool-versions
@@ -28,5 +33,14 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Go vet
+        run: cd server && go vet -tags dev ./...
+
+      - name: Go tests
+        run: cd server && go test -tags dev ./...
+
+      - name: Check generated files are up to date
+        run: make generate-check
+
       - name: Build
-        run: npm run build
+        run: make build

@@ -1,42 +1,10 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { History } from "lucide-react";
 import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell.js";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog.js";
-import { getBackups, restoreBackupFn } from "@/server/functions/backups.js";
-
-export const Route = createFileRoute("/history")({
-  head: () => ({
-    meta: [{ title: "Change History - Field Station" }],
-  }),
-  loader: async () => {
-    const backups = await getBackups();
-    return { backups };
-  },
-  component: HistoryPage,
-  pendingComponent: () => (
-    <AppShell title="Change History">
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-text-muted">Loading history...</div>
-      </div>
-    </AppShell>
-  ),
-  errorComponent: ({ error }) => (
-    <AppShell title="Change History">
-      <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-        <p className="text-danger font-medium">Failed to load history</p>
-        <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-      </div>
-    </AppShell>
-  ),
-});
-
-interface BackupEntry {
-  id: string;
-  timestamp: string;
-  originalPath: string;
-  operation: "update" | "delete" | "move";
-}
+import type { BackupFile } from "@/lib/api.js";
+import * as api from "@/lib/api.js";
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -54,50 +22,62 @@ function formatDayHeading(iso: string): string {
 }
 
 function displayPath(originalPath: string): string {
-  // Replace home dir with ~
   const home = originalPath.match(/^\/(?:home|Users)\/[^/]+\//)?.[0];
   if (home) return originalPath.replace(home, "~/");
   return originalPath;
 }
 
-function groupByDay(entries: BackupEntry[]): [string, BackupEntry[]][] {
-  const map = new Map<string, BackupEntry[]>();
+function groupByDay(entries: BackupFile[]): [string, BackupFile[]][] {
+  const map = new Map<string, BackupFile[]>();
   for (const e of entries) {
-    const day = new Date(e.timestamp).toDateString();
+    const day = new Date(e.createdAt).toDateString();
     if (!map.has(day)) map.set(day, []);
     map.get(day)?.push(e);
   }
-  return [...map.entries()].map(([, items]) => [formatDayHeading(items[0].timestamp), items]);
+  return [...map.entries()].map(([, items]) => {
+    const first = items[0];
+    return [formatDayHeading(first ? first.createdAt : ""), items] as [string, BackupFile[]];
+  });
 }
 
-const operationBadge: Record<string, string> = {
-  update: "text-text-muted bg-surface-2",
-  delete: "text-danger bg-danger/10",
-  move: "text-accent bg-accent-muted",
-};
-
-function HistoryPage() {
-  const { backups } = Route.useLoaderData();
-  const router = useRouter();
-  const [restoring, setRestoring] = useState<BackupEntry | null>(null);
-  const [busy, setBusy] = useState(false);
+export function HistoryPage() {
+  const queryClient = useQueryClient();
+  const [restoring, setRestoring] = useState<BackupFile | null>(null);
   const [restoreError, setRestoreError] = useState<string | null>(null);
 
-  const groups = groupByDay(backups);
+  const { data: backups, isLoading } = useQuery({
+    queryKey: ["backups"],
+    queryFn: api.getBackups,
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: ({ id }: { id: string }) => api.restoreBackup(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["backups"] });
+      setRestoreError(null);
+      setRestoring(null);
+    },
+    onError: (err) => {
+      setRestoreError(err instanceof Error ? err.message : "Restore failed. Please try again.");
+    },
+  });
+
+  const backupList = backups ?? [];
+  const groups = groupByDay(backupList);
 
   async function handleRestore() {
     if (!restoring) return;
-    setBusy(true);
-    try {
-      await restoreBackupFn({ data: { backupId: restoring.id } });
-      setRestoreError(null);
-      setRestoring(null);
-      await router.invalidate();
-    } catch (err) {
-      setRestoreError(err instanceof Error ? err.message : "Restore failed. Please try again.");
-    } finally {
-      setBusy(false);
-    }
+    restoreMutation.mutate({ id: restoring.id });
+  }
+
+  if (isLoading) {
+    return (
+      <AppShell title="Change History">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-pulse text-text-muted">Loading history...</div>
+        </div>
+      </AppShell>
+    );
   }
 
   return (
@@ -135,17 +115,10 @@ function HistoryPage() {
                   }`}
                 >
                   <span className="text-xs text-text-muted w-16 shrink-0 tabular-nums">
-                    {formatTime(entry.timestamp)}
+                    {formatTime(entry.createdAt)}
                   </span>
                   <span className="text-sm text-text-primary font-mono truncate flex-1 min-w-0">
                     {displayPath(entry.originalPath)}
-                  </span>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                      operationBadge[entry.operation] ?? operationBadge.update
-                    }`}
-                  >
-                    {entry.operation}
                   </span>
                   <button
                     type="button"
@@ -166,10 +139,10 @@ function HistoryPage() {
         title="Restore this version?"
         message={
           restoring
-            ? `Restore ${displayPath(restoring.originalPath)} to its state from ${formatTime(restoring.timestamp)}? The current file will be backed up first.${restoreError ? `\n\nError: ${restoreError}` : ""}`
+            ? `Restore ${displayPath(restoring.originalPath)} to its state from ${formatTime(restoring.createdAt)}? The current file will be backed up first.${restoreError ? `\n\nError: ${restoreError}` : ""}`
             : ""
         }
-        confirmLabel={busy ? "Restoring…" : "Restore"}
+        confirmLabel={restoreMutation.isPending ? "Restoring\u2026" : "Restore"}
         onConfirm={handleRestore}
         onCancel={() => {
           setRestoring(null);

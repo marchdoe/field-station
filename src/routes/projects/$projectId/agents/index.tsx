@@ -1,54 +1,47 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Bot, Lock } from "lucide-react";
+import { Link, useParams } from "react-router";
 import { FileCard } from "@/components/files/FileCard.js";
 import { FileList } from "@/components/files/FileList.js";
 import { ResourceListPage } from "@/components/resources/ResourceListPage.js";
-import { decodePath } from "@/lib/utils.js";
-import { listAgents } from "@/server/functions/agents.js";
+import * as api from "@/lib/api.js";
 
-export const Route = createFileRoute("/projects/$projectId/agents/")({
-  head: () => ({ meta: [{ title: "Project Agents - Field Station" }] }),
-  loader: async ({ params }) => {
-    const projectPath = decodePath(params.projectId);
-    const agents = await listAgents({ data: { scope: "project", projectPath } });
-    return { agents, projectId: params.projectId, projectPath };
-  },
-  component: ProjectAgentsPage,
-  pendingComponent: () => (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-pulse text-text-muted">Loading agents...</div>
-    </div>
-  ),
-  errorComponent: ({ error }) => (
-    <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-      <p className="text-danger font-medium">Failed to load agents</p>
-      <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-    </div>
-  ),
-});
+export function ProjectAgentsPage() {
+  const { projectId } = useParams<{ projectId: string }>();
 
-function ProjectAgentsPage() {
-  const { agents, projectId, projectPath } = Route.useLoaderData();
+  const { data: agents, isLoading } = useQuery({
+    queryKey: ["agents", "project", projectId],
+    queryFn: () => api.getAgents("project", projectId),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-pulse text-text-muted">Loading agents...</div>
+      </div>
+    );
+  }
+
+  const agentList = agents ?? [];
 
   return (
     <ResourceListPage
       scope="project"
-      projectPath={projectPath}
+      projectId={projectId}
       resourceType="agent"
       typeLabel="Agent"
       subtitle={
         <p className="text-text-secondary">
-          {agents.length} agent definition{agents.length !== 1 ? "s" : ""} from{" "}
+          {agentList.length} agent definition{agentList.length !== 1 ? "s" : ""} from{" "}
           <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">.claude/agents/</code>
         </p>
       }
     >
       <FileList emptyMessage="No project-level agents found">
-        {agents.map((agent) => (
+        {agentList.map((agent) => (
           <Link
             key={agent.fileName}
-            to="/projects/$projectId/agents/$agentName"
-            params={{ projectId, agentName: agent.fileName.replace(".md", "") }}
+            to={`/projects/${projectId}/agents/${agent.fileName.replace(".md", "")}`}
             className="block"
           >
             <FileCard

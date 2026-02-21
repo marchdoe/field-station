@@ -1,0 +1,8 @@
+package: api
+generate:
+  std-http-server: true
+  strict-server: true
+  models: true
+output: api/generated.go
+output-options:
+  user-templates: {}

@@ -1,36 +1,46 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { FolderOpen, Lock, Terminal } from "lucide-react";
+import { Link } from "react-router";
 import { FileCard } from "@/components/files/FileCard.js";
 import { FileList } from "@/components/files/FileList.js";
 import { AppShell } from "@/components/layout/AppShell.js";
 import { ResourceListPage } from "@/components/resources/ResourceListPage.js";
-import { listCommands } from "@/server/functions/commands.js";
+import * as api from "@/lib/api.js";
 
-export const Route = createFileRoute("/global/commands/")({
-  head: () => ({ meta: [{ title: "Commands - Field Station" }] }),
-  loader: async () => {
-    return listCommands({ data: { scope: "global" } });
-  },
-  component: GlobalCommandsPage,
-  pendingComponent: () => (
-    <AppShell title="Global Commands">
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-text-muted">Loading commands...</div>
-      </div>
-    </AppShell>
-  ),
-  errorComponent: ({ error }) => (
-    <AppShell title="Global Commands">
-      <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-        <p className="text-danger font-medium">Failed to load commands</p>
-        <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-      </div>
-    </AppShell>
-  ),
-});
+export function GlobalCommandsPage() {
+  const {
+    data: commands = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["commands", "global"],
+    queryFn: () => api.getCommands("global"),
+  });
 
-function GlobalCommandsPage() {
-  const { folders, commands } = Route.useLoaderData();
+  if (isLoading) {
+    return (
+      <AppShell title="Global Commands">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-pulse text-text-muted">Loading commands...</div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppShell title="Global Commands">
+        <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
+          <p className="text-danger font-medium">Failed to load commands</p>
+          <p className="text-text-muted text-sm mt-1">
+            {error instanceof Error ? error.message : String(error)}
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const folders = [...new Set(commands.map((c) => c.folder))];
 
   return (
     <AppShell title="Global Commands">
@@ -65,8 +75,7 @@ function GlobalCommandsPage() {
                 {folderCommands.map((cmd) => (
                   <Link
                     key={cmd.filePath}
-                    to="/global/commands/$folder/$commandName"
-                    params={{ folder: cmd.folder, commandName: cmd.name }}
+                    to={`/global/commands/${cmd.folder}/${cmd.name}`}
                     className="block"
                   >
                     <FileCard

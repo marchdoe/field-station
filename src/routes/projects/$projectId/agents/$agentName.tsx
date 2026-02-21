@@ -1,40 +1,38 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Bot } from "lucide-react";
+import { useParams } from "react-router";
 import { ResourceDetailPage } from "@/components/resources/ResourceDetailPage.js";
-import { decodePath } from "@/lib/utils.js";
-import { getAgent } from "@/server/functions/agents.js";
+import * as api from "@/lib/api.js";
 
-export const Route = createFileRoute("/projects/$projectId/agents/$agentName")({
-  loader: async ({ params }) => {
-    const projectPath = decodePath(params.projectId);
-    const agent = await getAgent({
-      data: { scope: "project", projectPath, name: params.agentName },
-    });
-    return { agent, projectId: params.projectId };
-  },
-  head: ({ loaderData }) => ({
-    meta: [{ title: `${loaderData?.agent?.name ?? "Agent"} - Field Station` }],
-  }),
-  component: ProjectAgentDetailPage,
-  pendingComponent: () => (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-pulse text-text-muted">Loading agent...</div>
-    </div>
-  ),
-  errorComponent: ({ error }) => (
-    <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-      <p className="text-danger font-medium">Failed to load agent</p>
-      <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-    </div>
-  ),
-});
+export function ProjectAgentDetailPage() {
+  const { projectId, agentName } = useParams<{ projectId: string; agentName: string }>();
 
-function ProjectAgentDetailPage() {
-  const { agent, projectId } = Route.useLoaderData();
+  const { data: agent, isLoading } = useQuery({
+    queryKey: ["agent", "project", projectId, agentName],
+    queryFn: () => api.getAgent(agentName ?? "", "project", projectId),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-pulse text-text-muted">Loading agent...</div>
+      </div>
+    );
+  }
+
+  if (!agent) {
+    return (
+      <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
+        <p className="text-danger font-medium">Agent not found</p>
+      </div>
+    );
+  }
 
   return (
     <ResourceDetailPage
       resourceType="agent"
+      scope="project"
+      projectId={projectId}
       resource={{
         name: agent.name,
         displayName: agent.name,
@@ -62,10 +60,9 @@ function ProjectAgentDetailPage() {
       ]}
       backLink={{
         label: "Back to agents",
-        to: "/projects/$projectId/agents",
-        params: { projectId },
+        to: `/projects/${projectId}/agents`,
       }}
-      deleteNavigate={{ to: "/projects/$projectId/agents", params: { projectId } }}
+      deleteNavigate={{ to: `/projects/${projectId}/agents` }}
     />
   );
 }

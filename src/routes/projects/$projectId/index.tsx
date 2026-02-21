@@ -1,10 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Navigate } from "react-router";
 
-export const Route = createFileRoute("/projects/$projectId/")({
-  beforeLoad: ({ params }) => {
-    throw redirect({
-      to: "/projects/$projectId/settings",
-      params: { projectId: params.projectId },
-    });
-  },
-});
+export function ProjectIndexRedirect() {
+  return <Navigate to="settings" replace />;
+}

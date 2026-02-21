@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { Feature } from "@/server/functions/features.js";
+import type { Feature } from "@/lib/api.js";
 import { FeatureList } from "./FeatureList.js";
 
 function makeFeature(overrides: Partial<Feature["definition"]> = {}): Feature {

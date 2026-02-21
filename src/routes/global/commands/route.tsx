@@ -1,5 +1,5 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { Outlet } from "react-router";
 
-export const Route = createFileRoute("/global/commands")({
-  component: () => <Outlet />,
-});
+export function GlobalCommandsOutlet() {
+  return <Outlet />;
+}

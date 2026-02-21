@@ -1,133 +1,163 @@
 # Field Station
 
-A visual configuration explorer and management tool for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Browse, inspect, and edit your Claude Code settings, agents, commands, skills, hooks, and plugins through a local web interface instead of manually navigating `~/.claude/` and editing JSON files.
+A local web interface for managing [Claude Code](https://docs.anthropic.com/en/docs/claude-code) configuration. Instead of manually editing JSON files and hunting through `~/.claude/`, Field Station gives you a browser UI to browse, inspect, and edit everything Claude Code stores on disk.
 
-## Prerequisites
+## What it does
 
-- **Node.js** (modern version with ES module support)
-- **Claude Code** installed with a `~/.claude/` directory
-- At least one project registered in `~/.claude/projects/`
+**Configuration** — View settings across all four layers (global, global-local, project, project-local) with a merged "effective config" view. Sensitive values like API keys are automatically redacted.
 
-## Getting Started
+**Projects** — Browse all your Claude Code projects and drill into each one to manage its resources independently.
+
+**Agents, Commands & Skills** — Create, edit, and delete markdown-based resources. Files are displayed with syntax-highlighted previews and parsed YAML frontmatter.
+
+**Hooks** — Inspect your hook configurations (SessionStart, Stop, PreToolUse, etc.) with color-coded event types and handler details.
+
+**Plugins** — See all installed plugins with enabled/disabled status.
+
+**Features & Experiments** — Browse Claude Code feature flags, see their current values, and toggle them.
+
+**Search** — Global search across all resources (Cmd+K / Ctrl+K).
+
+**Change History** — Every write operation is backed up first. You can browse the change timeline and restore any previous version of any file.
+
+**Authentication** — Optional token-based auth for running on a server or shared machine. Set `FIELD_STATION_TOKEN` and the UI requires a login before granting access.
+
+**Live updates** — The UI refreshes automatically via SSE when files change on disk or when Claude Code is upgraded.
+
+## Architecture
+
+Field Station is a self-contained Go binary with the React frontend embedded inside it. There are no external dependencies at runtime.
+
+```
+server/          Go backend (net/http, oapi-codegen, fsnotify)
+  openapi.yaml   Source of truth — generates Go types and TS types
+  api/           REST API handlers (generated + hand-written)
+  lib/           Core logic: config parsing, file I/O, path safety
+  middleware/    Auth (HMAC session tokens)
+  main.go        HTTP server on :3457, embeds server/dist/
+
+src/             React frontend (Vite, React Router v7, TanStack Query)
+  lib/api.ts     Typed REST client, generated from openapi.yaml
+  routes/        Page components
+  components/    Shared UI
+```
+
+In development, Vite runs on `:3456` and proxies `/api/*` to the Go backend on `:3457`. In production a single binary serves both on `:3457`.
+
+The OpenAPI spec drives everything — `make generate` regenerates Go server stubs, `make generate-ts` regenerates the TypeScript client types.
+
+## Development
+
+**Prerequisites:** Go 1.22+, Node.js 20+, Claude Code installed (`~/.claude/` must exist)
 
 ```bash
 npm install
-npm run dev
+
+# Terminal 1 — Go backend
+make dev-server
+
+# Terminal 2 — Vite dev server
+make dev-frontend
 ```
 
-The app runs at **http://localhost:3456**.
+Open **http://localhost:3456**.
 
-On first launch you'll see a welcome screen. Click **Run Setup** to scan for Claude Code projects and select which ones to track.
+## Building
 
-## Building for Production
+Produces a single self-contained binary with the frontend embedded:
 
 ```bash
-npm run build
-npm run preview
+make build
+./field-station     # http://localhost:3457
 ```
+
+## Running on a VPS
+
+The recommended approach is to build the binary, copy it to the server, and run it behind a reverse proxy.
+
+**1. Build and copy**
+
+```bash
+make build
+scp field-station user@your-server:/usr/local/bin/
+```
+
+**2. Set an auth token** (required for any remote deployment)
+
+```bash
+export FIELD_STATION_TOKEN=your-secret-token
+./field-station
+```
+
+The token is set once at startup. Anyone who opens the UI must enter it on the login screen. Sessions are signed with HMAC and stored in a cookie.
+
+**3. Reverse proxy with nginx** (optional but recommended for TLS)
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name fieldstation.example.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3457;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        # SSE requires buffering disabled
+        proxy_buffering off;
+        proxy_read_timeout 3600s;
+    }
+}
+```
+
+**Note:** Field Station reads `~/.claude/` on the server. On a VPS this should be the Claude Code config of the user account running the process.
 
 ## Running as a Service
 
-Field Station can run as a persistent background service so it survives terminal closes and starts automatically on login.
-
 ### Docker
 
-Build and run with docker-compose (mounts `~/.claude/` and the `claude` binary from the host):
-
 ```bash
-# Adjust the claude binary path in docker-compose.yml if needed
-# macOS (Homebrew): /opt/homebrew/bin/claude
-# Linux/npm global: /usr/local/bin/claude
 docker compose up -d
 ```
 
-Then open http://localhost:3456.
+Edit `docker-compose.yml` to adjust the volume paths for your Claude binary location (macOS Homebrew vs Linux npm global install differ).
 
 ### macOS (launchd)
 
-1. Build the app: `npm run build`
-2. Copy and configure the plist:
-   ```bash
-   cp deploy/field-station.plist ~/Library/LaunchAgents/com.fieldstation.app.plist
-   ```
-3. Edit `~/Library/LaunchAgents/com.fieldstation.app.plist` — set `WorkingDirectory` to the absolute path of this project (e.g. `/Users/you/Projects/field-station`)
-4. Load the service:
-   ```bash
-   mkdir -p ~/Library/Logs/field-station
-   launchctl load ~/Library/LaunchAgents/com.fieldstation.app.plist
-   ```
+```bash
+make build
+cp deploy/field-station.plist ~/Library/LaunchAgents/com.fieldstation.app.plist
+# Edit the plist to set WorkingDirectory and the path to the binary
+mkdir -p ~/Library/Logs/field-station
+launchctl load ~/Library/LaunchAgents/com.fieldstation.app.plist
+```
 
 To stop: `launchctl unload ~/Library/LaunchAgents/com.fieldstation.app.plist`
 
 ### Linux (systemd)
 
-1. Build the app: `npm run build`
-2. Copy and configure the unit:
-   ```bash
-   cp deploy/field-station.service ~/.config/systemd/user/field-station.service
-   ```
-3. Edit `~/.config/systemd/user/field-station.service` — set `WorkingDirectory` and `ExecStart` paths
-4. Enable and start:
-   ```bash
-   systemctl --user daemon-reload
-   systemctl --user enable --now field-station
-   ```
-
-### pm2 (alternative)
-
 ```bash
-npm run build
-pm2 start "node .output/server/index.mjs" --name field-station
-pm2 save       # persist across reboots
-pm2 startup    # configure autostart (follow the printed instructions)
+make build
+cp deploy/field-station.service ~/.config/systemd/user/field-station.service
+# Edit the service file to set ExecStart to the binary path
+systemctl --user daemon-reload
+systemctl --user enable --now field-station
 ```
 
-## What You Can Do
+## Environment variables
 
-### Global Settings
-
-View and edit configuration across all four layers — global, global local, project, and project local — with a merged "effective config" view. Sensitive values like API keys are automatically redacted.
-
-### Projects
-
-Browse all your registered Claude Code projects. Each project shows its path, whether a `CLAUDE.md` exists, and counts of agents, commands, and skills. Drill into any project to manage its resources.
-
-### Agents, Commands & Skills
-
-Browse, create, edit, and delete markdown-based resources:
-
-- **Agents** — custom AI agent definitions with frontmatter (name, description, tools)
-- **Commands** — slash commands organized by folder
-- **Skills** — skill packages with `SKILL.md` files
-
-Files are displayed with syntax-highlighted previews and parsed YAML frontmatter.
-
-### Hooks
-
-View hook configurations (SessionStart, Stop, PreToolUse, etc.) from your settings, with color-coded event types and handler details.
-
-### Plugins
-
-See installed plugins with version info, install dates, git commit SHAs, and enabled/disabled status. Links to plugin homepages when available.
-
-## Architecture
-
-Field Station is a full-stack TypeScript application built on [TanStack Start](https://tanstack.com/start) with file-based routing via [TanStack Router](https://tanstack.com/router). The server layer runs on [Nitro](https://nitro.build) and uses TanStack Start's `createServerFn` for server-side operations like reading/writing config files and scanning the filesystem.
-
-**Key libraries:**
-
-- **Tailwind CSS** — styling with a custom dark/light theme system
-- **Shiki** — dual-theme syntax highlighting for code and markdown previews
-- **react-markdown** — rendering markdown content with GFM support
-- **gray-matter** — parsing YAML frontmatter from resource files
-- **Zod** — schema validation
-- **Lucide React** — icons
+| Variable | Default | Description |
+|---|---|---|
+| `FIELD_STATION_TOKEN` | _(none)_ | Auth token. If unset, no login is required. |
+| `FIELD_STATION_ADDR` | `127.0.0.1:3457` | Listen address. Set to `:3457` for Docker or remote access. |
+| `CLAUDE_HOME` | `~/.claude` | Override the Claude config directory. |
+| `FIELD_STATION_DEV` | `0` | Set to `1` to skip embedding and proxy to Vite (set automatically by `make dev-server`). |
 
 ## Testing
 
 ```bash
-npm run test        # run tests
-npm run typecheck   # type check
+make test           # Go tests + Vitest
+make lint           # go vet + Biome
+npm run typecheck   # TypeScript
 ```
 
 ## License

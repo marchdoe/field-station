@@ -1,52 +1,47 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { FolderOpen, Lock, Terminal } from "lucide-react";
+import { Link, useParams } from "react-router";
 import { FileCard } from "@/components/files/FileCard.js";
 import { FileList } from "@/components/files/FileList.js";
 import { ResourceListPage } from "@/components/resources/ResourceListPage.js";
-import { decodePath } from "@/lib/utils.js";
-import { listCommands } from "@/server/functions/commands.js";
+import * as api from "@/lib/api.js";
 
-export const Route = createFileRoute("/projects/$projectId/commands/")({
-  head: () => ({ meta: [{ title: "Project Commands - Field Station" }] }),
-  loader: async ({ params }) => {
-    const projectPath = decodePath(params.projectId);
-    const result = await listCommands({ data: { scope: "project", projectPath } });
-    return { ...result, projectId: params.projectId, projectPath };
-  },
-  component: ProjectCommandsPage,
-  pendingComponent: () => (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-pulse text-text-muted">Loading commands...</div>
-    </div>
-  ),
-  errorComponent: ({ error }) => (
-    <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-      <p className="text-danger font-medium">Failed to load commands</p>
-      <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-    </div>
-  ),
-});
+export function ProjectCommandsPage() {
+  const { projectId } = useParams<{ projectId: string }>();
 
-function ProjectCommandsPage() {
-  const { folders, commands, projectId, projectPath } = Route.useLoaderData();
+  const { data: commands, isLoading } = useQuery({
+    queryKey: ["commands", "project", projectId],
+    queryFn: () => api.getCommands("project", projectId),
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-pulse text-text-muted">Loading commands...</div>
+      </div>
+    );
+  }
+
+  const commandList = commands ?? [];
+  const folders = [...new Set(commandList.map((c) => c.folder))];
 
   return (
     <ResourceListPage
       scope="project"
-      projectPath={projectPath}
+      projectId={projectId}
       resourceType="command"
       typeLabel="Command"
       existingFolders={folders}
       subtitle={
         <p className="text-text-secondary">
-          {commands.length} command{commands.length !== 1 ? "s" : ""} in {folders.length} folder
-          {folders.length !== 1 ? "s" : ""} from{" "}
+          {commandList.length} command{commandList.length !== 1 ? "s" : ""} in {folders.length}{" "}
+          folder{folders.length !== 1 ? "s" : ""} from{" "}
           <code className="text-sm bg-surface-2 px-1.5 py-0.5 rounded">.claude/commands/</code>
         </p>
       }
     >
       {folders.map((folder) => {
-        const folderCommands = commands.filter((c) => c.folder === folder);
+        const folderCommands = commandList.filter((c) => c.folder === folder);
         return (
           <div key={folder}>
             <div className="flex items-center gap-2 mb-3">
@@ -58,8 +53,7 @@ function ProjectCommandsPage() {
               {folderCommands.map((cmd) => (
                 <Link
                   key={cmd.filePath}
-                  to="/projects/$projectId/commands/$folder/$commandName"
-                  params={{ projectId, folder: cmd.folder, commandName: cmd.name }}
+                  to={`/projects/${projectId}/commands/${cmd.folder}/${cmd.name}`}
                   className="block"
                 >
                   <FileCard
@@ -82,7 +76,7 @@ function ProjectCommandsPage() {
         );
       })}
 
-      {commands.length === 0 && (
+      {commandList.length === 0 && (
         <div className="bg-surface-1 border border-border-default rounded-xl p-6 text-text-muted text-center">
           No project-level commands found
         </div>

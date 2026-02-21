@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import {
   Bot,
   ChevronRight,
@@ -11,6 +10,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 import { cn, getProjectName } from "@/lib/utils";
 import type { GlobalStats, ProjectInfo } from "@/types/config.js";
 
@@ -24,22 +24,12 @@ interface TreeNodeProps {
   label: string;
   badge?: string;
   to: string;
-  params?: Record<string, string>;
   theme: "accent" | "success";
   isLast?: boolean;
   depth?: number;
 }
 
-function TreeNode({
-  icon,
-  label,
-  badge,
-  to,
-  params,
-  theme,
-  isLast = false,
-  depth = 1,
-}: TreeNodeProps) {
+function TreeNode({ icon, label, badge, to, theme, isLast = false, depth = 1 }: TreeNodeProps) {
   const leftOffset = 19 + (depth - 1) * 20;
 
   return (
@@ -66,7 +56,6 @@ function TreeNode({
 
       <Link
         to={to}
-        params={params}
         className={cn(
           "group flex items-center gap-2.5 py-1.5 rounded-lg transition-colors relative",
           "hover:bg-surface-2",
@@ -253,8 +242,7 @@ export function ConfigNavigationTree({ stats, projects }: ConfigNavigationTreePr
                       <TreeNode
                         icon={<Settings className="w-3.5 h-3.5" />}
                         label="Settings"
-                        to="/projects/$projectId/settings"
-                        params={{ projectId: project.encodedPath }}
+                        to={`/projects/${project.encodedPath}/settings`}
                         theme="success"
                         depth={2}
                       />
@@ -262,8 +250,7 @@ export function ConfigNavigationTree({ stats, projects }: ConfigNavigationTreePr
                         icon={<Bot className="w-3.5 h-3.5" />}
                         label="Agents"
                         badge={project.agentCount > 0 ? String(project.agentCount) : undefined}
-                        to="/projects/$projectId/agents"
-                        params={{ projectId: project.encodedPath }}
+                        to={`/projects/${project.encodedPath}/agents`}
                         theme="success"
                         depth={2}
                       />
@@ -271,8 +258,7 @@ export function ConfigNavigationTree({ stats, projects }: ConfigNavigationTreePr
                         icon={<Terminal className="w-3.5 h-3.5" />}
                         label="Commands"
                         badge={project.commandCount > 0 ? String(project.commandCount) : undefined}
-                        to="/projects/$projectId/commands"
-                        params={{ projectId: project.encodedPath }}
+                        to={`/projects/${project.encodedPath}/commands`}
                         theme="success"
                         depth={2}
                       />
@@ -280,8 +266,7 @@ export function ConfigNavigationTree({ stats, projects }: ConfigNavigationTreePr
                         icon={<Zap className="w-3.5 h-3.5" />}
                         label="Skills"
                         badge={project.skillCount > 0 ? String(project.skillCount) : undefined}
-                        to="/projects/$projectId/skills"
-                        params={{ projectId: project.encodedPath }}
+                        to={`/projects/${project.encodedPath}/skills`}
                         theme="success"
                         depth={2}
                         isLast

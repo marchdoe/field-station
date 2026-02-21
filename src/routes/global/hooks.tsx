@@ -1,37 +1,40 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { FileCode, Webhook } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Webhook } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell.js";
-import { cn } from "@/lib/utils";
-import { getHookConfig, listHookScripts } from "@/server/functions/hooks.js";
+import * as api from "@/lib/api.js";
+import { cn } from "@/lib/utils.js";
 
-export const Route = createFileRoute("/global/hooks")({
-  head: () => ({
-    meta: [{ title: "Hooks - Field Station" }],
-  }),
-  loader: async () => {
-    const [scripts, config] = await Promise.all([listHookScripts(), getHookConfig()]);
-    return { scripts, config };
-  },
-  component: GlobalHooksPage,
-  pendingComponent: () => (
-    <AppShell title="Global Hooks">
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-text-muted">Loading hooks...</div>
-      </div>
-    </AppShell>
-  ),
-  errorComponent: ({ error }) => (
-    <AppShell title="Global Hooks">
-      <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-        <p className="text-danger font-medium">Failed to load hooks</p>
-        <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-      </div>
-    </AppShell>
-  ),
-});
+export function GlobalHooksPage() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["hooks", "global"],
+    queryFn: () => api.getHooks(),
+  });
 
-function GlobalHooksPage() {
-  const { scripts, config } = Route.useLoaderData();
+  if (isLoading) {
+    return (
+      <AppShell title="Global Hooks">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-pulse text-text-muted">Loading hooks...</div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppShell title="Global Hooks">
+        <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
+          <p className="text-danger font-medium">Failed to load hooks</p>
+          <p className="text-text-muted text-sm mt-1">
+            {error instanceof Error ? error.message : String(error)}
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const config = data?.global?.hooks ?? {};
+  const hasConfig = Object.keys(config).length > 0;
 
   return (
     <AppShell title="Global Hooks">
@@ -44,7 +47,7 @@ function GlobalHooksPage() {
           </p>
         </div>
 
-        {config && Object.keys(config).length > 0 && (
+        {hasConfig ? (
           <div>
             <h2 className="text-lg font-semibold text-text-primary mb-3">Hook Configuration</h2>
             <p className="text-sm text-text-secondary mb-4">Hooks defined in settings.json</p>
@@ -92,37 +95,11 @@ function GlobalHooksPage() {
               ))}
             </div>
           </div>
+        ) : (
+          <div className="bg-surface-1 border border-border-default rounded-xl p-6 text-text-muted text-center">
+            No hook configuration found
+          </div>
         )}
-
-        <div>
-          <h2 className="text-lg font-semibold text-text-primary mb-3">Hook Scripts</h2>
-          <p className="text-sm text-text-secondary mb-4">
-            {scripts.length} script file{scripts.length !== 1 ? "s" : ""}
-          </p>
-
-          {scripts.length === 0 ? (
-            <div className="bg-surface-1 border border-border-default rounded-xl p-6 text-text-muted text-center">
-              No hook scripts found
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {scripts.map((script) => (
-                <div
-                  key={script.fileName}
-                  className="bg-surface-1 border border-border-default rounded-xl overflow-hidden"
-                >
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border-muted">
-                    <FileCode className="w-4 h-4 text-accent" />
-                    <span className="font-medium text-text-primary text-sm">{script.fileName}</span>
-                  </div>
-                  <pre className="text-sm p-4 overflow-x-auto text-text-secondary">
-                    <code>{script.contentPreview}</code>
-                  </pre>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </AppShell>
   );

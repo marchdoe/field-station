@@ -1,48 +1,50 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { LayerBadge } from "@/components/config/LayerBadge.js";
 import { SettingsViewer } from "@/components/config/SettingsViewer.js";
 import { AppShell } from "@/components/layout/AppShell.js";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog.js";
+import * as api from "@/lib/api.js";
 import { type ConfirmState, useSettingsMutations } from "@/lib/useSettingsMutations.js";
-import { getGlobalSettings, getGlobalSettingsLocal } from "@/server/functions/config.js";
+import type { JsonObject } from "@/types/config.js";
 
-export const Route = createFileRoute("/global/settings")({
-  head: () => ({
-    meta: [{ title: "Settings - Field Station" }],
-  }),
-  loader: async () => {
-    const [settings, settingsLocal] = await Promise.all([
-      getGlobalSettings(),
-      getGlobalSettingsLocal(),
-    ]);
-    return { settings, settingsLocal };
-  },
-  component: GlobalSettingsPage,
-  pendingComponent: () => (
-    <AppShell title="Global Settings">
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-text-muted">Loading settings...</div>
-      </div>
-    </AppShell>
-  ),
-  errorComponent: ({ error }) => (
-    <AppShell title="Global Settings">
-      <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-        <p className="text-danger font-medium">Failed to load settings</p>
-        <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-      </div>
-    </AppShell>
-  ),
-});
-
-function GlobalSettingsPage() {
-  const { settings, settingsLocal } = Route.useLoaderData();
+export function GlobalSettingsPage() {
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
   const { createHandlers } = useSettingsMutations(undefined, setConfirmState);
 
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["config", "global"],
+    queryFn: () => api.getConfig(),
+  });
+
   const globalHandlers = createHandlers("global");
   const globalLocalHandlers = createHandlers("global-local");
+
+  if (isLoading) {
+    return (
+      <AppShell title="Global Settings">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-pulse text-text-muted">Loading settings...</div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppShell title="Global Settings">
+        <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
+          <p className="text-danger font-medium">Failed to load settings</p>
+          <p className="text-text-muted text-sm mt-1">
+            {error instanceof Error ? error.message : String(error)}
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const globalLayer = data?.layers.find((l) => l.source === "global");
+  const globalLocalLayer = data?.layers.find((l) => l.source === "global-local");
 
   return (
     <AppShell title="Global Settings">
@@ -64,15 +66,15 @@ function GlobalSettingsPage() {
             <div className="flex items-center gap-3 mb-3">
               <h2 className="text-lg font-semibold text-text-primary">settings.json</h2>
               <LayerBadge source="global" />
-              {!settings.exists && (
+              {globalLayer && !globalLayer.exists && (
                 <span className="text-xs text-text-muted bg-surface-2 px-2 py-0.5 rounded-full">
                   Not found
                 </span>
               )}
             </div>
-            {settings.exists && settings.content ? (
+            {globalLayer?.exists && globalLayer.content ? (
               <SettingsViewer
-                settings={settings.content}
+                settings={globalLayer.content as unknown as JsonObject}
                 source="global"
                 editable
                 onUpdate={globalHandlers.onUpdate}
@@ -95,15 +97,15 @@ function GlobalSettingsPage() {
             <div className="flex items-center gap-3 mb-3">
               <h2 className="text-lg font-semibold text-text-primary">settings.local.json</h2>
               <LayerBadge source="global-local" />
-              {!settingsLocal.exists && (
+              {globalLocalLayer && !globalLocalLayer.exists && (
                 <span className="text-xs text-text-muted bg-surface-2 px-2 py-0.5 rounded-full">
                   Not found
                 </span>
               )}
             </div>
-            {settingsLocal.exists && settingsLocal.content ? (
+            {globalLocalLayer?.exists && globalLocalLayer.content ? (
               <SettingsViewer
-                settings={settingsLocal.content}
+                settings={globalLocalLayer.content as unknown as JsonObject}
                 source="global-local"
                 editable
                 onUpdate={globalLocalHandlers.onUpdate}

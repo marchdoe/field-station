@@ -1,49 +1,60 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Terminal } from "lucide-react";
+import { useParams } from "react-router";
 import { AppShell } from "@/components/layout/AppShell.js";
 import { ResourceDetailPage } from "@/components/resources/ResourceDetailPage.js";
-import { getCommand } from "@/server/functions/commands.js";
+import * as api from "@/lib/api.js";
 
-export const Route = createFileRoute("/global/commands/$folder/$commandName")({
-  loader: async ({ params }) => {
-    return getCommand({
-      data: { scope: "global", folder: params.folder, name: params.commandName },
-    });
-  },
-  head: ({ loaderData }) => ({
-    meta: [{ title: `${loaderData?.name ?? "Command"} - Field Station` }],
-  }),
-  component: GlobalCommandDetailPage,
-  pendingComponent: () => (
-    <AppShell title="Command">
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-text-muted">Loading command...</div>
-      </div>
-    </AppShell>
-  ),
-  errorComponent: ({ error }) => (
-    <AppShell title="Command">
-      <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
-        <p className="text-danger font-medium">Failed to load command</p>
-        <p className="text-text-muted text-sm mt-1">{(error as Error).message}</p>
-      </div>
-    </AppShell>
-  ),
-});
+export function GlobalCommandDetailPage() {
+  const params = useParams();
+  const folder = params.folder ?? "";
+  const commandName = params.commandName ?? "";
 
-function GlobalCommandDetailPage() {
-  const command = Route.useLoaderData();
+  const {
+    data: command,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["command", "global", folder, commandName],
+    queryFn: () => api.getCommand("global", folder, commandName),
+    enabled: folder !== "" && commandName !== "",
+  });
+
+  if (isLoading) {
+    return (
+      <AppShell title="Command">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-pulse text-text-muted">Loading command...</div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error || !command) {
+    return (
+      <AppShell title="Command">
+        <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
+          <p className="text-danger font-medium">Failed to load command</p>
+          <p className="text-text-muted text-sm mt-1">
+            {error ? (error instanceof Error ? error.message : String(error)) : "Command not found"}
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell title={`/${command.folder}:${command.name}`}>
       <ResourceDetailPage
         resourceType="command"
+        scope="global"
         resource={{
           name: command.name,
           displayName: `/${command.folder}:${command.name}`,
           filePath: command.filePath,
           isEditable: command.isEditable,
           body: command.body,
+          folder: command.folder,
         }}
         icon={<Terminal className="w-4.5 h-4.5 text-blue-500" />}
         iconBgClass="bg-blue-500/15"

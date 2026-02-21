@@ -25,7 +25,7 @@ paths:
       operationId: getConfig
       summary: Get merged config with layers
       parameters:
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -102,7 +102,7 @@ paths:
           schema:
             type: string
             enum: [global, project]
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -148,7 +148,7 @@ paths:
           required: false
           schema:
             type: string
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -217,7 +217,7 @@ paths:
           schema:
             type: string
             enum: [global, project]
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -268,7 +268,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -331,7 +331,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -356,7 +356,7 @@ paths:
           schema:
             type: string
             enum: [global, project]
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -402,7 +402,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -455,7 +455,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -474,7 +474,7 @@ paths:
       operationId: getHooks
       summary: List hooks
       parameters:
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -540,7 +540,7 @@ paths:
           required: false
           schema:
             type: string
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -681,7 +681,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -702,7 +702,7 @@ paths:
       operationId: watch
       summary: SSE file watcher stream
       parameters:
-        - name: projectPath
+        - name: projectId
           in: query
           required: false
           schema:
@@ -805,7 +805,7 @@ components:
           items:
             type: string
         value: {}
-        projectPath:
+        projectId:
           type: string
 
     DeleteConfigSettingRequest:
@@ -817,7 +817,7 @@ components:
           type: array
           items:
             type: string
-        projectPath:
+        projectId:
           type: string
 
     MoveConfigSettingRequest:
@@ -832,7 +832,7 @@ components:
         direction:
           type: string
           enum: [up, down]
-        projectPath:
+        projectId:
           type: string
 
     AgentFile:
@@ -897,7 +897,7 @@ components:
         scope:
           type: string
           enum: [global, project]
-        projectPath:
+        projectId:
           type: string
 
     UpdateAgentRequest:
@@ -916,7 +916,7 @@ components:
         scope:
           type: string
           enum: [global, project]
-        projectPath:
+        projectId:
           type: string
 
     DeleteAgentRequest:
@@ -927,7 +927,7 @@ components:
         scope:
           type: string
           enum: [global, project]
-        projectPath:
+        projectId:
           type: string
 
     CommandFile:
@@ -980,7 +980,7 @@ components:
         scope:
           type: string
           enum: [global, project]
-        projectPath:
+        projectId:
           type: string
 
     UpdateCommandRequest:
@@ -990,7 +990,7 @@ components:
       properties:
         body:
           type: string
-        projectPath:
+        projectId:
           type: string
 
     SkillFile:
@@ -1043,7 +1043,7 @@ components:
         scope:
           type: string
           enum: [global, project]
-        projectPath:
+        projectId:
           type: string
 
     UpdateSkillRequest:
@@ -1055,7 +1055,7 @@ components:
           type: string
         body:
           type: string
-        projectPath:
+        projectId:
           type: string
 
     HookCommand:
@@ -1146,7 +1146,7 @@ components:
         scope:
           type: string
           enum: [global, project]
-        projectPath:
+        projectId:
           type: string
 
     UpdateHookRequest:
@@ -1165,7 +1165,7 @@ components:
         scope:
           type: string
           enum: [global, project]
-        projectPath:
+        projectId:
           type: string
 
     BackupFile:

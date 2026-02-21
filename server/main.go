@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"fieldstation/api"
 	"fieldstation/lib"
@@ -48,8 +49,25 @@ func main() {
 	}
 
 	addr := ":3457"
+	srv := &http.Server{
+		Addr:              addr,
+		Handler:           maxBytesMiddleware(makeTopHandler(mux, authToken)),
+		ReadHeaderTimeout: 30 * time.Second,
+		IdleTimeout:       120 * time.Second,
+	}
 	log.Printf("field-station listening on %s (dev=%v)", addr, isDev)
-	log.Fatal(http.ListenAndServe(addr, makeTopHandler(mux, authToken)))
+	log.Fatal(srv.ListenAndServe())
+}
+
+// maxBytesMiddleware limits request body size to prevent memory exhaustion.
+// The /api/watch endpoint is excluded because it is a GET with no body.
+func maxBytesMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/watch" {
+			r.Body = http.MaxBytesReader(w, r.Body, 10*1024*1024) // 10 MB
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 // makeTopHandler wraps mux with auth middleware, exempting the login endpoint.

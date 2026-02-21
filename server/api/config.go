@@ -14,6 +14,10 @@ func (h *FieldStationHandler) GetConfig(ctx context.Context, request GetConfigRe
 	projectPath := ""
 	if request.Params.ProjectPath != nil {
 		projectPath = *request.Params.ProjectPath
+		allowedRoots := lib.GetAllowedRoots("")
+		if _, err := lib.AssertSafePath(projectPath, allowedRoots); err != nil {
+			return nil, fmt.Errorf("config: unsafe project path: %w", err)
+		}
 	}
 
 	result := lib.MergeConfigLayers(projectPath)

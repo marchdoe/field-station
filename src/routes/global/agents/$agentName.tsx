@@ -35,7 +35,7 @@ export function GlobalAgentDetailPage() {
         <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
           <p className="text-danger font-medium">Failed to load agent</p>
           <p className="text-text-muted text-sm mt-1">
-            {error ? (error as Error).message : "Agent not found"}
+            {error ? (error instanceof Error ? error.message : String(error)) : "Agent not found"}
           </p>
         </div>
       </AppShell>

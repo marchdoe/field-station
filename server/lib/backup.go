@@ -76,7 +76,8 @@ func generateBackupID() string {
 	return ts + "-" + hex.EncodeToString(buf)
 }
 
-// copyFile copies src to dst, creating dst if it does not exist.
+// copyFile copies src to dst atomically using a temp file + rename.
+// This prevents a partial write from being visible to concurrent readers.
 func copyFile(src, dst string) error {
 	in, err := os.Open(src)
 	if err != nil {
@@ -84,16 +85,28 @@ func copyFile(src, dst string) error {
 	}
 	defer in.Close()
 
-	out, err := os.Create(dst)
+	dir := filepath.Dir(dst)
+	tmp, err := os.CreateTemp(dir, ".backup-*")
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	tmpName := tmp.Name()
 
-	if _, err = io.Copy(out, in); err != nil {
+	if _, err = io.Copy(tmp, in); err != nil {
+		tmp.Close()
+		os.Remove(tmpName)
 		return err
 	}
-	return out.Sync()
+	if err := tmp.Sync(); err != nil {
+		tmp.Close()
+		os.Remove(tmpName)
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		os.Remove(tmpName)
+		return err
+	}
+	return os.Rename(tmpName, dst)
 }
 
 // BackupFile copies filePath into a new backup entry under claudeHome/backups/.
@@ -241,6 +254,12 @@ func RestoreBackup(backupDir string, claudeHome string) error {
 	}
 	if meta.OriginalPath == "" || meta.Operation == "" || meta.Timestamp == "" {
 		return fmt.Errorf("backup is corrupted — invalid meta.json: %s", backupDir)
+	}
+
+	// Validate that the restore target is within allowed roots.
+	allowedRoots := GetAllowedRoots("")
+	if _, err := AssertSafePath(meta.OriginalPath, allowedRoots); err != nil {
+		return fmt.Errorf("restore: unsafe original path in backup metadata: %w", err)
 	}
 
 	// Back up the current file first so restore is undoable

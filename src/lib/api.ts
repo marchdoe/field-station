@@ -296,21 +296,6 @@ export function search(q: string): Promise<SearchResult[]> {
   return apiFetch<SearchResult[]>(`/api/search?q=${encodeURIComponent(q)}`);
 }
 
-// Resource mutations (unified agent/command/skill update+delete via filePath)
-export function updateResource(_data: {
-  filePath: string;
-  frontmatter: Record<string, string>;
-  body: string;
-}): Promise<void> {
-  // The Go API uses type-specific endpoints. Determine type from filePath path segments.
-  // agents: /api/agents/{name} PUT, commands: /api/commands/{scope}/{folder}/{name} PUT
-  // For now, we detect from filePath and call appropriate endpoint.
-  // This is a best-effort approach - the component passes filePath and we extract name.
-  // In practice, ResourceDetailPage always knows the type via its resourceType prop.
-  // We'll handle this via the typed endpoints in the components directly.
-  throw new Error("Use updateAgent/updateCommand/updateSkill directly");
-}
-
 export function createResource(data: {
   scope: "global" | "project";
   type: "agent" | "command" | "skill";

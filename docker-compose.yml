@@ -2,7 +2,7 @@ services:
   field-station:
     build: .
     ports:
-      - "3456:3456"
+      - "3457:3457"
     volumes:
       # Claude config directory (read-only)
       - ~/.claude:/root/.claude:ro
@@ -12,5 +12,4 @@ services:
       - /usr/local/bin/claude:/usr/local/bin/claude:ro
     restart: unless-stopped
     environment:
-      - NODE_ENV=production
-      - FIELD_STATION_AUTH_TOKEN=${FIELD_STATION_AUTH_TOKEN:-}
+      - FIELD_STATION_TOKEN=${FIELD_STATION_TOKEN:-}

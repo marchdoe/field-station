@@ -48,9 +48,9 @@ export function ResourceListPage({
       });
       toast(`${typeLabel} created successfully`);
       setShowCreate(false);
-      await queryClient.invalidateQueries();
+      await queryClient.invalidateQueries({ queryKey: [`${resourceType}s`] });
     } catch (e) {
-      toast((e as Error).message, "error");
+      toast(e instanceof Error ? e.message : String(e), "error");
     } finally {
       setSaving(false);
     }

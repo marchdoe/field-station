@@ -7,13 +7,9 @@
 
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/bin/node</string>
-    <string>.output/server/index.mjs</string>
+    <!-- REQUIRED: Set this to the absolute path of the field-station binary -->
+    <string>/usr/local/bin/field-station</string>
   </array>
-
-  <!-- REQUIRED: Set this to the absolute path of your field-station directory -->
-  <key>WorkingDirectory</key>
-  <string>/path/to/field-station</string>
 
   <key>RunAtLoad</key>
   <true/>
@@ -27,10 +23,14 @@
   <key>StandardErrorPath</key>
   <string>~/Library/Logs/field-station/err.log</string>
 
+  <!-- Optional environment variables:
   <key>EnvironmentVariables</key>
   <dict>
-    <key>NODE_ENV</key>
-    <string>production</string>
+    <key>FIELD_STATION_TOKEN</key>
+    <string>your-secret-token</string>
+    <key>FIELD_STATION_SECURE_COOKIES</key>
+    <string>1</string>
   </dict>
+  -->
 </dict>
 </plist>

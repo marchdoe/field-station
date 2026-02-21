@@ -26,7 +26,13 @@ export function LoginPage() {
       });
 
       if (res.redirected) {
-        window.location.href = res.url;
+        // Validate the redirect is same-origin to prevent open redirect attacks.
+        const redirectUrl = new URL(res.url);
+        if (redirectUrl.origin === window.location.origin) {
+          window.location.href = res.url;
+        } else {
+          window.location.href = "/";
+        }
         return;
       }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"os"
 
 	"fieldstation/middleware"
 )
@@ -15,12 +16,14 @@ type loginSuccessResponse struct {
 
 func (r loginSuccessResponse) VisitLoginResponse(w http.ResponseWriter) error {
 	if r.cookieValue != "" {
+		secureCookies := os.Getenv("FIELD_STATION_SECURE_COOKIES") == "1"
 		http.SetCookie(w, &http.Cookie{
 			Name:     middleware.SessionCookieName(),
 			Value:    r.cookieValue,
 			Path:     "/",
 			HttpOnly: true,
 			SameSite: http.SameSiteStrictMode,
+			Secure:   secureCookies,
 		})
 	}
 	w.Header().Set("Content-Type", "application/json")

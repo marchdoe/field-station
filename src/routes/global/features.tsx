@@ -48,7 +48,7 @@ export function GlobalFeaturesPage() {
         toast(`Disabled ${feature.definition.name}`);
       }
     } catch (e) {
-      toast(`Failed to update ${feature.definition.name}: ${(e as Error).message}`, "error");
+      toast(`Failed to update ${feature.definition.name}: ${e instanceof Error ? e.message : String(e)}`, "error");
     }
   };
 
@@ -67,7 +67,7 @@ export function GlobalFeaturesPage() {
         toast(`Updated ${feature.definition.name}`);
       }
     } catch (e) {
-      toast(`Failed to update ${feature.definition.name}: ${(e as Error).message}`, "error");
+      toast(`Failed to update ${feature.definition.name}: ${e instanceof Error ? e.message : String(e)}`, "error");
     }
   };
 
@@ -87,7 +87,7 @@ export function GlobalFeaturesPage() {
         <div className="rounded-xl border border-danger/30 bg-danger/5 p-6">
           <p className="text-danger font-medium">Failed to load features</p>
           <p className="text-text-muted text-sm mt-1">
-            {error ? (error as Error).message : "No data"}
+            {error ? (error instanceof Error ? error.message : String(error)) : "No data"}
           </p>
         </div>
       </AppShell>

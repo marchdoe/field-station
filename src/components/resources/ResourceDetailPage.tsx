@@ -99,9 +99,9 @@ export function ResourceDetailPage({
       }
       toast(`${typeLabel} updated successfully`);
       setEditing(false);
-      await queryClient.invalidateQueries();
+      await queryClient.invalidateQueries({ queryKey: [`${resourceType}s`] });
     } catch (e) {
-      toast((e as Error).message, "error");
+      toast(e instanceof Error ? e.message : String(e), "error");
     } finally {
       setSaving(false);
     }
@@ -119,10 +119,10 @@ export function ResourceDetailPage({
         await deleteSkill(scope, resource.name, projectPath);
       }
       toast(`${typeLabel} deleted`);
-      await queryClient.invalidateQueries();
+      await queryClient.invalidateQueries({ queryKey: [`${resourceType}s`] });
       navigate(deleteNavigate.to);
     } catch (e) {
-      toast((e as Error).message, "error");
+      toast(e instanceof Error ? e.message : String(e), "error");
     } finally {
       setSaving(false);
       setConfirmDelete(false);

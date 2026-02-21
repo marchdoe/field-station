@@ -152,6 +152,10 @@ func (h *FieldStationHandler) CreateSkill(ctx context.Context, request CreateSki
 	folderPath := filepath.Join(skillDir, body.Name)
 	skillMdPath := filepath.Join(folderPath, "SKILL.md")
 
+	if _, err := lib.AssertSafePath(skillMdPath, []string{skillDir}); err != nil {
+		return nil, fmt.Errorf("skills: unsafe path: %w", err)
+	}
+
 	if err := os.MkdirAll(folderPath, 0o755); err != nil {
 		return nil, fmt.Errorf("skills: cannot create folder %s: %w", folderPath, err)
 	}

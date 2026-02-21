@@ -131,6 +131,10 @@ func (h *FieldStationHandler) CreateCommand(ctx context.Context, request CreateC
 	folderPath := filepath.Join(commandDir, body.Folder)
 	filePath := filepath.Join(folderPath, body.Name+".md")
 
+	if _, err := lib.AssertSafePath(filePath, []string{commandDir}); err != nil {
+		return nil, fmt.Errorf("commands: unsafe path: %w", err)
+	}
+
 	if err := os.MkdirAll(folderPath, 0o755); err != nil {
 		return nil, fmt.Errorf("commands: cannot create folder %s: %w", folderPath, err)
 	}

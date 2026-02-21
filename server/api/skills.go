@@ -231,11 +231,7 @@ func (h *FieldStationHandler) UpdateSkill(ctx context.Context, request UpdateSki
 	skillMdPath := filepath.Join(skillDir, folderName, "SKILL.md")
 
 	// Validate path safety.
-	allowedRoots := []string{h.claudeHome}
-	if body.ProjectPath != nil {
-		allowedRoots = append(allowedRoots, *body.ProjectPath)
-	}
-	if _, err := lib.AssertSafePath(skillMdPath, allowedRoots); err != nil {
+	if _, err := lib.AssertSafePath(skillMdPath, lib.GetAllowedRoots("")); err != nil {
 		return nil, err
 	}
 
@@ -283,11 +279,7 @@ func (h *FieldStationHandler) DeleteSkill(ctx context.Context, request DeleteSki
 	skillMdPath := filepath.Join(folderPath, "SKILL.md")
 
 	// Validate path safety (check SKILL.md path specifically).
-	allowedRoots := []string{h.claudeHome}
-	if request.Params.ProjectPath != nil {
-		allowedRoots = append(allowedRoots, *request.Params.ProjectPath)
-	}
-	if _, err := lib.AssertSafePath(folderPath, allowedRoots); err != nil {
+	if _, err := lib.AssertSafePath(folderPath, lib.GetAllowedRoots("")); err != nil {
 		return nil, err
 	}
 

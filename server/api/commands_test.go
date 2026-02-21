@@ -81,3 +81,40 @@ func TestCreateCommand_RejectsPluginCacheTarget(t *testing.T) {
 	require.Error(t, err, "CreateCommand must reject writes to the plugin cache")
 	assert.Contains(t, err.Error(), "plugin-managed")
 }
+
+// Circular projectPath validation fix
+
+func TestUpdateCommand_RejectsUnregisteredProjectPath(t *testing.T) {
+	h, _ := newTestHandler(t)
+	unregistered := t.TempDir()
+
+	scope := "project"
+	pp := unregistered
+	_, err := h.UpdateCommand(context.Background(), api.UpdateCommandRequestObject{
+		Scope:  scope,
+		Folder: "myfolder",
+		Name:   "mycmd",
+		Body: &api.UpdateCommandJSONRequestBody{
+			ProjectPath: &pp,
+			Body:        "# bad command",
+		},
+	})
+	require.Error(t, err, "UpdateCommand must reject unregistered project paths")
+	assert.Contains(t, err.Error(), "outside allowed")
+}
+
+func TestDeleteCommand_RejectsUnregisteredProjectPath(t *testing.T) {
+	h, _ := newTestHandler(t)
+	unregistered := t.TempDir()
+
+	scope := "project"
+	pp := unregistered
+	_, err := h.DeleteCommand(context.Background(), api.DeleteCommandRequestObject{
+		Scope:  scope,
+		Folder: "myfolder",
+		Name:   "mycmd",
+		Params: api.DeleteCommandParams{ProjectPath: &pp},
+	})
+	require.Error(t, err, "DeleteCommand must reject unregistered project paths")
+	assert.Contains(t, err.Error(), "outside allowed")
+}

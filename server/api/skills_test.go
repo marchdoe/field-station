@@ -75,3 +75,36 @@ func TestCreateSkill_RejectsPluginCacheTarget(t *testing.T) {
 	require.Error(t, err, "CreateSkill must reject writes to the plugin cache")
 	assert.Contains(t, err.Error(), "plugin-managed")
 }
+
+// Circular projectPath validation fix
+
+func TestUpdateSkill_RejectsUnregisteredProjectPath(t *testing.T) {
+	h, _ := newTestHandler(t)
+	unregistered := t.TempDir()
+
+	pp := unregistered
+	_, err := h.UpdateSkill(context.Background(), api.UpdateSkillRequestObject{
+		Scope: "project",
+		Name:  "my-skill",
+		Body: &api.UpdateSkillJSONRequestBody{
+			ProjectPath: &pp,
+			Body:        "# bad skill",
+		},
+	})
+	require.Error(t, err, "UpdateSkill must reject unregistered project paths")
+	assert.Contains(t, err.Error(), "outside allowed")
+}
+
+func TestDeleteSkill_RejectsUnregisteredProjectPath(t *testing.T) {
+	h, _ := newTestHandler(t)
+	unregistered := t.TempDir()
+
+	pp := unregistered
+	_, err := h.DeleteSkill(context.Background(), api.DeleteSkillRequestObject{
+		Scope:  "project",
+		Name:   "my-skill",
+		Params: api.DeleteSkillParams{ProjectPath: &pp},
+	})
+	require.Error(t, err, "DeleteSkill must reject unregistered project paths")
+	assert.Contains(t, err.Error(), "outside allowed")
+}

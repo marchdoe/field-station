@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,6 +13,15 @@ import (
 )
 
 // helpers
+
+// registerProject creates the encoded project directory entry in claudeHome/projects/
+// so that GetAllowedRoots recognises projectPath as a valid root.
+func registerProject(t *testing.T, claudeHome, projectPath string) {
+	t.Helper()
+	withoutSlash := strings.TrimPrefix(projectPath, "/")
+	encoded := "-" + strings.ReplaceAll(withoutSlash, "/", "-")
+	require.NoError(t, os.MkdirAll(filepath.Join(claudeHome, "projects", encoded), 0o755))
+}
 
 func newTestHandler(t *testing.T) (*api.FieldStationHandler, string) {
 	t.Helper()
@@ -92,6 +102,7 @@ func TestDeleteAgent_ValidatesScopeAndProjectPath(t *testing.T) {
 func TestUpdateAgent_ProjectScope_BackupGoesToGlobalClaudeHome(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
 	projectDir := t.TempDir()
+	registerProject(t, claudeHome, projectDir)
 
 	// Create a project-scope agent
 	agentDir := filepath.Join(projectDir, ".claude", "agents")
@@ -117,6 +128,7 @@ func TestUpdateAgent_ProjectScope_BackupGoesToGlobalClaudeHome(t *testing.T) {
 func TestDeleteAgent_ProjectScope_BackupGoesToGlobalClaudeHome(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
 	projectDir := t.TempDir()
+	registerProject(t, claudeHome, projectDir)
 
 	agentDir := filepath.Join(projectDir, ".claude", "agents")
 	writeAgentFile(t, agentDir, "myagent", "---\nname: My Agent\n---\nBody")
@@ -134,4 +146,66 @@ func TestDeleteAgent_ProjectScope_BackupGoesToGlobalClaudeHome(t *testing.T) {
 	entries, err := os.ReadDir(filepath.Join(claudeHome, "backups"))
 	require.NoError(t, err, "claudeHome/backups/ should exist after delete")
 	assert.NotEmpty(t, entries, "at least one backup should be written to claudeHome/backups/")
+}
+
+// Circular projectPath validation fix — unregistered project path must be rejected.
+// Previously, handlers added user-supplied projectPath to allowedRoots, making the
+// AssertSafePath check tautological (filePath always passed because its parent was
+// in the allow list). Now GetAllowedRoots is used, which only allows paths that are
+// already registered in ~/.claude/projects/.
+
+func TestUpdateAgent_RejectsUnregisteredProjectPath(t *testing.T) {
+	h, _ := newTestHandler(t)
+	unregistered := t.TempDir() // not in ~/.claude/projects/
+
+	agentDir := filepath.Join(unregistered, ".claude", "agents")
+	writeAgentFile(t, agentDir, "victim", "---\nname: Victim\n---\nBody")
+
+	scope := api.UpdateAgentRequestScopeProject
+	_, err := h.UpdateAgent(context.Background(), api.UpdateAgentRequestObject{
+		Name: "victim",
+		Body: &api.UpdateAgentJSONRequestBody{
+			Scope:       scope,
+			ProjectPath: &unregistered,
+			Body:        "Overwritten",
+		},
+	})
+	require.Error(t, err, "UpdateAgent must reject unregistered project paths")
+	assert.Contains(t, err.Error(), "outside allowed")
+}
+
+func TestCreateAgent_RejectsUnregisteredProjectPath(t *testing.T) {
+	h, _ := newTestHandler(t)
+	unregistered := t.TempDir()
+
+	scope := api.CreateAgentRequestScopeProject
+	_, err := h.CreateAgent(context.Background(), api.CreateAgentRequestObject{
+		Body: &api.CreateAgentJSONRequestBody{
+			Scope:       scope,
+			ProjectPath: &unregistered,
+			Name:        "injected",
+			Body:        "# injected agent",
+		},
+	})
+	require.Error(t, err, "CreateAgent must reject unregistered project paths")
+	assert.Contains(t, err.Error(), "outside allowed")
+}
+
+func TestDeleteAgent_RejectsUnregisteredProjectPath(t *testing.T) {
+	h, _ := newTestHandler(t)
+	unregistered := t.TempDir()
+
+	agentDir := filepath.Join(unregistered, ".claude", "agents")
+	writeAgentFile(t, agentDir, "victim", "---\nname: Victim\n---\nBody")
+
+	scope := api.DeleteAgentRequestScopeProject
+	_, err := h.DeleteAgent(context.Background(), api.DeleteAgentRequestObject{
+		Name: "victim",
+		Body: &api.DeleteAgentJSONRequestBody{
+			Scope:       scope,
+			ProjectPath: &unregistered,
+		},
+	})
+	require.Error(t, err, "DeleteAgent must reject unregistered project paths")
+	assert.Contains(t, err.Error(), "outside allowed")
 }

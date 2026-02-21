@@ -135,11 +135,7 @@ func (h *FieldStationHandler) CreateAgent(ctx context.Context, request CreateAge
 	}
 
 	// Validate path safety before write.
-	createAllowedRoots := []string{h.claudeHome}
-	if body.ProjectPath != nil {
-		createAllowedRoots = append(createAllowedRoots, *body.ProjectPath)
-	}
-	if _, err := lib.AssertSafePath(agentDir, createAllowedRoots); err != nil {
+	if _, err := lib.AssertSafePath(agentDir, lib.GetAllowedRoots("")); err != nil {
 		return nil, err
 	}
 
@@ -189,11 +185,7 @@ func (h *FieldStationHandler) UpdateAgent(ctx context.Context, request UpdateAge
 
 	// Validate path safety before write.
 	filePath := filepath.Join(agentDir, request.Name+".md")
-	allowedRoots := []string{h.claudeHome}
-	if body.ProjectPath != nil {
-		allowedRoots = append(allowedRoots, *body.ProjectPath)
-	}
-	if _, err := lib.AssertSafePath(filePath, allowedRoots); err != nil {
+	if _, err := lib.AssertSafePath(filePath, lib.GetAllowedRoots("")); err != nil {
 		return nil, err
 	}
 
@@ -248,11 +240,7 @@ func (h *FieldStationHandler) DeleteAgent(ctx context.Context, request DeleteAge
 	}
 
 	// Validate path safety (consistent with CreateAgent and UpdateAgent).
-	deleteAllowedRoots := []string{h.claudeHome}
-	if body.ProjectPath != nil {
-		deleteAllowedRoots = append(deleteAllowedRoots, *body.ProjectPath)
-	}
-	if _, err := lib.AssertSafePath(agentDir, deleteAllowedRoots); err != nil {
+	if _, err := lib.AssertSafePath(agentDir, lib.GetAllowedRoots("")); err != nil {
 		return nil, err
 	}
 

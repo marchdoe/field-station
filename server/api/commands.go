@@ -192,11 +192,7 @@ func (h *FieldStationHandler) UpdateCommand(ctx context.Context, request UpdateC
 	filePath := filepath.Join(commandDir, request.Folder, request.Name+".md")
 
 	// Validate path is under an allowed root.
-	allowedRoots := []string{h.claudeHome}
-	if body.ProjectPath != nil {
-		allowedRoots = append(allowedRoots, *body.ProjectPath)
-	}
-	if _, err := lib.AssertSafePath(filePath, allowedRoots); err != nil {
+	if _, err := lib.AssertSafePath(filePath, lib.GetAllowedRoots("")); err != nil {
 		return nil, err
 	}
 
@@ -227,11 +223,7 @@ func (h *FieldStationHandler) DeleteCommand(ctx context.Context, request DeleteC
 	filePath := filepath.Join(commandDir, request.Folder, request.Name+".md")
 
 	// Validate path safety.
-	allowedRoots := []string{h.claudeHome}
-	if request.Params.ProjectPath != nil {
-		allowedRoots = append(allowedRoots, *request.Params.ProjectPath)
-	}
-	if _, err := lib.AssertSafePath(filePath, allowedRoots); err != nil {
+	if _, err := lib.AssertSafePath(filePath, lib.GetAllowedRoots("")); err != nil {
 		return nil, err
 	}
 

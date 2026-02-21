@@ -135,8 +135,7 @@ func (h *FieldStationHandler) GetHooks(ctx context.Context, request GetHooksRequ
 	if request.Params.ProjectPath != nil && *request.Params.ProjectPath != "" {
 		projectPath := *request.Params.ProjectPath
 		projectSettingsPath := filepath.Join(projectPath, ".claude", "settings.json")
-		allowedRoots := []string{h.claudeHome, projectPath}
-		if _, err := lib.AssertSafePath(projectSettingsPath, allowedRoots); err != nil {
+		if _, err := lib.AssertSafePath(projectSettingsPath, lib.GetAllowedRoots("")); err != nil {
 			return nil, fmt.Errorf("invalid project path: %w", err)
 		}
 		projectHooks := readHooksByEvent(projectSettingsPath)
@@ -207,11 +206,7 @@ func (h *FieldStationHandler) CreateHook(ctx context.Context, request CreateHook
 		return nil, fmt.Errorf("invalid hook event: %q", body.Event)
 	}
 
-	allowedRoots := []string{h.claudeHome}
-	if projectPath != "" {
-		allowedRoots = append(allowedRoots, projectPath)
-	}
-	if _, err := lib.AssertSafePath(settingsPath, allowedRoots); err != nil {
+	if _, err := lib.AssertSafePath(settingsPath, lib.GetAllowedRoots("")); err != nil {
 		return nil, fmt.Errorf("hooks: path validation failed: %w", err)
 	}
 
@@ -263,11 +258,7 @@ func (h *FieldStationHandler) UpdateHook(ctx context.Context, request UpdateHook
 		return nil, fmt.Errorf("invalid hook event: %q", body.Event)
 	}
 
-	allowedRoots := []string{h.claudeHome}
-	if projectPath != "" {
-		allowedRoots = append(allowedRoots, projectPath)
-	}
-	if _, err := lib.AssertSafePath(settingsPath, allowedRoots); err != nil {
+	if _, err := lib.AssertSafePath(settingsPath, lib.GetAllowedRoots("")); err != nil {
 		return nil, fmt.Errorf("hooks: path validation failed: %w", err)
 	}
 
@@ -319,11 +310,7 @@ func (h *FieldStationHandler) DeleteHook(ctx context.Context, request DeleteHook
 		return nil, fmt.Errorf("projectPath is required for project scope")
 	}
 
-	allowedRoots := []string{h.claudeHome}
-	if projectPath != "" {
-		allowedRoots = append(allowedRoots, projectPath)
-	}
-	if _, err := lib.AssertSafePath(settingsPath, allowedRoots); err != nil {
+	if _, err := lib.AssertSafePath(settingsPath, lib.GetAllowedRoots("")); err != nil {
 		return nil, fmt.Errorf("hooks: path validation failed: %w", err)
 	}
 

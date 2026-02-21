@@ -8,6 +8,7 @@ export function LoginPage() {
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -26,7 +27,6 @@ export function LoginPage() {
       });
 
       if (res.redirected) {
-        // Validate the redirect is same-origin to prevent open redirect attacks.
         const redirectUrl = new URL(res.url);
         if (redirectUrl.origin === window.location.origin) {
           window.location.href = res.url;
@@ -94,6 +94,58 @@ export function LoginPage() {
           >
             {submitting ? "Signing in\u2026" : "Sign in"}
           </button>
+
+          <div className="pt-2 border-t border-border-muted">
+            <button
+              type="button"
+              onClick={() => setHelpOpen((v) => !v)}
+              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors w-full text-left"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`transition-transform ${helpOpen ? "rotate-90" : ""}`}
+                aria-hidden="true"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+              How do I get a token?
+            </button>
+
+            {helpOpen && (
+              <div className="mt-3 space-y-3 text-xs text-text-secondary">
+                <p>
+                  The token matches the{" "}
+                  <code className="bg-surface-2 px-1 py-0.5 rounded text-accent font-mono">
+                    FIELD_STATION_TOKEN
+                  </code>{" "}
+                  environment variable set when the server was started.
+                </p>
+                <div>
+                  <p className="mb-1 text-text-muted">Generate a secure token:</p>
+                  <pre className="bg-surface-2 rounded px-2 py-1.5 font-mono text-text-primary overflow-x-auto">
+                    openssl rand -hex 32
+                  </pre>
+                </div>
+                <div>
+                  <p className="mb-1 text-text-muted">Start the server with the token:</p>
+                  <pre className="bg-surface-2 rounded px-2 py-1.5 font-mono text-text-primary overflow-x-auto">
+                    {"TOKEN=<your-token> ./field-station"}
+                  </pre>
+                </div>
+                <p className="text-text-muted">
+                  Running locally without auth? Start the server without setting the token variable.
+                </p>
+              </div>
+            )}
+          </div>
         </form>
       </div>
     </div>

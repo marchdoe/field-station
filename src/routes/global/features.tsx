@@ -48,7 +48,10 @@ export function GlobalFeaturesPage() {
         toast(`Disabled ${feature.definition.name}`);
       }
     } catch (e) {
-      toast(`Failed to update ${feature.definition.name}: ${e instanceof Error ? e.message : String(e)}`, "error");
+      toast(
+        `Failed to update ${feature.definition.name}: ${e instanceof Error ? e.message : String(e)}`,
+        "error",
+      );
     }
   };
 
@@ -67,7 +70,10 @@ export function GlobalFeaturesPage() {
         toast(`Updated ${feature.definition.name}`);
       }
     } catch (e) {
-      toast(`Failed to update ${feature.definition.name}: ${e instanceof Error ? e.message : String(e)}`, "error");
+      toast(
+        `Failed to update ${feature.definition.name}: ${e instanceof Error ? e.message : String(e)}`,
+        "error",
+      );
     }
   };
 

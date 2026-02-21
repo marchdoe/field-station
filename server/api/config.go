@@ -12,12 +12,12 @@ import (
 // GetConfig returns the merged configuration with all layers.
 func (h *FieldStationHandler) GetConfig(ctx context.Context, request GetConfigRequestObject) (GetConfigResponseObject, error) {
 	projectPath := ""
-	if request.Params.ProjectPath != nil {
-		projectPath = *request.Params.ProjectPath
-		allowedRoots := lib.GetAllowedRoots("")
-		if _, err := lib.AssertSafePath(projectPath, allowedRoots); err != nil {
-			return nil, fmt.Errorf("config: unsafe project path: %w", err)
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
+		if err != nil {
+			return nil, fmt.Errorf("config: invalid project id: %w", err)
 		}
+		projectPath = pp
 	}
 
 	result := lib.MergeConfigLayers(projectPath)
@@ -48,17 +48,12 @@ func (h *FieldStationHandler) GetConfig(ctx context.Context, request GetConfigRe
 	}), nil
 }
 
-// resolveConfigFilePath resolves the correct settings.json path based on optional projectPath.
-// If projectPath is provided, validates it and returns the project settings file path.
-// Otherwise returns the global settings file path.
+// resolveConfigFilePath resolves the correct settings.json path based on optional
+// decoded projectPath. If projectPath is non-empty, returns the project settings
+// file path; otherwise returns the global settings file path.
 func (h *FieldStationHandler) resolveConfigFilePath(projectPath *string) (string, error) {
 	if projectPath != nil && *projectPath != "" {
-		pp := *projectPath
-		allowedRoots := lib.GetAllowedRoots(pp)
-		if _, err := lib.AssertSafePath(pp, allowedRoots); err != nil {
-			return "", fmt.Errorf("unsafe project path: %w", err)
-		}
-		return filepath.Join(pp, ".claude", "settings.json"), nil
+		return filepath.Join(*projectPath, ".claude", "settings.json"), nil
 	}
 	return filepath.Join(h.claudeHome, "settings.json"), nil
 }
@@ -69,7 +64,16 @@ func (h *FieldStationHandler) UpdateConfigSetting(ctx context.Context, request U
 		return nil, fmt.Errorf("request body is required")
 	}
 
-	filePath, err := h.resolveConfigFilePath(request.Body.ProjectPath)
+	var decodedPath *string
+	if request.Body.ProjectId != nil && *request.Body.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Body.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		decodedPath = &pp
+	}
+
+	filePath, err := h.resolveConfigFilePath(decodedPath)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +93,16 @@ func (h *FieldStationHandler) DeleteConfigSetting(ctx context.Context, request D
 		return nil, fmt.Errorf("request body is required")
 	}
 
-	filePath, err := h.resolveConfigFilePath(request.Body.ProjectPath)
+	var decodedPath *string
+	if request.Body.ProjectId != nil && *request.Body.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Body.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		decodedPath = &pp
+	}
+
+	filePath, err := h.resolveConfigFilePath(decodedPath)
 	if err != nil {
 		return nil, err
 	}
@@ -104,18 +117,17 @@ func (h *FieldStationHandler) DeleteConfigSetting(ctx context.Context, request D
 }
 
 // MoveConfigSetting moves a config setting between base and local settings files.
-// When projectPath is provided, moves between project-scoped settings files.
+// When projectId is provided, moves between project-scoped settings files.
 func (h *FieldStationHandler) MoveConfigSetting(ctx context.Context, request MoveConfigSettingRequestObject) (MoveConfigSettingResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
 
 	var globalPath, localPath string
-	if request.Body.ProjectPath != nil && *request.Body.ProjectPath != "" {
-		pp := *request.Body.ProjectPath
-		allowedRoots := lib.GetAllowedRoots(pp)
-		if _, err := lib.AssertSafePath(pp, allowedRoots); err != nil {
-			return nil, fmt.Errorf("unsafe project path: %w", err)
+	if request.Body.ProjectId != nil && *request.Body.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Body.ProjectId)
+		if err != nil {
+			return nil, fmt.Errorf("unsafe project id: %w", err)
 		}
 		globalPath = filepath.Join(pp, ".claude", "settings.json")
 		localPath = filepath.Join(pp, ".claude", "settings.local.json")

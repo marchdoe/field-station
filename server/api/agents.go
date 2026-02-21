@@ -9,12 +9,12 @@ import (
 )
 
 // resolveAgentDir returns the directory containing agent .md files for the
-// given scope. For project scope, projectPath is the project root and agents
-// live under .claude/agents/.
+// given scope. For project scope, projectPath is the decoded project root
+// and agents live under .claude/agents/.
 func (h *FieldStationHandler) resolveAgentDir(scope string, projectPath *string) (string, error) {
 	if scope == "project" {
 		if projectPath == nil || *projectPath == "" {
-			return "", fmt.Errorf("projectPath is required for project scope")
+			return "", fmt.Errorf("projectId is required for project scope")
 		}
 		return filepath.Join(*projectPath, ".claude", "agents"), nil
 	}
@@ -86,7 +86,15 @@ func (h *FieldStationHandler) GetAgents(ctx context.Context, request GetAgentsRe
 		scope = string(*request.Params.Scope)
 	}
 
-	agentDir, err := h.resolveAgentDir(scope, request.Params.ProjectPath)
+	var projectPath *string
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	agentDir, err := h.resolveAgentDir(scope, projectPath)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +118,15 @@ func (h *FieldStationHandler) GetAgent(ctx context.Context, request GetAgentRequ
 		scope = *request.Params.Scope
 	}
 
-	agentDir, err := h.resolveAgentDir(scope, request.Params.ProjectPath)
+	var projectPath *string
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	agentDir, err := h.resolveAgentDir(scope, projectPath)
 	if err != nil {
 		return nil, err
 	}
@@ -129,13 +145,16 @@ func (h *FieldStationHandler) CreateAgent(ctx context.Context, request CreateAge
 	}
 	body := request.Body
 
-	agentDir, err := h.resolveAgentDir(string(body.Scope), body.ProjectPath)
-	if err != nil {
-		return nil, err
+	var projectPath *string
+	if body.ProjectId != nil && *body.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *body.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
 	}
-
-	// Validate path safety before write.
-	if _, err := lib.AssertSafePath(agentDir, lib.GetAllowedRoots("")); err != nil {
+	agentDir, err := h.resolveAgentDir(string(body.Scope), projectPath)
+	if err != nil {
 		return nil, err
 	}
 
@@ -178,18 +197,21 @@ func (h *FieldStationHandler) UpdateAgent(ctx context.Context, request UpdateAge
 	}
 	body := request.Body
 
-	agentDir, err := h.resolveAgentDir(string(body.Scope), body.ProjectPath)
+	var projectPath *string
+	if body.ProjectId != nil && *body.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *body.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	agentDir, err := h.resolveAgentDir(string(body.Scope), projectPath)
 	if err != nil {
 		return nil, err
 	}
 
-	// Validate path safety before write.
-	filePath := filepath.Join(agentDir, request.Name+".md")
-	if _, err := lib.AssertSafePath(filePath, lib.GetAllowedRoots("")); err != nil {
-		return nil, err
-	}
-
 	// Reject writes to plugin-managed files.
+	filePath := filepath.Join(agentDir, request.Name+".md")
 	if !lib.IsUserOwned(filePath) {
 		return nil, fmt.Errorf("agents: cannot write plugin-managed file: %s", filePath)
 	}
@@ -234,13 +256,16 @@ func (h *FieldStationHandler) DeleteAgent(ctx context.Context, request DeleteAge
 	}
 	body := request.Body
 
-	agentDir, err := h.resolveAgentDir(string(body.Scope), body.ProjectPath)
-	if err != nil {
-		return nil, err
+	var projectPath *string
+	if body.ProjectId != nil && *body.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *body.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
 	}
-
-	// Validate path safety (consistent with CreateAgent and UpdateAgent).
-	if _, err := lib.AssertSafePath(agentDir, lib.GetAllowedRoots("")); err != nil {
+	agentDir, err := h.resolveAgentDir(string(body.Scope), projectPath)
+	if err != nil {
 		return nil, err
 	}
 

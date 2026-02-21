@@ -15,12 +15,14 @@ import (
 // helpers
 
 // registerProject creates the encoded project directory entry in claudeHome/projects/
-// so that GetAllowedRoots recognises projectPath as a valid root.
-func registerProject(t *testing.T, claudeHome, projectPath string) {
+// so that resolveProjectPath recognises projectPath as a valid root.
+// Returns the encoded project ID.
+func registerProject(t *testing.T, claudeHome, projectPath string) string {
 	t.Helper()
 	withoutSlash := strings.TrimPrefix(projectPath, "/")
 	encoded := "-" + strings.ReplaceAll(withoutSlash, "/", "-")
 	require.NoError(t, os.MkdirAll(filepath.Join(claudeHome, "projects", encoded), 0o755))
+	return encoded
 }
 
 func newTestHandler(t *testing.T) (*api.FieldStationHandler, string) {
@@ -41,17 +43,19 @@ func writeAgentFile(t *testing.T, dir, name, content string) {
 func TestCreateAgent_RejectsPluginCacheTarget(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
 
-	// projectPath inside the plugin cache → agentDir is cache/.claude/agents → not user-owned
+	// projectId for the plugin cache dir — register it so resolveProjectPath passes,
+	// but the resulting agentDir (inside plugins/cache) is not user-owned.
 	cacheDir := filepath.Join(claudeHome, "plugins", "cache")
 	require.NoError(t, os.MkdirAll(cacheDir, 0o755))
+	encoded := registerProject(t, claudeHome, cacheDir)
 
 	scope := api.CreateAgentRequestScopeProject
 	_, err := h.CreateAgent(context.Background(), api.CreateAgentRequestObject{
 		Body: &api.CreateAgentJSONRequestBody{
-			Scope:       scope,
-			ProjectPath: &cacheDir,
-			Name:        "evil-agent",
-			Body:        "# body",
+			Scope:     scope,
+			ProjectId: &encoded,
+			Name:      "evil-agent",
+			Body:      "# body",
 		},
 	})
 	require.Error(t, err, "CreateAgent must reject writes to the plugin cache")
@@ -66,13 +70,14 @@ func TestDeleteAgent_RejectsPluginCacheTarget(t *testing.T) {
 	cacheDir := filepath.Join(claudeHome, "plugins", "cache")
 	agentDir := filepath.Join(cacheDir, ".claude", "agents")
 	writeAgentFile(t, agentDir, "managed", "---\nname: Managed\n---\nBody")
+	encoded := registerProject(t, claudeHome, cacheDir)
 
 	scope := api.DeleteAgentRequestScopeProject
 	_, err := h.DeleteAgent(context.Background(), api.DeleteAgentRequestObject{
 		Name: "managed",
 		Body: &api.DeleteAgentJSONRequestBody{
-			Scope:       scope,
-			ProjectPath: &cacheDir,
+			Scope:     scope,
+			ProjectId: &encoded,
 		},
 	})
 	require.Error(t, err, "DeleteAgent must reject deletes from the plugin cache")
@@ -102,7 +107,7 @@ func TestDeleteAgent_ValidatesScopeAndProjectPath(t *testing.T) {
 func TestUpdateAgent_ProjectScope_BackupGoesToGlobalClaudeHome(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
 	projectDir := t.TempDir()
-	registerProject(t, claudeHome, projectDir)
+	encoded := registerProject(t, claudeHome, projectDir)
 
 	// Create a project-scope agent
 	agentDir := filepath.Join(projectDir, ".claude", "agents")
@@ -112,9 +117,9 @@ func TestUpdateAgent_ProjectScope_BackupGoesToGlobalClaudeHome(t *testing.T) {
 	_, err := h.UpdateAgent(context.Background(), api.UpdateAgentRequestObject{
 		Name: "myagent",
 		Body: &api.UpdateAgentJSONRequestBody{
-			Scope:       scope,
-			ProjectPath: &projectDir,
-			Body:        "New body",
+			Scope:     scope,
+			ProjectId: &encoded,
+			Body:      "New body",
 		},
 	})
 	require.NoError(t, err)
@@ -128,7 +133,7 @@ func TestUpdateAgent_ProjectScope_BackupGoesToGlobalClaudeHome(t *testing.T) {
 func TestDeleteAgent_ProjectScope_BackupGoesToGlobalClaudeHome(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
 	projectDir := t.TempDir()
-	registerProject(t, claudeHome, projectDir)
+	encoded := registerProject(t, claudeHome, projectDir)
 
 	agentDir := filepath.Join(projectDir, ".claude", "agents")
 	writeAgentFile(t, agentDir, "myagent", "---\nname: My Agent\n---\nBody")
@@ -137,8 +142,8 @@ func TestDeleteAgent_ProjectScope_BackupGoesToGlobalClaudeHome(t *testing.T) {
 	_, err := h.DeleteAgent(context.Background(), api.DeleteAgentRequestObject{
 		Name: "myagent",
 		Body: &api.DeleteAgentJSONRequestBody{
-			Scope:       scope,
-			ProjectPath: &projectDir,
+			Scope:     scope,
+			ProjectId: &encoded,
 		},
 	})
 	require.NoError(t, err)
@@ -148,64 +153,54 @@ func TestDeleteAgent_ProjectScope_BackupGoesToGlobalClaudeHome(t *testing.T) {
 	assert.NotEmpty(t, entries, "at least one backup should be written to claudeHome/backups/")
 }
 
-// Circular projectPath validation fix — unregistered project path must be rejected.
-// Previously, handlers added user-supplied projectPath to allowedRoots, making the
-// AssertSafePath check tautological (filePath always passed because its parent was
-// in the allow list). Now GetAllowedRoots is used, which only allows paths that are
-// already registered in ~/.claude/projects/.
+// Unregistered project ID must be rejected — resolveProjectPath validates registration.
 
 func TestUpdateAgent_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	unregistered := t.TempDir() // not in ~/.claude/projects/
-
-	agentDir := filepath.Join(unregistered, ".claude", "agents")
-	writeAgentFile(t, agentDir, "victim", "---\nname: Victim\n---\nBody")
+	fakeId := "-nonexistent-project"
 
 	scope := api.UpdateAgentRequestScopeProject
 	_, err := h.UpdateAgent(context.Background(), api.UpdateAgentRequestObject{
 		Name: "victim",
 		Body: &api.UpdateAgentJSONRequestBody{
-			Scope:       scope,
-			ProjectPath: &unregistered,
-			Body:        "Overwritten",
+			Scope:     scope,
+			ProjectId: &fakeId,
+			Body:      "Overwritten",
 		},
 	})
-	require.Error(t, err, "UpdateAgent must reject unregistered project paths")
-	assert.Contains(t, err.Error(), "outside allowed")
+	require.Error(t, err, "UpdateAgent must reject unregistered project ids")
+	assert.Contains(t, err.Error(), "unregistered")
 }
 
 func TestCreateAgent_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	unregistered := t.TempDir()
+	fakeId := "-nonexistent-project"
 
 	scope := api.CreateAgentRequestScopeProject
 	_, err := h.CreateAgent(context.Background(), api.CreateAgentRequestObject{
 		Body: &api.CreateAgentJSONRequestBody{
-			Scope:       scope,
-			ProjectPath: &unregistered,
-			Name:        "injected",
-			Body:        "# injected agent",
+			Scope:     scope,
+			ProjectId: &fakeId,
+			Name:      "injected",
+			Body:      "# injected agent",
 		},
 	})
-	require.Error(t, err, "CreateAgent must reject unregistered project paths")
-	assert.Contains(t, err.Error(), "outside allowed")
+	require.Error(t, err, "CreateAgent must reject unregistered project ids")
+	assert.Contains(t, err.Error(), "unregistered")
 }
 
 func TestDeleteAgent_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	unregistered := t.TempDir()
-
-	agentDir := filepath.Join(unregistered, ".claude", "agents")
-	writeAgentFile(t, agentDir, "victim", "---\nname: Victim\n---\nBody")
+	fakeId := "-nonexistent-project"
 
 	scope := api.DeleteAgentRequestScopeProject
 	_, err := h.DeleteAgent(context.Background(), api.DeleteAgentRequestObject{
 		Name: "victim",
 		Body: &api.DeleteAgentJSONRequestBody{
-			Scope:       scope,
-			ProjectPath: &unregistered,
+			Scope:     scope,
+			ProjectId: &fakeId,
 		},
 	})
-	require.Error(t, err, "DeleteAgent must reject unregistered project paths")
-	assert.Contains(t, err.Error(), "outside allowed")
+	require.Error(t, err, "DeleteAgent must reject unregistered project ids")
+	assert.Contains(t, err.Error(), "unregistered")
 }

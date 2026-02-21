@@ -62,49 +62,48 @@ func TestCreateSkill_RejectsPluginCacheTarget(t *testing.T) {
 
 	cacheDir := filepath.Join(claudeHome, "plugins", "cache")
 	require.NoError(t, os.MkdirAll(cacheDir, 0o755))
+	encoded := registerProject(t, claudeHome, cacheDir)
 
 	scope := api.CreateSkillRequestScopeProject
 	_, err := h.CreateSkill(context.Background(), api.CreateSkillRequestObject{
 		Body: &api.CreateSkillJSONRequestBody{
-			Scope:       scope,
-			ProjectPath: &cacheDir,
-			Name:        "evil-skill",
-			Body:        "# evil skill",
+			Scope:     scope,
+			ProjectId: &encoded,
+			Name:      "evil-skill",
+			Body:      "# evil skill",
 		},
 	})
 	require.Error(t, err, "CreateSkill must reject writes to the plugin cache")
 	assert.Contains(t, err.Error(), "plugin-managed")
 }
 
-// Circular projectPath validation fix
+// Unregistered project ID must be rejected
 
 func TestUpdateSkill_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	unregistered := t.TempDir()
+	fakeId := "-nonexistent-project"
 
-	pp := unregistered
 	_, err := h.UpdateSkill(context.Background(), api.UpdateSkillRequestObject{
 		Scope: "project",
 		Name:  "my-skill",
 		Body: &api.UpdateSkillJSONRequestBody{
-			ProjectPath: &pp,
-			Body:        "# bad skill",
+			ProjectId: &fakeId,
+			Body:      "# bad skill",
 		},
 	})
-	require.Error(t, err, "UpdateSkill must reject unregistered project paths")
-	assert.Contains(t, err.Error(), "outside allowed")
+	require.Error(t, err, "UpdateSkill must reject unregistered project ids")
+	assert.Contains(t, err.Error(), "unregistered")
 }
 
 func TestDeleteSkill_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	unregistered := t.TempDir()
+	fakeId := "-nonexistent-project"
 
-	pp := unregistered
 	_, err := h.DeleteSkill(context.Background(), api.DeleteSkillRequestObject{
 		Scope:  "project",
 		Name:   "my-skill",
-		Params: api.DeleteSkillParams{ProjectPath: &pp},
+		Params: api.DeleteSkillParams{ProjectId: &fakeId},
 	})
-	require.Error(t, err, "DeleteSkill must reject unregistered project paths")
-	assert.Contains(t, err.Error(), "outside allowed")
+	require.Error(t, err, "DeleteSkill must reject unregistered project ids")
+	assert.Contains(t, err.Error(), "unregistered")
 }

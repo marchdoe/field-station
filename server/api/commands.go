@@ -14,7 +14,7 @@ import (
 func (h *FieldStationHandler) resolveCommandDir(scope string, projectPath *string) (string, error) {
 	if scope == "project" {
 		if projectPath == nil || *projectPath == "" {
-			return "", fmt.Errorf("projectPath is required for project scope")
+			return "", fmt.Errorf("projectId is required for project scope")
 		}
 		return filepath.Join(*projectPath, ".claude", "commands"), nil
 	}
@@ -75,7 +75,15 @@ func (h *FieldStationHandler) GetCommands(ctx context.Context, request GetComman
 		scope = string(*request.Params.Scope)
 	}
 
-	commandDir, err := h.resolveCommandDir(scope, request.Params.ProjectPath)
+	var projectPath *string
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	commandDir, err := h.resolveCommandDir(scope, projectPath)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +100,15 @@ func (h *FieldStationHandler) GetCommands(ctx context.Context, request GetComman
 
 // GetCommand returns the detail of a single command by scope, folder, and name.
 func (h *FieldStationHandler) GetCommand(ctx context.Context, request GetCommandRequestObject) (GetCommandResponseObject, error) {
-	commandDir, err := h.resolveCommandDir(request.Scope, request.Params.ProjectPath)
+	var projectPath *string
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	commandDir, err := h.resolveCommandDir(request.Scope, projectPath)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +145,15 @@ func (h *FieldStationHandler) CreateCommand(ctx context.Context, request CreateC
 	}
 	body := request.Body
 
-	commandDir, err := h.resolveCommandDir(string(body.Scope), body.ProjectPath)
+	var projectPath *string
+	if body.ProjectId != nil && *body.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *body.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	commandDir, err := h.resolveCommandDir(string(body.Scope), projectPath)
 	if err != nil {
 		return nil, err
 	}
@@ -184,17 +208,20 @@ func (h *FieldStationHandler) UpdateCommand(ctx context.Context, request UpdateC
 	}
 	body := request.Body
 
-	commandDir, err := h.resolveCommandDir(request.Scope, body.ProjectPath)
+	var projectPath *string
+	if body.ProjectId != nil && *body.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *body.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	commandDir, err := h.resolveCommandDir(request.Scope, projectPath)
 	if err != nil {
 		return nil, err
 	}
 
 	filePath := filepath.Join(commandDir, request.Folder, request.Name+".md")
-
-	// Validate path is under an allowed root.
-	if _, err := lib.AssertSafePath(filePath, lib.GetAllowedRoots("")); err != nil {
-		return nil, err
-	}
 
 	// Backup before mutation.
 	lib.BackupFile(filePath, lib.BackupOpUpdate, h.claudeHome)
@@ -215,17 +242,20 @@ func (h *FieldStationHandler) UpdateCommand(ctx context.Context, request UpdateC
 
 // DeleteCommand deletes a command file.
 func (h *FieldStationHandler) DeleteCommand(ctx context.Context, request DeleteCommandRequestObject) (DeleteCommandResponseObject, error) {
-	commandDir, err := h.resolveCommandDir(request.Scope, request.Params.ProjectPath)
+	var projectPath *string
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	commandDir, err := h.resolveCommandDir(request.Scope, projectPath)
 	if err != nil {
 		return nil, err
 	}
 
 	filePath := filepath.Join(commandDir, request.Folder, request.Name+".md")
-
-	// Validate path safety.
-	if _, err := lib.AssertSafePath(filePath, lib.GetAllowedRoots("")); err != nil {
-		return nil, err
-	}
 
 	if _, err := os.Stat(filePath); err != nil {
 		if os.IsNotExist(err) {

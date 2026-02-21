@@ -132,12 +132,12 @@ func (h *FieldStationHandler) GetHooks(ctx context.Context, request GetHooksRequ
 		},
 	}
 
-	if request.Params.ProjectPath != nil && *request.Params.ProjectPath != "" {
-		projectPath := *request.Params.ProjectPath
-		projectSettingsPath := filepath.Join(projectPath, ".claude", "settings.json")
-		if _, err := lib.AssertSafePath(projectSettingsPath, lib.GetAllowedRoots("")); err != nil {
-			return nil, fmt.Errorf("invalid project path: %w", err)
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
+		if err != nil {
+			return nil, fmt.Errorf("invalid project id: %w", err)
 		}
+		projectSettingsPath := filepath.Join(pp, ".claude", "settings.json")
 		projectHooks := readHooksByEvent(projectSettingsPath)
 		projectByEvent := hooksByEventToAPIType(projectHooks)
 		resp.Project = &HookScope{
@@ -193,21 +193,17 @@ func (h *FieldStationHandler) CreateHook(ctx context.Context, request CreateHook
 	body := request.Body
 
 	projectPath := ""
-	if body.ProjectPath != nil {
-		projectPath = *body.ProjectPath
+	if body.ProjectId != nil && *body.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *body.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = pp
 	}
 	settingsPath := h.settingsHooksPath(string(body.Scope), projectPath)
 
-	if body.Scope == CreateHookRequestScopeProject && projectPath == "" {
-		return nil, fmt.Errorf("projectPath is required for project scope")
-	}
-
 	if !validHookEvent(body.Event) {
 		return nil, fmt.Errorf("invalid hook event: %q", body.Event)
-	}
-
-	if _, err := lib.AssertSafePath(settingsPath, lib.GetAllowedRoots("")); err != nil {
-		return nil, fmt.Errorf("hooks: path validation failed: %w", err)
 	}
 
 	hooksMap := readHooksByEvent(settingsPath)
@@ -245,21 +241,17 @@ func (h *FieldStationHandler) UpdateHook(ctx context.Context, request UpdateHook
 	}
 
 	projectPath := ""
-	if body.ProjectPath != nil {
-		projectPath = *body.ProjectPath
+	if body.ProjectId != nil && *body.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *body.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = pp
 	}
 	settingsPath := h.settingsHooksPath(string(body.Scope), projectPath)
 
-	if body.Scope == UpdateHookRequestScopeProject && projectPath == "" {
-		return nil, fmt.Errorf("projectPath is required for project scope")
-	}
-
 	if !validHookEvent(body.Event) {
 		return nil, fmt.Errorf("invalid hook event: %q", body.Event)
-	}
-
-	if _, err := lib.AssertSafePath(settingsPath, lib.GetAllowedRoots("")); err != nil {
-		return nil, fmt.Errorf("hooks: path validation failed: %w", err)
 	}
 
 	hooksMap := readHooksByEvent(settingsPath)
@@ -301,18 +293,14 @@ func (h *FieldStationHandler) DeleteHook(ctx context.Context, request DeleteHook
 	}
 
 	projectPath := ""
-	if request.Params.ProjectPath != nil {
-		projectPath = *request.Params.ProjectPath
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = pp
 	}
 	settingsPath := h.settingsHooksPath(scope, projectPath)
-
-	if scope == "project" && projectPath == "" {
-		return nil, fmt.Errorf("projectPath is required for project scope")
-	}
-
-	if _, err := lib.AssertSafePath(settingsPath, lib.GetAllowedRoots("")); err != nil {
-		return nil, fmt.Errorf("hooks: path validation failed: %w", err)
-	}
 
 	hooksMap := readHooksByEvent(settingsPath)
 	if hooksMap == nil {

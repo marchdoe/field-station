@@ -163,10 +163,8 @@ func (r watchSSEResponse) VisitWatchResponse(w http.ResponseWriter) error {
 // Watch handles GET /api/watch — SSE stream for file changes.
 func (h *FieldStationHandler) Watch(ctx context.Context, request WatchRequestObject) (WatchResponseObject, error) {
 	projectDir := ""
-	if request.Params.ProjectPath != nil && *request.Params.ProjectPath != "" {
-		pp := *request.Params.ProjectPath
-		allowedRoots := lib.GetAllowedRoots(pp)
-		if _, err := lib.AssertSafePath(pp, allowedRoots); err == nil {
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		if pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId); err == nil {
 			projectDir = filepath.Join(pp, ".claude")
 		}
 	}

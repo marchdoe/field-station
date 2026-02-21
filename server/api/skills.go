@@ -14,7 +14,7 @@ import (
 func (h *FieldStationHandler) resolveSkillDir(scope string, projectPath *string) (string, error) {
 	if scope == "project" {
 		if projectPath == nil || *projectPath == "" {
-			return "", fmt.Errorf("projectPath is required for project scope")
+			return "", fmt.Errorf("projectId is required for project scope")
 		}
 		return filepath.Join(*projectPath, ".claude", "skills"), nil
 	}
@@ -79,7 +79,15 @@ func (h *FieldStationHandler) GetSkills(ctx context.Context, request GetSkillsRe
 		scope = string(*request.Params.Scope)
 	}
 
-	skillDir, err := h.resolveSkillDir(scope, request.Params.ProjectPath)
+	var projectPath *string
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	skillDir, err := h.resolveSkillDir(scope, projectPath)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +104,15 @@ func (h *FieldStationHandler) GetSkills(ctx context.Context, request GetSkillsRe
 
 // GetSkill returns the detail of a single skill by folder name.
 func (h *FieldStationHandler) GetSkill(ctx context.Context, request GetSkillRequestObject) (GetSkillResponseObject, error) {
-	skillDir, err := h.resolveSkillDir(request.Scope, request.Params.ProjectPath)
+	var projectPath *string
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	skillDir, err := h.resolveSkillDir(request.Scope, projectPath)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +165,15 @@ func (h *FieldStationHandler) CreateSkill(ctx context.Context, request CreateSki
 	}
 	body := request.Body
 
-	skillDir, err := h.resolveSkillDir(string(body.Scope), body.ProjectPath)
+	var projectPath *string
+	if body.ProjectId != nil && *body.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *body.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	skillDir, err := h.resolveSkillDir(string(body.Scope), projectPath)
 	if err != nil {
 		return nil, err
 	}
@@ -222,18 +246,21 @@ func (h *FieldStationHandler) UpdateSkill(ctx context.Context, request UpdateSki
 	}
 	body := request.Body
 
-	skillDir, err := h.resolveSkillDir(request.Scope, body.ProjectPath)
+	var projectPath *string
+	if body.ProjectId != nil && *body.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *body.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	skillDir, err := h.resolveSkillDir(request.Scope, projectPath)
 	if err != nil {
 		return nil, err
 	}
 
 	folderName := request.Name
 	skillMdPath := filepath.Join(skillDir, folderName, "SKILL.md")
-
-	// Validate path safety.
-	if _, err := lib.AssertSafePath(skillMdPath, lib.GetAllowedRoots("")); err != nil {
-		return nil, err
-	}
 
 	// Build updated SKILL.md content.
 	fm := lib.FrontmatterDoc{
@@ -269,7 +296,15 @@ func (h *FieldStationHandler) UpdateSkill(ctx context.Context, request UpdateSki
 
 // DeleteSkill deletes a skill folder (including its SKILL.md).
 func (h *FieldStationHandler) DeleteSkill(ctx context.Context, request DeleteSkillRequestObject) (DeleteSkillResponseObject, error) {
-	skillDir, err := h.resolveSkillDir(request.Scope, request.Params.ProjectPath)
+	var projectPath *string
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
+		if err != nil {
+			return nil, err
+		}
+		projectPath = &pp
+	}
+	skillDir, err := h.resolveSkillDir(request.Scope, projectPath)
 	if err != nil {
 		return nil, err
 	}
@@ -277,11 +312,6 @@ func (h *FieldStationHandler) DeleteSkill(ctx context.Context, request DeleteSki
 	folderName := request.Name
 	folderPath := filepath.Join(skillDir, folderName)
 	skillMdPath := filepath.Join(folderPath, "SKILL.md")
-
-	// Validate path safety (check SKILL.md path specifically).
-	if _, err := lib.AssertSafePath(folderPath, lib.GetAllowedRoots("")); err != nil {
-		return nil, err
-	}
 
 	if _, err := os.Stat(skillMdPath); err != nil {
 		if os.IsNotExist(err) {

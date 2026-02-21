@@ -29,13 +29,12 @@ func searchMatchesQuery(query string, texts ...string) bool {
 func (h *FieldStationHandler) Search(ctx context.Context, request SearchRequestObject) (SearchResponseObject, error) {
 	query := request.Params.Q
 
-	// Validate project path if provided.
+	// Resolve project path from projectId if provided.
 	projectPath := ""
-	if request.Params.ProjectPath != nil && *request.Params.ProjectPath != "" {
-		pp := *request.Params.ProjectPath
-		allowedRoots := lib.GetAllowedRoots(pp)
-		if _, err := lib.AssertSafePath(pp, allowedRoots); err != nil {
-			return nil, fmt.Errorf("search: unsafe project path: %w", err)
+	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
+		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
+		if err != nil {
+			return nil, fmt.Errorf("search: invalid project id: %w", err)
 		}
 		projectPath = pp
 	}

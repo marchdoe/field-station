@@ -67,54 +67,53 @@ func TestCreateCommand_RejectsPluginCacheTarget(t *testing.T) {
 
 	cacheDir := filepath.Join(claudeHome, "plugins", "cache")
 	require.NoError(t, os.MkdirAll(cacheDir, 0o755))
+	encoded := registerProject(t, claudeHome, cacheDir)
 
 	scope := api.CreateCommandRequestScopeProject
 	_, err := h.CreateCommand(context.Background(), api.CreateCommandRequestObject{
 		Body: &api.CreateCommandJSONRequestBody{
-			Scope:       scope,
-			ProjectPath: &cacheDir,
-			Folder:      "myfolder",
-			Name:        "evil",
-			Body:        "# evil command",
+			Scope:     scope,
+			ProjectId: &encoded,
+			Folder:    "myfolder",
+			Name:      "evil",
+			Body:      "# evil command",
 		},
 	})
 	require.Error(t, err, "CreateCommand must reject writes to the plugin cache")
 	assert.Contains(t, err.Error(), "plugin-managed")
 }
 
-// Circular projectPath validation fix
+// Unregistered project ID must be rejected
 
 func TestUpdateCommand_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	unregistered := t.TempDir()
+	fakeId := "-nonexistent-project"
 
 	scope := "project"
-	pp := unregistered
 	_, err := h.UpdateCommand(context.Background(), api.UpdateCommandRequestObject{
 		Scope:  scope,
 		Folder: "myfolder",
 		Name:   "mycmd",
 		Body: &api.UpdateCommandJSONRequestBody{
-			ProjectPath: &pp,
-			Body:        "# bad command",
+			ProjectId: &fakeId,
+			Body:      "# bad command",
 		},
 	})
-	require.Error(t, err, "UpdateCommand must reject unregistered project paths")
-	assert.Contains(t, err.Error(), "outside allowed")
+	require.Error(t, err, "UpdateCommand must reject unregistered project ids")
+	assert.Contains(t, err.Error(), "unregistered")
 }
 
 func TestDeleteCommand_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	unregistered := t.TempDir()
+	fakeId := "-nonexistent-project"
 
 	scope := "project"
-	pp := unregistered
 	_, err := h.DeleteCommand(context.Background(), api.DeleteCommandRequestObject{
 		Scope:  scope,
 		Folder: "myfolder",
 		Name:   "mycmd",
-		Params: api.DeleteCommandParams{ProjectPath: &pp},
+		Params: api.DeleteCommandParams{ProjectId: &fakeId},
 	})
-	require.Error(t, err, "DeleteCommand must reject unregistered project paths")
-	assert.Contains(t, err.Error(), "outside allowed")
+	require.Error(t, err, "DeleteCommand must reject unregistered project ids")
+	assert.Contains(t, err.Error(), "unregistered")
 }

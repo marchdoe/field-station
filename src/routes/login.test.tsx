@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { LoginPage } from "./login.js";
 
 function renderLogin() {
@@ -11,6 +11,26 @@ function renderLogin() {
     </MemoryRouter>,
   );
 }
+
+describe("LoginPage form submission", () => {
+  it("sends password field (not token) in request body", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: false, redirected: false, json: () => Promise.resolve({}) });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderLogin();
+    fireEvent.change(screen.getByLabelText(/access token/i), { target: { value: "my-secret" } });
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.password).toBe("my-secret");
+    expect(body.token).toBeUndefined();
+
+    vi.unstubAllGlobals();
+  });
+});
 
 describe("LoginPage help toggle", () => {
   it("shows the help toggle button", () => {

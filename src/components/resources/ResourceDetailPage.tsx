@@ -26,7 +26,7 @@ interface Badge {
 interface ResourceDetailPageProps {
   resourceType: "agent" | "command" | "skill";
   scope: "global" | "project";
-  projectPath?: string;
+  projectId?: string;
   resource: {
     name: string;
     displayName: string;
@@ -53,7 +53,7 @@ const TYPE_LABELS: Record<string, string> = {
 export function ResourceDetailPage({
   resourceType,
   scope,
-  projectPath,
+  projectId,
   resource,
   icon,
   iconBgClass,
@@ -82,19 +82,19 @@ export function ResourceDetailPage({
           description: frontmatter.description,
           tools: frontmatter.tools,
           color: frontmatter.color,
-          ...(projectPath ? { projectPath } : {}),
+          ...(projectId ? { projectId } : {}),
         });
       } else if (resourceType === "command") {
         const folder = resource.folder ?? "";
         await updateCommand(scope, folder, resource.name, {
           body,
-          ...(projectPath ? { projectPath } : {}),
+          ...(projectId ? { projectId } : {}),
         });
       } else if (resourceType === "skill") {
         await updateSkill(scope, resource.name, {
           body,
           description: frontmatter.description,
-          ...(projectPath ? { projectPath } : {}),
+          ...(projectId ? { projectId } : {}),
         });
       }
       toast(`${typeLabel} updated successfully`);
@@ -111,12 +111,12 @@ export function ResourceDetailPage({
     setSaving(true);
     try {
       if (resourceType === "agent") {
-        await deleteAgent(resource.name, scope, projectPath);
+        await deleteAgent(resource.name, scope, projectId);
       } else if (resourceType === "command") {
         const folder = resource.folder ?? "";
-        await deleteCommand(scope, folder, resource.name, projectPath);
+        await deleteCommand(scope, folder, resource.name, projectId);
       } else if (resourceType === "skill") {
-        await deleteSkill(scope, resource.name, projectPath);
+        await deleteSkill(scope, resource.name, projectId);
       }
       toast(`${typeLabel} deleted`);
       await queryClient.invalidateQueries({ queryKey: [`${resourceType}s`] });

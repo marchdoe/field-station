@@ -7,7 +7,7 @@ import { createResource } from "@/lib/api.js";
 
 interface ResourceListPageProps {
   scope: "global" | "project";
-  projectPath?: string;
+  projectId?: string;
   resourceType: "agent" | "command" | "skill";
   typeLabel: string;
   subtitle: React.ReactNode;
@@ -17,7 +17,7 @@ interface ResourceListPageProps {
 
 export function ResourceListPage({
   scope,
-  projectPath,
+  projectId,
   resourceType,
   typeLabel,
   subtitle,
@@ -42,7 +42,7 @@ export function ResourceListPage({
         type: resourceType,
         name: data.name,
         ...(data.folder ? { folder: data.folder } : {}),
-        ...(projectPath ? { projectPath } : {}),
+        ...(projectId ? { projectId } : {}),
         frontmatter: resourceType === "command" ? {} : data.frontmatter,
         body: data.body,
       });

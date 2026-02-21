@@ -3,15 +3,13 @@ import { Bot } from "lucide-react";
 import { useParams } from "react-router";
 import { ResourceDetailPage } from "@/components/resources/ResourceDetailPage.js";
 import * as api from "@/lib/api.js";
-import { decodePath } from "@/lib/utils.js";
 
 export function ProjectAgentDetailPage() {
   const { projectId, agentName } = useParams<{ projectId: string; agentName: string }>();
-  const projectPath = decodePath(projectId ?? "");
 
   const { data: agent, isLoading } = useQuery({
-    queryKey: ["agent", "project", projectPath, agentName],
-    queryFn: () => api.getAgent(agentName ?? "", "project", projectPath),
+    queryKey: ["agent", "project", projectId, agentName],
+    queryFn: () => api.getAgent(agentName ?? "", "project", projectId),
   });
 
   if (isLoading) {
@@ -34,7 +32,7 @@ export function ProjectAgentDetailPage() {
     <ResourceDetailPage
       resourceType="agent"
       scope="project"
-      projectPath={projectPath}
+      projectId={projectId}
       resource={{
         name: agent.name,
         displayName: agent.name,

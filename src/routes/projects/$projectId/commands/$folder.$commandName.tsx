@@ -3,7 +3,6 @@ import { Terminal } from "lucide-react";
 import { useParams } from "react-router";
 import { ResourceDetailPage } from "@/components/resources/ResourceDetailPage.js";
 import * as api from "@/lib/api.js";
-import { decodePath } from "@/lib/utils.js";
 
 export function ProjectCommandDetailPage() {
   const { projectId, folder, commandName } = useParams<{
@@ -11,11 +10,10 @@ export function ProjectCommandDetailPage() {
     folder: string;
     commandName: string;
   }>();
-  const projectPath = decodePath(projectId ?? "");
 
   const { data: command, isLoading } = useQuery({
-    queryKey: ["command", "project", projectPath, folder, commandName],
-    queryFn: () => api.getCommand("project", folder ?? "", commandName ?? "", projectPath),
+    queryKey: ["command", "project", projectId, folder, commandName],
+    queryFn: () => api.getCommand("project", folder ?? "", commandName ?? "", projectId),
   });
 
   if (isLoading) {
@@ -38,7 +36,7 @@ export function ProjectCommandDetailPage() {
     <ResourceDetailPage
       resourceType="command"
       scope="project"
-      projectPath={projectPath}
+      projectId={projectId}
       resource={{
         name: command.name,
         displayName: `/${command.folder}:${command.name}`,

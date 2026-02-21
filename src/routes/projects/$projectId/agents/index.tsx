@@ -5,15 +5,13 @@ import { FileCard } from "@/components/files/FileCard.js";
 import { FileList } from "@/components/files/FileList.js";
 import { ResourceListPage } from "@/components/resources/ResourceListPage.js";
 import * as api from "@/lib/api.js";
-import { decodePath } from "@/lib/utils.js";
 
 export function ProjectAgentsPage() {
   const { projectId } = useParams<{ projectId: string }>();
-  const projectPath = decodePath(projectId ?? "");
 
   const { data: agents, isLoading } = useQuery({
-    queryKey: ["agents", "project", projectPath],
-    queryFn: () => api.getAgents("project", projectPath),
+    queryKey: ["agents", "project", projectId],
+    queryFn: () => api.getAgents("project", projectId),
   });
 
   if (isLoading) {
@@ -29,7 +27,7 @@ export function ProjectAgentsPage() {
   return (
     <ResourceListPage
       scope="project"
-      projectPath={projectPath}
+      projectId={projectId}
       resourceType="agent"
       typeLabel="Agent"
       subtitle={

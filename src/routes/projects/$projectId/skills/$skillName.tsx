@@ -3,15 +3,13 @@ import { Zap } from "lucide-react";
 import { useParams } from "react-router";
 import { ResourceDetailPage } from "@/components/resources/ResourceDetailPage.js";
 import * as api from "@/lib/api.js";
-import { decodePath } from "@/lib/utils.js";
 
 export function ProjectSkillDetailPage() {
   const { projectId, skillName } = useParams<{ projectId: string; skillName: string }>();
-  const projectPath = decodePath(projectId ?? "");
 
   const { data: skill, isLoading } = useQuery({
-    queryKey: ["skill", "project", projectPath, skillName],
-    queryFn: () => api.getSkill("project", skillName ?? "", projectPath),
+    queryKey: ["skill", "project", projectId, skillName],
+    queryFn: () => api.getSkill("project", skillName ?? "", projectId),
   });
 
   if (isLoading) {
@@ -36,7 +34,7 @@ export function ProjectSkillDetailPage() {
     <ResourceDetailPage
       resourceType="skill"
       scope="project"
-      projectPath={projectPath}
+      projectId={projectId}
       resource={{
         name: skill.name,
         displayName: skill.name,

@@ -37,9 +37,7 @@ async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
 
 // Config
 export function getConfig(projectId?: string): Promise<ConfigResponse> {
-  const url = projectId
-    ? `/api/config?projectId=${projectId}`
-    : "/api/config";
+  const url = projectId ? `/api/config?projectId=${projectId}` : "/api/config";
   return apiFetch<ConfigResponse>(url);
 }
 
@@ -253,9 +251,7 @@ export function deleteSkill(scope: string, name: string, projectId?: string): Pr
 
 // Hooks
 export function getHooks(projectId?: string): Promise<HooksResponse> {
-  const url = projectId
-    ? `/api/hooks?projectId=${projectId}`
-    : "/api/hooks";
+  const url = projectId ? `/api/hooks?projectId=${projectId}` : "/api/hooks";
   return apiFetch<HooksResponse>(url);
 }
 

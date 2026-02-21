@@ -10,7 +10,6 @@ import { ViewToggle } from "@/components/ui/ViewToggle.js";
 import type { ConfigLayer, ConfigLayerSource } from "@/lib/api.js";
 import * as api from "@/lib/api.js";
 import { type ConfirmState, useSettingsMutations } from "@/lib/useSettingsMutations.js";
-import { decodePath } from "@/lib/utils.js";
 import type { JsonObject, JsonValue } from "@/types/config.js";
 
 interface LayerSectionProps {
@@ -74,13 +73,12 @@ function LayerSection({ layer, editable, onUpdate, onDelete, onMove, onAdd }: La
 
 export function ProjectSettingsPage() {
   const { projectId } = useParams<{ projectId: string }>();
-  const projectPath = decodePath(projectId ?? "");
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
-  const { createHandlers } = useSettingsMutations(projectPath, setConfirmState);
+  const { createHandlers } = useSettingsMutations(projectId ?? "", setConfirmState);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["config", projectPath],
-    queryFn: () => api.getConfig(projectPath),
+    queryKey: ["config", projectId],
+    queryFn: () => api.getConfig(projectId ?? ""),
   });
 
   if (isLoading) {

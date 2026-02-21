@@ -6,7 +6,6 @@ import { FileList } from "@/components/files/FileList.js";
 import { ResourceListPage } from "@/components/resources/ResourceListPage.js";
 import type { SkillFile } from "@/lib/api.js";
 import * as api from "@/lib/api.js";
-import { decodePath } from "@/lib/utils.js";
 
 function buildSkillMeta(skill: SkillFile): Record<string, string> {
   const meta: Record<string, string> = {};
@@ -22,11 +21,10 @@ function buildSkillMeta(skill: SkillFile): Record<string, string> {
 
 export function ProjectSkillsPage() {
   const { projectId } = useParams<{ projectId: string }>();
-  const projectPath = decodePath(projectId ?? "");
 
   const { data: skills, isLoading } = useQuery({
-    queryKey: ["skills", "project", projectPath],
-    queryFn: () => api.getSkills("project", projectPath),
+    queryKey: ["skills", "project", projectId],
+    queryFn: () => api.getSkills("project", projectId),
   });
 
   if (isLoading) {
@@ -42,7 +40,7 @@ export function ProjectSkillsPage() {
   return (
     <ResourceListPage
       scope="project"
-      projectPath={projectPath}
+      projectId={projectId}
       resourceType="skill"
       typeLabel="Skill"
       subtitle={

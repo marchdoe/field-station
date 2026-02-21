@@ -13,7 +13,7 @@ export interface ConfirmState {
 }
 
 export function useSettingsMutations(
-  projectPath: string | undefined,
+  projectId: string | undefined,
   setConfirmState: Dispatch<SetStateAction<ConfirmState | null>>,
 ) {
   const queryClient = useQueryClient();
@@ -23,7 +23,7 @@ export function useSettingsMutations(
     (layer: ConfigLayerSource) => ({
       onUpdate: async (keyPath: string, value: JsonValue) => {
         try {
-          await api.updateConfigSetting({ keyPath, value, projectPath });
+          await api.updateConfigSetting({ keyPath, value, projectId });
           toast(`Updated "${keyPath}"`);
           queryClient.invalidateQueries({ queryKey: ["config"] });
         } catch (e) {
@@ -37,7 +37,7 @@ export function useSettingsMutations(
           message: `Are you sure you want to delete "${keyPath}" from the ${layer} layer?`,
           action: async () => {
             try {
-              await api.deleteConfigSetting({ keyPath, projectPath });
+              await api.deleteConfigSetting({ keyPath, projectId });
               toast(`Deleted "${keyPath}"`);
               queryClient.invalidateQueries({ queryKey: ["config"] });
             } catch (e) {
@@ -66,7 +66,7 @@ export function useSettingsMutations(
       },
       onAdd: async (keyPath: string, value: JsonValue) => {
         try {
-          await api.updateConfigSetting({ keyPath, value, projectPath });
+          await api.updateConfigSetting({ keyPath, value, projectId });
           toast(`Added "${keyPath}"`);
           queryClient.invalidateQueries({ queryKey: ["config"] });
         } catch (e) {
@@ -74,7 +74,7 @@ export function useSettingsMutations(
         }
       },
     }),
-    [projectPath, queryClient, toast, setConfirmState],
+    [projectId, queryClient, toast, setConfirmState],
   );
 
   return { createHandlers };

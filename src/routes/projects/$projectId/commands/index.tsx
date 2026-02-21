@@ -5,15 +5,13 @@ import { FileCard } from "@/components/files/FileCard.js";
 import { FileList } from "@/components/files/FileList.js";
 import { ResourceListPage } from "@/components/resources/ResourceListPage.js";
 import * as api from "@/lib/api.js";
-import { decodePath } from "@/lib/utils.js";
 
 export function ProjectCommandsPage() {
   const { projectId } = useParams<{ projectId: string }>();
-  const projectPath = decodePath(projectId ?? "");
 
   const { data: commands, isLoading } = useQuery({
-    queryKey: ["commands", "project", projectPath],
-    queryFn: () => api.getCommands("project", projectPath),
+    queryKey: ["commands", "project", projectId],
+    queryFn: () => api.getCommands("project", projectId),
   });
 
   if (isLoading) {
@@ -30,7 +28,7 @@ export function ProjectCommandsPage() {
   return (
     <ResourceListPage
       scope="project"
-      projectPath={projectPath}
+      projectId={projectId}
       resourceType="command"
       typeLabel="Command"
       existingFolders={folders}

@@ -14,7 +14,7 @@ import {
   Webhook,
   X,
 } from "lucide-react";
-import { Link, NavLink } from "react-router";
+import { NavLink } from "react-router";
 import { getProjects } from "@/lib/api.js";
 import { cn, encodePath, getProjectName } from "@/lib/utils";
 
@@ -149,14 +149,14 @@ export default function Sidebar({ onClose }: SidebarProps) {
           </div>
           <div className="space-y-0.5">
             {(projects.data ?? []).map((project) => (
-              <Link
+              <NavLink
                 key={project.path}
                 to={`/projects/${encodePath(project.path)}`}
-                className={linkBaseClass}
+                className={({ isActive }) => (isActive ? linkActiveClass : linkBaseClass)}
               >
                 <FolderOpen size={16} />
                 <span className="truncate">{getProjectName(project.path)}</span>
-              </Link>
+              </NavLink>
             ))}
             {(projects.data ?? []).length === 0 && (
               <p className="px-3 py-2 text-xs text-text-muted">No projects registered</p>

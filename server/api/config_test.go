@@ -53,3 +53,45 @@ func TestDeleteConfigSetting_GlobalSettings(t *testing.T) {
 	assert.NotContains(t, string(data), "dark")
 	assert.Contains(t, string(data), "other")
 }
+
+// --- Happy path tests ---
+
+func TestGetConfig_GlobalScope_ReturnsLayers(t *testing.T) {
+	h, claudeHome := newTestHandler(t)
+
+	// Write a global settings file with a known value.
+	settingsPath := filepath.Join(claudeHome, "settings.json")
+	require.NoError(t, os.WriteFile(settingsPath, []byte(`{"theme":"dark"}`), 0o644))
+
+	resp, err := h.GetConfig(context.Background(), api.GetConfigRequestObject{
+		Params: api.GetConfigParams{},
+	})
+	require.NoError(t, err)
+	cr, ok := resp.(api.GetConfig200JSONResponse)
+	require.True(t, ok)
+	assert.NotEmpty(t, cr.Layers, "should return config layers")
+	// Merged config should include the theme key.
+	assert.Equal(t, "dark", cr.Merged["theme"])
+}
+
+func TestMoveConfigSetting_GlobalUp_MovesToLocal(t *testing.T) {
+	h, claudeHome := newTestHandler(t)
+
+	// Put a key in global settings.
+	settingsPath := filepath.Join(claudeHome, "settings.json")
+	require.NoError(t, os.WriteFile(settingsPath, []byte(`{"verbosity":"verbose"}`), 0o644))
+
+	_, err := h.MoveConfigSetting(context.Background(), api.MoveConfigSettingRequestObject{
+		Body: &api.MoveConfigSettingJSONRequestBody{
+			KeyPath:   []string{"verbosity"},
+			Direction: api.Up,
+		},
+	})
+	require.NoError(t, err)
+
+	// Key must now appear in settings.local.json.
+	localPath := filepath.Join(claudeHome, "settings.local.json")
+	data, err := os.ReadFile(localPath)
+	require.NoError(t, err)
+	assert.Contains(t, string(data), "verbose")
+}

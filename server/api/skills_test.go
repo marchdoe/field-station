@@ -107,3 +107,32 @@ func TestDeleteSkill_RejectsUnregisteredProjectPath(t *testing.T) {
 	require.Error(t, err, "DeleteSkill must reject unregistered project ids")
 	assert.Contains(t, err.Error(), "unregistered")
 }
+
+// --- Happy path tests ---
+
+func TestGetSkills_GlobalScope_EmptyWhenNoSkills(t *testing.T) {
+	h, _ := newTestHandler(t)
+	resp, err := h.GetSkills(context.Background(), api.GetSkillsRequestObject{
+		Params: api.GetSkillsParams{},
+	})
+	require.NoError(t, err)
+	result, ok := resp.(api.GetSkills200JSONResponse)
+	require.True(t, ok)
+	assert.Empty(t, result)
+}
+
+func TestGetSkills_GlobalScope_ReturnsList(t *testing.T) {
+	h, claudeHome := newTestHandler(t)
+	skillsDir := filepath.Join(claudeHome, "skills")
+	writeSkillFile(t, skillsDir, "myskill", "---\nname: My Skill\ndescription: Helps\n---\nBody text")
+
+	resp, err := h.GetSkills(context.Background(), api.GetSkillsRequestObject{
+		Params: api.GetSkillsParams{},
+	})
+	require.NoError(t, err)
+	result, ok := resp.(api.GetSkills200JSONResponse)
+	require.True(t, ok)
+	require.Len(t, result, 1)
+	assert.Equal(t, "My Skill", result[0].Name)
+	assert.Equal(t, "Helps", result[0].Description)
+}

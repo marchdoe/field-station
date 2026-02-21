@@ -117,3 +117,32 @@ func TestDeleteCommand_RejectsUnregisteredProjectPath(t *testing.T) {
 	require.Error(t, err, "DeleteCommand must reject unregistered project ids")
 	assert.Contains(t, err.Error(), "unregistered")
 }
+
+// --- Happy path tests ---
+
+func TestGetCommands_GlobalScope_EmptyWhenNoCommands(t *testing.T) {
+	h, _ := newTestHandler(t)
+	resp, err := h.GetCommands(context.Background(), api.GetCommandsRequestObject{
+		Params: api.GetCommandsParams{},
+	})
+	require.NoError(t, err)
+	result, ok := resp.(api.GetCommands200JSONResponse)
+	require.True(t, ok)
+	assert.Empty(t, result)
+}
+
+func TestGetCommands_GlobalScope_ReturnsList(t *testing.T) {
+	h, claudeHome := newTestHandler(t)
+	commandDir := filepath.Join(claudeHome, "commands")
+	writeCommandFile(t, commandDir, "myfolder", "mycmd", "# My command body")
+
+	resp, err := h.GetCommands(context.Background(), api.GetCommandsRequestObject{
+		Params: api.GetCommandsParams{},
+	})
+	require.NoError(t, err)
+	result, ok := resp.(api.GetCommands200JSONResponse)
+	require.True(t, ok)
+	require.Len(t, result, 1)
+	assert.Equal(t, "mycmd", result[0].Name)
+	assert.Equal(t, "myfolder", result[0].Folder)
+}

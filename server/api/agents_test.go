@@ -204,3 +204,51 @@ func TestDeleteAgent_RejectsUnregisteredProjectPath(t *testing.T) {
 	require.Error(t, err, "DeleteAgent must reject unregistered project ids")
 	assert.Contains(t, err.Error(), "unregistered")
 }
+
+// --- Happy path tests ---
+
+func TestGetAgents_GlobalScope_EmptyWhenNoAgents(t *testing.T) {
+	h, _ := newTestHandler(t)
+	resp, err := h.GetAgents(context.Background(), api.GetAgentsRequestObject{
+		Params: api.GetAgentsParams{},
+	})
+	require.NoError(t, err)
+	result, ok := resp.(api.GetAgents200JSONResponse)
+	require.True(t, ok)
+	assert.Empty(t, result)
+}
+
+func TestGetAgents_GlobalScope_ReturnsList(t *testing.T) {
+	h, claudeHome := newTestHandler(t)
+	agentDir := filepath.Join(claudeHome, "agents")
+	writeAgentFile(t, agentDir, "myagent", "---\nname: My Agent\ndescription: Does things\n---\nBody text")
+
+	resp, err := h.GetAgents(context.Background(), api.GetAgentsRequestObject{
+		Params: api.GetAgentsParams{},
+	})
+	require.NoError(t, err)
+	result, ok := resp.(api.GetAgents200JSONResponse)
+	require.True(t, ok)
+	require.Len(t, result, 1)
+	// Name field is the frontmatter display name, not the file ID.
+	assert.Equal(t, "My Agent", result[0].Name)
+}
+
+func TestGetAgent_GlobalScope_ReturnsAgent(t *testing.T) {
+	h, claudeHome := newTestHandler(t)
+	agentDir := filepath.Join(claudeHome, "agents")
+	writeAgentFile(t, agentDir, "myagent", "---\nname: My Agent\ndescription: Does things\n---\nBody text")
+
+	scope := "global"
+	resp, err := h.GetAgent(context.Background(), api.GetAgentRequestObject{
+		Name:   "myagent",
+		Params: api.GetAgentParams{Scope: &scope},
+	})
+	require.NoError(t, err)
+	detail, ok := resp.(api.GetAgent200JSONResponse)
+	require.True(t, ok)
+	// Name field is the frontmatter display name.
+	assert.Equal(t, "My Agent", detail.Name)
+	assert.Equal(t, "Does things", detail.Description)
+	assert.Contains(t, detail.Body, "Body text")
+}

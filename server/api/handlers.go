@@ -9,11 +9,18 @@ import (
 type FieldStationHandler struct {
 	claudeHome string
 	authToken  string
+	hub        *watchHub
 }
 
 // NewHandler creates a new FieldStationHandler.
 func NewHandler(claudeHome, authToken string) *FieldStationHandler {
-	return &FieldStationHandler{claudeHome: claudeHome, authToken: authToken}
+	return &FieldStationHandler{
+		claudeHome: claudeHome,
+		authToken:  authToken,
+		hub: &watchHub{
+			listeners: make(map[chan struct{}]struct{}),
+		},
+	}
 }
 
 // write501 writes a 501 Not Implemented response.

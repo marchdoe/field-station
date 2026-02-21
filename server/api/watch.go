@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -21,17 +22,13 @@ type watchHub struct {
 	debounce  *time.Timer
 }
 
-var hub = &watchHub{
-	listeners: make(map[chan struct{}]struct{}),
-}
-
-func (h *watchHub) subscribe(watchDir string) chan struct{} {
+func (h *watchHub) subscribe(watchDirs ...string) chan struct{} {
 	ch := make(chan struct{}, 1)
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	h.listeners[ch] = struct{}{}
 	if len(h.listeners) == 1 {
-		h.startWatching(watchDir)
+		h.startWatching(watchDirs...)
 	}
 	return ch
 }
@@ -40,9 +37,15 @@ func (h *watchHub) unsubscribe(ch chan struct{}) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	delete(h.listeners, ch)
-	if len(h.listeners) == 0 && h.watcher != nil {
-		h.watcher.Close()
-		h.watcher = nil
+	if len(h.listeners) == 0 {
+		if h.debounce != nil {
+			h.debounce.Stop()
+			h.debounce = nil
+		}
+		if h.watcher != nil {
+			h.watcher.Close()
+			h.watcher = nil
+		}
 	}
 }
 
@@ -57,7 +60,7 @@ func (h *watchHub) notifyAll() {
 	}
 }
 
-func (h *watchHub) startWatching(watchDir string) {
+func (h *watchHub) startWatching(watchDirs ...string) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Printf("fsnotify: %v", err)
@@ -65,8 +68,10 @@ func (h *watchHub) startWatching(watchDir string) {
 	}
 	h.watcher = watcher
 
-	if err := watcher.Add(watchDir); err != nil {
-		log.Printf("watcher.Add %s: %v", watchDir, err)
+	for _, dir := range watchDirs {
+		if err := watcher.Add(dir); err != nil {
+			log.Printf("watcher.Add %s: %v", dir, err)
+		}
 	}
 
 	go func() {
@@ -93,10 +98,11 @@ func (h *watchHub) startWatching(watchDir string) {
 }
 
 // watchSSEResponse implements WatchResponseObject, streaming SSE events via VisitWatchResponse.
-// Keeping the SSE loop inside Visit gives direct access to http.ResponseWriter for Flush calls.
 type watchSSEResponse struct {
 	ctx        context.Context
 	claudeHome string
+	projectDir string // optional: project .claude/ dir to also watch
+	hub        *watchHub
 }
 
 func (r watchSSEResponse) VisitWatchResponse(w http.ResponseWriter) error {
@@ -118,14 +124,20 @@ func (r watchSSEResponse) VisitWatchResponse(w http.ResponseWriter) error {
 			persisted := lib.ReadPersistedVersion(r.claudeHome)
 			if currentVersion != persisted {
 				_ = lib.WritePersistedVersion(r.claudeHome, currentVersion)
-				fmt.Fprintf(w, "event: change\ndata: {}\n\n")
-				flusher.Flush()
+				if _, err := fmt.Fprintf(w, "event: change\ndata: {}\n\n"); err == nil {
+					flusher.Flush()
+				}
 			}
 		}
 	}
 
-	ch := hub.subscribe(r.claudeHome)
-	defer hub.unsubscribe(ch)
+	watchDirs := []string{r.claudeHome}
+	if r.projectDir != "" {
+		watchDirs = append(watchDirs, r.projectDir)
+	}
+
+	ch := r.hub.subscribe(watchDirs...)
+	defer r.hub.unsubscribe(ch)
 
 	heartbeat := time.NewTicker(30 * time.Second)
 	defer heartbeat.Stop()
@@ -135,10 +147,14 @@ func (r watchSSEResponse) VisitWatchResponse(w http.ResponseWriter) error {
 		case <-r.ctx.Done():
 			return nil
 		case <-ch:
-			fmt.Fprintf(w, "event: change\ndata: {}\n\n")
+			if _, err := fmt.Fprintf(w, "event: change\ndata: {}\n\n"); err != nil {
+				return nil
+			}
 			flusher.Flush()
 		case <-heartbeat.C:
-			fmt.Fprintf(w, "event: heartbeat\ndata: {}\n\n")
+			if _, err := fmt.Fprintf(w, "event: heartbeat\ndata: {}\n\n"); err != nil {
+				return nil
+			}
 			flusher.Flush()
 		}
 	}
@@ -146,5 +162,13 @@ func (r watchSSEResponse) VisitWatchResponse(w http.ResponseWriter) error {
 
 // Watch handles GET /api/watch — SSE stream for file changes.
 func (h *FieldStationHandler) Watch(ctx context.Context, request WatchRequestObject) (WatchResponseObject, error) {
-	return watchSSEResponse{ctx: ctx, claudeHome: h.claudeHome}, nil
+	projectDir := ""
+	if request.Params.ProjectPath != nil && *request.Params.ProjectPath != "" {
+		pp := *request.Params.ProjectPath
+		allowedRoots := lib.GetAllowedRoots(pp)
+		if _, err := lib.AssertSafePath(pp, allowedRoots); err == nil {
+			projectDir = filepath.Join(pp, ".claude")
+		}
+	}
+	return watchSSEResponse{ctx: ctx, claudeHome: h.claudeHome, projectDir: projectDir, hub: h.hub}, nil
 }

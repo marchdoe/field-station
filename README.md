@@ -148,6 +148,7 @@ systemctl --user enable --now field-station
 | Variable | Default | Description |
 |---|---|---|
 | `FIELD_STATION_TOKEN` | _(none)_ | Auth token. If unset, no login is required. |
+| `FIELD_STATION_ADDR` | `127.0.0.1:3457` | Listen address. Set to `:3457` for Docker or remote access. |
 | `CLAUDE_HOME` | `~/.claude` | Override the Claude config directory. |
 | `FIELD_STATION_DEV` | `0` | Set to `1` to skip embedding and proxy to Vite (set automatically by `make dev-server`). |
 

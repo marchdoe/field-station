@@ -48,7 +48,10 @@ func main() {
 		})
 	}
 
-	addr := ":3457"
+	addr := os.Getenv("FIELD_STATION_ADDR")
+	if addr == "" {
+		addr = "127.0.0.1:3457"
+	}
 	srv := &http.Server{
 		Addr:              addr,
 		Handler:           maxBytesMiddleware(middleware.RequireLocalOrigin(makeTopHandler(mux, authToken))),

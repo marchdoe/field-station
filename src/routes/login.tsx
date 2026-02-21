@@ -66,7 +66,7 @@ export function LoginPage() {
           className="bg-surface-1 border border-border-default rounded-xl p-6"
         >
           <div className="mb-4">
-            <label htmlFor="token" className="block text-sm font-medium text-text-primary mb-1">
+            <label htmlFor="token" className="block text-sm font-medium text-text-primary mb-2">
               Access token
             </label>
             <input

@@ -653,6 +653,23 @@ paths:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
 
+    delete:
+      operationId: deleteFeature
+      summary: Delete (reset) a feature value
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   # Search
   /api/search:
     get:
@@ -662,6 +679,11 @@ paths:
         - name: q
           in: query
           required: true
+          schema:
+            type: string
+        - name: projectPath
+          in: query
+          required: false
           schema:
             type: string
       responses:
@@ -679,6 +701,12 @@ paths:
     get:
       operationId: watch
       summary: SSE file watcher stream
+      parameters:
+        - name: projectPath
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         "200":
           description: SSE stream
@@ -777,6 +805,8 @@ components:
           items:
             type: string
         value: {}
+        projectPath:
+          type: string
 
     DeleteConfigSettingRequest:
       type: object
@@ -787,6 +817,8 @@ components:
           type: array
           items:
             type: string
+        projectPath:
+          type: string
 
     MoveConfigSettingRequest:
       type: object
@@ -800,6 +832,8 @@ components:
         direction:
           type: string
           enum: [up, down]
+        projectPath:
+          type: string
 
     AgentFile:
       type: object

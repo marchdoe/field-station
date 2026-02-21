@@ -126,3 +126,24 @@ func (h *FieldStationHandler) UpdateFeature(ctx context.Context, request UpdateF
 	}
 	return UpdateFeature200JSONResponse(SuccessResponse{Success: true}), nil
 }
+
+// DeleteFeature removes a feature value from the global settings file.
+// For env-type features, the value lives under settings["env"][key].
+// For setting-type features, the value lives at the dot-path key.
+func (h *FieldStationHandler) DeleteFeature(ctx context.Context, request DeleteFeatureRequestObject) (DeleteFeatureResponseObject, error) {
+	key := request.Key
+	settingsPath := filepath.Join(h.claudeHome, "settings.json")
+
+	// Look up feature type to determine the correct key path.
+	var keyPath string
+	if feat, ok := lib.GetFeature(key); ok && feat.Type == lib.FeatureTypeEnv {
+		keyPath = "env." + key
+	} else {
+		keyPath = key
+	}
+
+	if err := lib.ApplyDeleteSetting(settingsPath, keyPath, h.claudeHome); err != nil {
+		return nil, fmt.Errorf("failed to delete feature %q: %w", key, err)
+	}
+	return DeleteFeature200JSONResponse(SuccessResponse{Success: true}), nil
+}

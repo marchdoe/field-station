@@ -259,6 +259,7 @@ type DeleteAgentRequestScope string
 // DeleteConfigSettingRequest defines model for DeleteConfigSettingRequest.
 type DeleteConfigSettingRequest struct {
 	KeyPath              []string               `json:"keyPath"`
+	ProjectPath          *string                `json:"projectPath,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -351,6 +352,7 @@ type LoginRequest struct {
 type MoveConfigSettingRequest struct {
 	Direction            MoveConfigSettingRequestDirection `json:"direction"`
 	KeyPath              []string                          `json:"keyPath"`
+	ProjectPath          *string                           `json:"projectPath,omitempty"`
 	AdditionalProperties map[string]interface{}            `json:"-"`
 }
 
@@ -437,6 +439,7 @@ type UpdateCommandRequest struct {
 // UpdateConfigSettingRequest defines model for UpdateConfigSettingRequest.
 type UpdateConfigSettingRequest struct {
 	KeyPath              []string               `json:"keyPath"`
+	ProjectPath          *string                `json:"projectPath,omitempty"`
 	Value                interface{}            `json:"value"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
@@ -524,7 +527,8 @@ type DeleteHookParams struct {
 
 // SearchParams defines parameters for Search.
 type SearchParams struct {
-	Q string `form:"q" json:"q"`
+	Q           string  `form:"q" json:"q"`
+	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
 }
 
 // GetSkillsParams defines parameters for GetSkills.
@@ -543,6 +547,11 @@ type DeleteSkillParams struct {
 
 // GetSkillParams defines parameters for GetSkill.
 type GetSkillParams struct {
+	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
+}
+
+// WatchParams defines parameters for Watch.
+type WatchParams struct {
 	ProjectPath *string `form:"projectPath,omitempty" json:"projectPath,omitempty"`
 }
 
@@ -2110,6 +2119,14 @@ func (a *DeleteConfigSettingRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "keyPath")
 	}
 
+	if raw, found := object["projectPath"]; found {
+		err = json.Unmarshal(raw, &a.ProjectPath)
+		if err != nil {
+			return fmt.Errorf("error reading 'projectPath': %w", err)
+		}
+		delete(object, "projectPath")
+	}
+
 	if len(object) != 0 {
 		a.AdditionalProperties = make(map[string]interface{})
 		for fieldName, fieldBuf := range object {
@@ -2133,6 +2150,13 @@ func (a DeleteConfigSettingRequest) MarshalJSON() ([]byte, error) {
 		object["keyPath"], err = json.Marshal(a.KeyPath)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'keyPath': %w", err)
+		}
+	}
+
+	if a.ProjectPath != nil {
+		object["projectPath"], err = json.Marshal(a.ProjectPath)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
 		}
 	}
 
@@ -3123,6 +3147,14 @@ func (a *MoveConfigSettingRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "keyPath")
 	}
 
+	if raw, found := object["projectPath"]; found {
+		err = json.Unmarshal(raw, &a.ProjectPath)
+		if err != nil {
+			return fmt.Errorf("error reading 'projectPath': %w", err)
+		}
+		delete(object, "projectPath")
+	}
+
 	if len(object) != 0 {
 		a.AdditionalProperties = make(map[string]interface{})
 		for fieldName, fieldBuf := range object {
@@ -3151,6 +3183,13 @@ func (a MoveConfigSettingRequest) MarshalJSON() ([]byte, error) {
 		object["keyPath"], err = json.Marshal(a.KeyPath)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'keyPath': %w", err)
+		}
+	}
+
+	if a.ProjectPath != nil {
+		object["projectPath"], err = json.Marshal(a.ProjectPath)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
 		}
 	}
 
@@ -4035,6 +4074,14 @@ func (a *UpdateConfigSettingRequest) UnmarshalJSON(b []byte) error {
 		delete(object, "keyPath")
 	}
 
+	if raw, found := object["projectPath"]; found {
+		err = json.Unmarshal(raw, &a.ProjectPath)
+		if err != nil {
+			return fmt.Errorf("error reading 'projectPath': %w", err)
+		}
+		delete(object, "projectPath")
+	}
+
 	if raw, found := object["value"]; found {
 		err = json.Unmarshal(raw, &a.Value)
 		if err != nil {
@@ -4066,6 +4113,13 @@ func (a UpdateConfigSettingRequest) MarshalJSON() ([]byte, error) {
 		object["keyPath"], err = json.Marshal(a.KeyPath)
 		if err != nil {
 			return nil, fmt.Errorf("error marshaling 'keyPath': %w", err)
+		}
+	}
+
+	if a.ProjectPath != nil {
+		object["projectPath"], err = json.Marshal(a.ProjectPath)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'projectPath': %w", err)
 		}
 	}
 
@@ -4441,6 +4495,9 @@ type ServerInterface interface {
 	// Get features data
 	// (GET /api/features)
 	GetFeatures(w http.ResponseWriter, r *http.Request)
+	// Delete (reset) a feature value
+	// (DELETE /api/features/{key})
+	DeleteFeature(w http.ResponseWriter, r *http.Request, key string)
 	// Update a feature value
 	// (PUT /api/features/{key})
 	UpdateFeature(w http.ResponseWriter, r *http.Request, key string)
@@ -4485,7 +4542,7 @@ type ServerInterface interface {
 	UpdateSkill(w http.ResponseWriter, r *http.Request, scope string, name string)
 	// SSE file watcher stream
 	// (GET /api/watch)
-	Watch(w http.ResponseWriter, r *http.Request)
+	Watch(w http.ResponseWriter, r *http.Request, params WatchParams)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -4990,6 +5047,31 @@ func (siw *ServerInterfaceWrapper) GetFeatures(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r)
 }
 
+// DeleteFeature operation middleware
+func (siw *ServerInterfaceWrapper) DeleteFeature(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "key" -------------
+	var key string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "key", r.PathValue("key"), &key, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "key", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteFeature(w, r, key)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // UpdateFeature operation middleware
 func (siw *ServerInterfaceWrapper) UpdateFeature(w http.ResponseWriter, r *http.Request) {
 
@@ -5190,6 +5272,14 @@ func (siw *ServerInterfaceWrapper) Search(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// ------------- Optional query parameter "projectPath" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.Search(w, r, params)
 	}))
@@ -5377,8 +5467,21 @@ func (siw *ServerInterfaceWrapper) UpdateSkill(w http.ResponseWriter, r *http.Re
 // Watch operation middleware
 func (siw *ServerInterfaceWrapper) Watch(w http.ResponseWriter, r *http.Request) {
 
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params WatchParams
+
+	// ------------- Optional query parameter "projectPath" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "projectPath", r.URL.Query(), &params.ProjectPath)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectPath", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.Watch(w, r)
+		siw.Handler.Watch(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -5527,6 +5630,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/api/config/setting", wrapper.UpdateConfigSetting)
 	m.HandleFunc("POST "+options.BaseURL+"/api/config/setting/move", wrapper.MoveConfigSetting)
 	m.HandleFunc("GET "+options.BaseURL+"/api/features", wrapper.GetFeatures)
+	m.HandleFunc("DELETE "+options.BaseURL+"/api/features/{key}", wrapper.DeleteFeature)
 	m.HandleFunc("PUT "+options.BaseURL+"/api/features/{key}", wrapper.UpdateFeature)
 	m.HandleFunc("GET "+options.BaseURL+"/api/health", wrapper.GetHealth)
 	m.HandleFunc("GET "+options.BaseURL+"/api/hooks", wrapper.GetHooks)
@@ -5878,6 +5982,23 @@ func (response GetFeatures200JSONResponse) VisitGetFeaturesResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type DeleteFeatureRequestObject struct {
+	Key string `json:"key"`
+}
+
+type DeleteFeatureResponseObject interface {
+	VisitDeleteFeatureResponse(w http.ResponseWriter) error
+}
+
+type DeleteFeature200JSONResponse SuccessResponse
+
+func (response DeleteFeature200JSONResponse) VisitDeleteFeatureResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type UpdateFeatureRequestObject struct {
 	Key  string `json:"key"`
 	Body *UpdateFeatureJSONRequestBody
@@ -6123,6 +6244,7 @@ func (response UpdateSkill200JSONResponse) VisitUpdateSkillResponse(w http.Respo
 }
 
 type WatchRequestObject struct {
+	Params WatchParams
 }
 
 type WatchResponseObject interface {
@@ -6207,6 +6329,9 @@ type StrictServerInterface interface {
 	// Get features data
 	// (GET /api/features)
 	GetFeatures(ctx context.Context, request GetFeaturesRequestObject) (GetFeaturesResponseObject, error)
+	// Delete (reset) a feature value
+	// (DELETE /api/features/{key})
+	DeleteFeature(ctx context.Context, request DeleteFeatureRequestObject) (DeleteFeatureResponseObject, error)
 	// Update a feature value
 	// (PUT /api/features/{key})
 	UpdateFeature(ctx context.Context, request UpdateFeatureRequestObject) (UpdateFeatureResponseObject, error)
@@ -6831,6 +6956,32 @@ func (sh *strictHandler) GetFeatures(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// DeleteFeature operation middleware
+func (sh *strictHandler) DeleteFeature(w http.ResponseWriter, r *http.Request, key string) {
+	var request DeleteFeatureRequestObject
+
+	request.Key = key
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteFeature(ctx, request.(DeleteFeatureRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteFeature")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteFeatureResponseObject); ok {
+		if err := validResponse.VisitDeleteFeatureResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // UpdateFeature operation middleware
 func (sh *strictHandler) UpdateFeature(w http.ResponseWriter, r *http.Request, key string) {
 	var request UpdateFeatureRequestObject
@@ -7227,8 +7378,10 @@ func (sh *strictHandler) UpdateSkill(w http.ResponseWriter, r *http.Request, sco
 }
 
 // Watch operation middleware
-func (sh *strictHandler) Watch(w http.ResponseWriter, r *http.Request) {
+func (sh *strictHandler) Watch(w http.ResponseWriter, r *http.Request, params WatchParams) {
 	var request WatchRequestObject
+
+	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
 		return sh.ssi.Watch(ctx, request.(WatchRequestObject))

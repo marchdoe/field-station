@@ -48,15 +48,33 @@ func (h *FieldStationHandler) GetConfig(ctx context.Context, request GetConfigRe
 	}), nil
 }
 
-// UpdateConfigSetting updates a setting in the global settings.json.
+// resolveConfigFilePath resolves the correct settings.json path based on optional projectPath.
+// If projectPath is provided, validates it and returns the project settings file path.
+// Otherwise returns the global settings file path.
+func (h *FieldStationHandler) resolveConfigFilePath(projectPath *string) (string, error) {
+	if projectPath != nil && *projectPath != "" {
+		pp := *projectPath
+		allowedRoots := lib.GetAllowedRoots(pp)
+		if _, err := lib.AssertSafePath(pp, allowedRoots); err != nil {
+			return "", fmt.Errorf("unsafe project path: %w", err)
+		}
+		return filepath.Join(pp, ".claude", "settings.json"), nil
+	}
+	return filepath.Join(h.claudeHome, "settings.json"), nil
+}
+
+// UpdateConfigSetting updates a setting in the appropriate settings.json.
 func (h *FieldStationHandler) UpdateConfigSetting(ctx context.Context, request UpdateConfigSettingRequestObject) (UpdateConfigSettingResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
 
-	filePath := filepath.Join(h.claudeHome, "settings.json")
+	filePath, err := h.resolveConfigFilePath(request.Body.ProjectPath)
+	if err != nil {
+		return nil, err
+	}
 
-	if _, err := lib.AssertSafePath(filePath, []string{h.claudeHome}); err != nil {
+	if _, err := lib.AssertSafePath(filePath, []string{h.claudeHome, filepath.Dir(filePath)}); err != nil {
 		return nil, err
 	}
 
@@ -69,15 +87,18 @@ func (h *FieldStationHandler) UpdateConfigSetting(ctx context.Context, request U
 	return UpdateConfigSetting200JSONResponse(SuccessResponse{Success: true}), nil
 }
 
-// DeleteConfigSetting deletes a setting from the global settings.json.
+// DeleteConfigSetting deletes a setting from the appropriate settings.json.
 func (h *FieldStationHandler) DeleteConfigSetting(ctx context.Context, request DeleteConfigSettingRequestObject) (DeleteConfigSettingResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
 
-	filePath := filepath.Join(h.claudeHome, "settings.json")
+	filePath, err := h.resolveConfigFilePath(request.Body.ProjectPath)
+	if err != nil {
+		return nil, err
+	}
 
-	if _, err := lib.AssertSafePath(filePath, []string{h.claudeHome}); err != nil {
+	if _, err := lib.AssertSafePath(filePath, []string{h.claudeHome, filepath.Dir(filePath)}); err != nil {
 		return nil, err
 	}
 
@@ -90,22 +111,31 @@ func (h *FieldStationHandler) DeleteConfigSetting(ctx context.Context, request D
 	return DeleteConfigSetting200JSONResponse(SuccessResponse{Success: true}), nil
 }
 
-// MoveConfigSetting moves a setting between the global and global-local settings files.
-// "up" promotes a setting to the higher-precedence layer (settings.json → settings.local.json,
-// since local overrides base). "down" demotes a setting to the lower-precedence layer
-// (settings.local.json → settings.json).
+// MoveConfigSetting moves a config setting between base and local settings files.
+// When projectPath is provided, moves between project-scoped settings files.
 func (h *FieldStationHandler) MoveConfigSetting(ctx context.Context, request MoveConfigSettingRequestObject) (MoveConfigSettingResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
 
-	globalPath := filepath.Join(h.claudeHome, "settings.json")
-	localPath := filepath.Join(h.claudeHome, "settings.local.json")
+	var globalPath, localPath string
+	if request.Body.ProjectPath != nil && *request.Body.ProjectPath != "" {
+		pp := *request.Body.ProjectPath
+		allowedRoots := lib.GetAllowedRoots(pp)
+		if _, err := lib.AssertSafePath(pp, allowedRoots); err != nil {
+			return nil, fmt.Errorf("unsafe project path: %w", err)
+		}
+		globalPath = filepath.Join(pp, ".claude", "settings.json")
+		localPath = filepath.Join(pp, ".claude", "settings.local.json")
+	} else {
+		globalPath = filepath.Join(h.claudeHome, "settings.json")
+		localPath = filepath.Join(h.claudeHome, "settings.local.json")
+	}
 
-	if _, err := lib.AssertSafePath(globalPath, []string{h.claudeHome}); err != nil {
+	if _, err := lib.AssertSafePath(globalPath, []string{h.claudeHome, filepath.Dir(globalPath)}); err != nil {
 		return nil, err
 	}
-	if _, err := lib.AssertSafePath(localPath, []string{h.claudeHome}); err != nil {
+	if _, err := lib.AssertSafePath(localPath, []string{h.claudeHome, filepath.Dir(localPath)}); err != nil {
 		return nil, err
 	}
 

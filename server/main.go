@@ -14,7 +14,7 @@ import (
 
 func main() {
 	claudeHome := lib.ResolveClaudeHome()
-	authToken := os.Getenv("FIELD_STATION_TOKEN")
+	authToken := lib.ResolveAuthToken(claudeHome)
 	isDev := os.Getenv("FIELD_STATION_DEV") == "1"
 
 	handler := api.NewHandler(claudeHome, authToken)

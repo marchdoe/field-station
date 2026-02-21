@@ -16,6 +16,13 @@ export type ProjectFile = components["schemas"]["ProjectFile"];
 export type PluginFile = components["schemas"]["PluginFile"];
 export type SearchResult = components["schemas"]["SearchResult"];
 export type ConfigLayerSource = components["schemas"]["ConfigLayer"]["source"];
+export type FeatureCategory =
+  | "experimental"
+  | "model"
+  | "ui"
+  | "security"
+  | "telemetry"
+  | "advanced";
 
 async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, options);

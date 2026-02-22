@@ -2,6 +2,8 @@
 
 A local web interface for managing [Claude Code](https://docs.anthropic.com/en/docs/claude-code) configuration. Instead of manually editing JSON files and hunting through `~/.claude/`, Field Station gives you a browser UI to browse, inspect, and edit everything Claude Code stores on disk.
 
+<img width="800" alt="Screenshot 2026-02-21 at 8 06 16 PM" src="https://github.com/user-attachments/assets/00d8d206-4c2e-42a6-8c74-d1659efafd67" />
+
 ## What it does
 
 **Configuration** — View settings across all four layers (global, global-local, project, project-local) with a merged "effective config" view. Sensitive values like API keys are automatically redacted.

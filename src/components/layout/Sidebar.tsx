@@ -26,14 +26,14 @@ interface NavItem {
 }
 
 const globalChildren: NavItem[] = [
-  { label: "Settings", to: "/global/settings", icon: <Settings size={16} /> },
-  { label: "Agents", to: "/global/agents", icon: <Bot size={16} /> },
-  { label: "Commands", to: "/global/commands", icon: <Terminal size={16} /> },
-  { label: "Skills", to: "/global/skills", icon: <Sparkles size={16} /> },
-  { label: "Hooks", to: "/global/hooks", icon: <Webhook size={16} /> },
-  { label: "Plugins", to: "/global/plugins", icon: <Puzzle size={16} /> },
   { label: "Features", to: "/global/features", icon: <ToggleLeft size={16} /> },
+  { label: "Settings", to: "/global/settings", icon: <Settings size={16} /> },
   { label: "Instructions", to: "/global/instructions", icon: <BookOpen size={16} /> },
+  { label: "Plugins", to: "/global/plugins", icon: <Puzzle size={16} /> },
+  { label: "Agents", to: "/global/agents", icon: <Bot size={16} /> },
+  { label: "Skills", to: "/global/skills", icon: <Sparkles size={16} /> },
+  { label: "Commands", to: "/global/commands", icon: <Terminal size={16} /> },
+  { label: "Hooks", to: "/global/hooks", icon: <Webhook size={16} /> },
 ];
 
 const linkBaseClass = cn(

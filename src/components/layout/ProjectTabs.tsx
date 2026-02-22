@@ -1,4 +1,4 @@
-import { Bot, Settings, Terminal, Zap } from "lucide-react";
+import { BookOpen, Bot, Brain, Settings, Terminal, Zap } from "lucide-react";
 import { NavLink } from "react-router";
 
 const inactive = "text-text-muted hover:text-text-primary border-b-2 border-transparent";
@@ -39,6 +39,16 @@ export function ProjectTabs({ projectId, counts }: ProjectTabsProps) {
       to: `/projects/${projectId}/skills`,
       icon: Zap,
       count: counts?.skills,
+    },
+    {
+      label: "Instructions",
+      to: `/projects/${projectId}/instructions`,
+      icon: BookOpen,
+    },
+    {
+      label: "Memory",
+      to: `/projects/${projectId}/memory`,
+      icon: Brain,
     },
   ];
 

@@ -343,3 +343,79 @@ export function createResource(data: {
   }
   throw new Error(`Unknown resource type: ${type}`);
 }
+
+// Instructions (CLAUDE.md files)
+export type InstructionsFile = components["schemas"]["InstructionsFile"];
+export type InstructionsResponse = components["schemas"]["InstructionsResponse"];
+
+export function getInstructions(
+  scope: "global" | "project",
+  projectId?: string,
+): Promise<InstructionsResponse> {
+  const params = new URLSearchParams({ scope });
+  if (projectId) params.set("projectId", projectId);
+  return apiFetch<InstructionsResponse>(`/api/instructions?${params}`);
+}
+
+export function updateInstruction(params: {
+  scope: "global" | "project";
+  file: "main" | "local";
+  content: string;
+  projectId?: string;
+}): Promise<void> {
+  return apiFetch("/api/instructions", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      scope: params.scope,
+      file: params.file,
+      content: params.content,
+      ...(params.projectId ? { projectId: params.projectId } : {}),
+    }),
+  });
+}
+
+// Memory files (per-project)
+export type MemoryFile = components["schemas"]["MemoryFile"];
+export type MemoryDetail = components["schemas"]["MemoryDetail"];
+
+export function listMemory(projectId: string): Promise<MemoryFile[]> {
+  return apiFetch<MemoryFile[]>(`/api/memory?projectId=${encodeURIComponent(projectId)}`);
+}
+
+export function getMemory(filename: string, projectId: string): Promise<MemoryDetail> {
+  return apiFetch<MemoryDetail>(
+    `/api/memory/${encodeURIComponent(filename)}?projectId=${encodeURIComponent(projectId)}`,
+  );
+}
+
+export function createMemory(params: {
+  filename: string;
+  content: string;
+  projectId: string;
+}): Promise<MemoryFile> {
+  return apiFetch<MemoryFile>("/api/memory", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+}
+
+export function updateMemory(params: {
+  filename: string;
+  content: string;
+  projectId: string;
+}): Promise<void> {
+  return apiFetch(`/api/memory/${encodeURIComponent(params.filename)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content: params.content, projectId: params.projectId }),
+  });
+}
+
+export function deleteMemory(filename: string, projectId: string): Promise<void> {
+  return apiFetch(
+    `/api/memory/${encodeURIComponent(filename)}?projectId=${encodeURIComponent(projectId)}`,
+    { method: "DELETE" },
+  );
+}

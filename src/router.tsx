@@ -9,6 +9,7 @@ import { GlobalFeaturesPage } from "./routes/global/features.js";
 import { GlobalHooksPage } from "./routes/global/hooks.js";
 // Global routes
 import { GlobalOverviewPage } from "./routes/global/index.js";
+import { GlobalInstructionsPage } from "./routes/global/instructions.js";
 import { GlobalPluginsPage } from "./routes/global/plugins.js";
 import { GlobalSettingsPage } from "./routes/global/settings.js";
 import { GlobalSkillDetailPage } from "./routes/global/skills/$skillName.js";
@@ -24,6 +25,9 @@ import { ProjectAgentsOutlet } from "./routes/projects/$projectId/agents/route.j
 import { ProjectCommandDetailPage } from "./routes/projects/$projectId/commands/$folder.$commandName.js";
 import { ProjectCommandsPage } from "./routes/projects/$projectId/commands/index.js";
 import { ProjectCommandsOutlet } from "./routes/projects/$projectId/commands/route.js";
+import { ProjectInstructionsPage } from "./routes/projects/$projectId/instructions.js";
+import { ProjectMemoryDetailPage } from "./routes/projects/$projectId/memory/$filename.js";
+import { ProjectMemoryListPage } from "./routes/projects/$projectId/memory/index.js";
 import { ProjectLayout } from "./routes/projects/$projectId/route.js";
 import { ProjectSettingsPage } from "./routes/projects/$projectId/settings.js";
 import { ProjectSkillDetailPage } from "./routes/projects/$projectId/skills/$skillName.js";
@@ -63,6 +67,7 @@ export function AppRoutes() {
       <Route path="/global/hooks" element={<GlobalHooksPage />} />
       <Route path="/global/features" element={<GlobalFeaturesPage />} />
       <Route path="/global/plugins" element={<GlobalPluginsPage />} />
+      <Route path="/global/instructions" element={<GlobalInstructionsPage />} />
 
       {/* Projects routes */}
       <Route path="/projects" element={<ProjectsListPage />} />
@@ -85,6 +90,10 @@ export function AppRoutes() {
           <Route index element={<ProjectSkillsPage />} />
           <Route path=":skillName" element={<ProjectSkillDetailPage />} />
         </Route>
+
+        <Route path="instructions" element={<ProjectInstructionsPage />} />
+        <Route path="memory" element={<ProjectMemoryListPage />} />
+        <Route path="memory/:filename" element={<ProjectMemoryDetailPage />} />
       </Route>
     </Routes>
   );

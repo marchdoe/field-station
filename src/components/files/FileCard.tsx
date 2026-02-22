@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type FileCardVariant = "default" | "agent" | "command" | "skill";
+type FileCardVariant = "default" | "agent" | "command" | "skill" | "instructions" | "memory";
 
 interface FileCardProps {
   name: string;
@@ -25,6 +25,14 @@ const variantStyles: Record<FileCardVariant, { border: string; iconBg: string }>
   skill: {
     border: "border-l-4 border-l-amber-500",
     iconBg: "bg-amber-500/15",
+  },
+  instructions: {
+    border: "border-l-4 border-l-green-600",
+    iconBg: "bg-green-600/15",
+  },
+  memory: {
+    border: "border-l-4 border-l-purple-500",
+    iconBg: "bg-purple-500/15",
   },
 };
 

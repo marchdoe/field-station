@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import {
+  BookOpen,
   Bot,
   FolderOpen,
   Globe,
@@ -14,7 +15,7 @@ import {
   Webhook,
   X,
 } from "lucide-react";
-import { Link, NavLink } from "react-router";
+import { NavLink } from "react-router";
 import { getProjects } from "@/lib/api.js";
 import { cn, encodePath, getProjectName } from "@/lib/utils";
 
@@ -25,13 +26,14 @@ interface NavItem {
 }
 
 const globalChildren: NavItem[] = [
-  { label: "Settings", to: "/global/settings", icon: <Settings size={16} /> },
-  { label: "Agents", to: "/global/agents", icon: <Bot size={16} /> },
-  { label: "Commands", to: "/global/commands", icon: <Terminal size={16} /> },
-  { label: "Skills", to: "/global/skills", icon: <Sparkles size={16} /> },
-  { label: "Hooks", to: "/global/hooks", icon: <Webhook size={16} /> },
-  { label: "Plugins", to: "/global/plugins", icon: <Puzzle size={16} /> },
   { label: "Features", to: "/global/features", icon: <ToggleLeft size={16} /> },
+  { label: "Settings", to: "/global/settings", icon: <Settings size={16} /> },
+  { label: "Instructions", to: "/global/instructions", icon: <BookOpen size={16} /> },
+  { label: "Plugins", to: "/global/plugins", icon: <Puzzle size={16} /> },
+  { label: "Agents", to: "/global/agents", icon: <Bot size={16} /> },
+  { label: "Skills", to: "/global/skills", icon: <Sparkles size={16} /> },
+  { label: "Commands", to: "/global/commands", icon: <Terminal size={16} /> },
+  { label: "Hooks", to: "/global/hooks", icon: <Webhook size={16} /> },
 ];
 
 const linkBaseClass = cn(
@@ -149,14 +151,14 @@ export default function Sidebar({ onClose }: SidebarProps) {
           </div>
           <div className="space-y-0.5">
             {(projects.data ?? []).map((project) => (
-              <Link
+              <NavLink
                 key={project.path}
                 to={`/projects/${encodePath(project.path)}`}
-                className={linkBaseClass}
+                className={({ isActive }) => (isActive ? linkActiveClass : linkBaseClass)}
               >
                 <FolderOpen size={16} />
                 <span className="truncate">{getProjectName(project.path)}</span>
-              </Link>
+              </NavLink>
             ))}
             {(projects.data ?? []).length === 0 && (
               <p className="px-3 py-2 text-xs text-text-muted">No projects registered</p>

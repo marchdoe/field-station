@@ -12,6 +12,10 @@ A local web interface for managing [Claude Code](https://docs.anthropic.com/en/d
 
 **Agents, Commands & Skills** — Create, edit, and delete markdown-based resources. Files are displayed with syntax-highlighted previews and parsed YAML frontmatter.
 
+**Instructions** — View and edit `CLAUDE.md` and `CLAUDE.local.md` at both global (`~/.claude/`) and per-project scope, with a markdown preview and inline editor.
+
+**Memory** — Browse, create, edit, and delete per-project auto-memory files (`~/.claude/projects/<id>/memory/*.md`) — the files Claude Code writes to persist context across sessions.
+
 **Hooks** — Inspect your hook configurations (SessionStart, Stop, PreToolUse, etc.) with color-coded event types and handler details.
 
 **Plugins** — See all installed plugins with enabled/disabled status.

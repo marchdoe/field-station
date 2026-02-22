@@ -54,7 +54,7 @@ The OpenAPI spec drives everything — `make generate` regenerates Go server stu
 
 ## Development
 
-**Prerequisites:** Go 1.22+, Node.js 20+, Claude Code installed (`~/.claude/` must exist)
+**Prerequisites:** Go 1.25+, Node.js 20+, Claude Code installed (`~/.claude/` must exist)
 
 ```bash
 npm install
@@ -148,7 +148,7 @@ Edit `docker-compose.yml` to adjust the volume paths for your Claude binary loca
 ```bash
 make build
 cp deploy/field-station.plist ~/Library/LaunchAgents/com.fieldstation.app.plist
-# Edit the plist to set WorkingDirectory and the path to the binary
+# Edit the plist to set the path to the binary
 mkdir -p ~/Library/Logs/field-station
 launchctl load ~/Library/LaunchAgents/com.fieldstation.app.plist
 ```
@@ -171,6 +171,7 @@ systemctl --user enable --now field-station
 |---|---|---|
 | `FIELD_STATION_TOKEN` | _(none)_ | Auth token. If unset, no login is required. |
 | `FIELD_STATION_ADDR` | `127.0.0.1:3457` | Listen address. Set to `:3457` for Docker or remote access. |
+| `FIELD_STATION_SECURE_COOKIES` | `0` | Set to `1` to mark session cookies as `Secure` (required when serving over HTTPS). |
 | `CLAUDE_HOME` | `~/.claude` | Override the Claude config directory. |
 | `FIELD_STATION_DEV` | `0` | Set to `1` to skip embedding and proxy to Vite (set automatically by `make dev-server`). |
 

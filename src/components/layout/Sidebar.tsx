@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import {
+  BookOpen,
   Bot,
   FolderOpen,
   Globe,
@@ -32,6 +33,7 @@ const globalChildren: NavItem[] = [
   { label: "Hooks", to: "/global/hooks", icon: <Webhook size={16} /> },
   { label: "Plugins", to: "/global/plugins", icon: <Puzzle size={16} /> },
   { label: "Features", to: "/global/features", icon: <ToggleLeft size={16} /> },
+  { label: "Instructions", to: "/global/instructions", icon: <BookOpen size={16} /> },
 ];
 
 const linkBaseClass = cn(

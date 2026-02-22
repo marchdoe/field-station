@@ -1,4 +1,13 @@
-import { Bot, ChevronRight, Puzzle, Settings, Terminal, Webhook, Zap } from "lucide-react";
+import {
+  BookOpen,
+  Bot,
+  ChevronRight,
+  Puzzle,
+  Settings,
+  Terminal,
+  Webhook,
+  Zap,
+} from "lucide-react";
 import { Link } from "react-router";
 import { AppShell } from "@/components/layout/AppShell.js";
 
@@ -39,6 +48,12 @@ export function GlobalOverviewPage() {
       description: "Installed plugins and their status",
       icon: <Puzzle className="w-5 h-5" />,
       href: "/global/plugins",
+    },
+    {
+      label: "Instructions",
+      description: "CLAUDE.md and CLAUDE.local.md instruction files",
+      icon: <BookOpen className="w-5 h-5" />,
+      href: "/global/instructions",
     },
   ];
 

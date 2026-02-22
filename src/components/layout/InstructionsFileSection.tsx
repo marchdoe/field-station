@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
+import { useState } from "react";
 import { CodeViewer } from "@/components/files/CodeViewer.js";
 import { MarkdownViewer } from "@/components/files/MarkdownViewer.js";
-import { ViewToggle } from "@/components/ui/ViewToggle.js";
 import { useToast } from "@/components/ui/Toast.js";
+import { ViewToggle } from "@/components/ui/ViewToggle.js";
 import type { InstructionsFile } from "@/lib/api.js";
 import { updateInstruction } from "@/lib/api.js";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface InstructionsFileSectionProps {
   label: string;

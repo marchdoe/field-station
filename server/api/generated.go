@@ -97,6 +97,18 @@ const (
 	UpdateHookRequestScopeProject UpdateHookRequestScope = "project"
 )
 
+// Defines values for UpdateInstructionsRequestFile.
+const (
+	Local UpdateInstructionsRequestFile = "local"
+	Main  UpdateInstructionsRequestFile = "main"
+)
+
+// Defines values for UpdateInstructionsRequestScope.
+const (
+	UpdateInstructionsRequestScopeGlobal  UpdateInstructionsRequestScope = "global"
+	UpdateInstructionsRequestScopeProject UpdateInstructionsRequestScope = "project"
+)
+
 // Defines values for GetAgentsParamsScope.
 const (
 	GetAgentsParamsScopeGlobal  GetAgentsParamsScope = "global"
@@ -107,6 +119,12 @@ const (
 const (
 	GetCommandsParamsScopeGlobal  GetCommandsParamsScope = "global"
 	GetCommandsParamsScopeProject GetCommandsParamsScope = "project"
+)
+
+// Defines values for GetInstructionsParamsScope.
+const (
+	GetInstructionsParamsScopeGlobal  GetInstructionsParamsScope = "global"
+	GetInstructionsParamsScopeProject GetInstructionsParamsScope = "project"
 )
 
 // Defines values for GetSkillsParamsScope.
@@ -233,6 +251,14 @@ type CreateHookRequest struct {
 // CreateHookRequestScope defines model for CreateHookRequest.Scope.
 type CreateHookRequestScope string
 
+// CreateMemoryRequest defines model for CreateMemoryRequest.
+type CreateMemoryRequest struct {
+	Content              string                 `json:"content"`
+	Filename             string                 `json:"filename"`
+	ProjectId            string                 `json:"projectId"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
 // CreateSkillRequest defines model for CreateSkillRequest.
 type CreateSkillRequest struct {
 	Body                 string                  `json:"body"`
@@ -342,9 +368,40 @@ type HooksResponse struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
+// InstructionsFile defines model for InstructionsFile.
+type InstructionsFile struct {
+	Content              *string                `json:"content"`
+	Exists               bool                   `json:"exists"`
+	FilePath             string                 `json:"filePath"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// InstructionsResponse defines model for InstructionsResponse.
+type InstructionsResponse struct {
+	Local                InstructionsFile       `json:"local"`
+	Main                 InstructionsFile       `json:"main"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
 // LoginRequest defines model for LoginRequest.
 type LoginRequest struct {
 	Password             string                 `json:"password"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// MemoryDetail defines model for MemoryDetail.
+type MemoryDetail struct {
+	Content              string                 `json:"content"`
+	FilePath             string                 `json:"filePath"`
+	Filename             string                 `json:"filename"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// MemoryFile defines model for MemoryFile.
+type MemoryFile struct {
+	FilePath             string                 `json:"filePath"`
+	Filename             string                 `json:"filename"`
+	Preview              string                 `json:"preview"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -467,6 +524,28 @@ type UpdateHookRequest struct {
 // UpdateHookRequestScope defines model for UpdateHookRequest.Scope.
 type UpdateHookRequestScope string
 
+// UpdateInstructionsRequest defines model for UpdateInstructionsRequest.
+type UpdateInstructionsRequest struct {
+	Content              string                          `json:"content"`
+	File                 UpdateInstructionsRequestFile   `json:"file"`
+	ProjectId            *string                         `json:"projectId,omitempty"`
+	Scope                *UpdateInstructionsRequestScope `json:"scope,omitempty"`
+	AdditionalProperties map[string]interface{}          `json:"-"`
+}
+
+// UpdateInstructionsRequestFile defines model for UpdateInstructionsRequest.File.
+type UpdateInstructionsRequestFile string
+
+// UpdateInstructionsRequestScope defines model for UpdateInstructionsRequest.Scope.
+type UpdateInstructionsRequestScope string
+
+// UpdateMemoryRequest defines model for UpdateMemoryRequest.
+type UpdateMemoryRequest struct {
+	Content              string                 `json:"content"`
+	ProjectId            string                 `json:"projectId"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
 // UpdateSkillRequest defines model for UpdateSkillRequest.
 type UpdateSkillRequest struct {
 	Body                 string                 `json:"body"`
@@ -523,6 +602,30 @@ type GetHooksParams struct {
 type DeleteHookParams struct {
 	Scope     *string `form:"scope,omitempty" json:"scope,omitempty"`
 	ProjectId *string `form:"projectId,omitempty" json:"projectId,omitempty"`
+}
+
+// GetInstructionsParams defines parameters for GetInstructions.
+type GetInstructionsParams struct {
+	Scope     *GetInstructionsParamsScope `form:"scope,omitempty" json:"scope,omitempty"`
+	ProjectId *string                     `form:"projectId,omitempty" json:"projectId,omitempty"`
+}
+
+// GetInstructionsParamsScope defines parameters for GetInstructions.
+type GetInstructionsParamsScope string
+
+// ListMemoryParams defines parameters for ListMemory.
+type ListMemoryParams struct {
+	ProjectId string `form:"projectId" json:"projectId"`
+}
+
+// DeleteMemoryParams defines parameters for DeleteMemory.
+type DeleteMemoryParams struct {
+	ProjectId string `form:"projectId" json:"projectId"`
+}
+
+// GetMemoryParams defines parameters for GetMemory.
+type GetMemoryParams struct {
+	ProjectId string `form:"projectId" json:"projectId"`
 }
 
 // SearchParams defines parameters for Search.
@@ -590,6 +693,15 @@ type CreateHookJSONRequestBody = CreateHookRequest
 
 // UpdateHookJSONRequestBody defines body for UpdateHook for application/json ContentType.
 type UpdateHookJSONRequestBody = UpdateHookRequest
+
+// UpdateInstructionsJSONRequestBody defines body for UpdateInstructions for application/json ContentType.
+type UpdateInstructionsJSONRequestBody = UpdateInstructionsRequest
+
+// CreateMemoryJSONRequestBody defines body for CreateMemory for application/json ContentType.
+type CreateMemoryJSONRequestBody = CreateMemoryRequest
+
+// UpdateMemoryJSONRequestBody defines body for UpdateMemory for application/json ContentType.
+type UpdateMemoryJSONRequestBody = UpdateMemoryRequest
 
 // CreateSkillJSONRequestBody defines body for CreateSkill for application/json ContentType.
 type CreateSkillJSONRequestBody = CreateSkillRequest
@@ -1883,6 +1995,98 @@ func (a CreateHookRequest) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
+// Getter for additional properties for CreateMemoryRequest. Returns the specified
+// element and whether it was found
+func (a CreateMemoryRequest) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for CreateMemoryRequest
+func (a *CreateMemoryRequest) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for CreateMemoryRequest to handle AdditionalProperties
+func (a *CreateMemoryRequest) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["content"]; found {
+		err = json.Unmarshal(raw, &a.Content)
+		if err != nil {
+			return fmt.Errorf("error reading 'content': %w", err)
+		}
+		delete(object, "content")
+	}
+
+	if raw, found := object["filename"]; found {
+		err = json.Unmarshal(raw, &a.Filename)
+		if err != nil {
+			return fmt.Errorf("error reading 'filename': %w", err)
+		}
+		delete(object, "filename")
+	}
+
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
+		if err != nil {
+			return fmt.Errorf("error reading 'projectId': %w", err)
+		}
+		delete(object, "projectId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for CreateMemoryRequest to handle AdditionalProperties
+func (a CreateMemoryRequest) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["content"], err = json.Marshal(a.Content)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'content': %w", err)
+	}
+
+	object["filename"], err = json.Marshal(a.Filename)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'filename': %w", err)
+	}
+
+	object["projectId"], err = json.Marshal(a.ProjectId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
 // Getter for additional properties for CreateSkillRequest. Returns the specified
 // element and whether it was found
 func (a CreateSkillRequest) Get(fieldName string) (value interface{}, found bool) {
@@ -3040,6 +3244,179 @@ func (a HooksResponse) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
+// Getter for additional properties for InstructionsFile. Returns the specified
+// element and whether it was found
+func (a InstructionsFile) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for InstructionsFile
+func (a *InstructionsFile) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for InstructionsFile to handle AdditionalProperties
+func (a *InstructionsFile) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["content"]; found {
+		err = json.Unmarshal(raw, &a.Content)
+		if err != nil {
+			return fmt.Errorf("error reading 'content': %w", err)
+		}
+		delete(object, "content")
+	}
+
+	if raw, found := object["exists"]; found {
+		err = json.Unmarshal(raw, &a.Exists)
+		if err != nil {
+			return fmt.Errorf("error reading 'exists': %w", err)
+		}
+		delete(object, "exists")
+	}
+
+	if raw, found := object["filePath"]; found {
+		err = json.Unmarshal(raw, &a.FilePath)
+		if err != nil {
+			return fmt.Errorf("error reading 'filePath': %w", err)
+		}
+		delete(object, "filePath")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for InstructionsFile to handle AdditionalProperties
+func (a InstructionsFile) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Content != nil {
+		object["content"], err = json.Marshal(a.Content)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'content': %w", err)
+		}
+	}
+
+	object["exists"], err = json.Marshal(a.Exists)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'exists': %w", err)
+	}
+
+	object["filePath"], err = json.Marshal(a.FilePath)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'filePath': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for InstructionsResponse. Returns the specified
+// element and whether it was found
+func (a InstructionsResponse) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for InstructionsResponse
+func (a *InstructionsResponse) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for InstructionsResponse to handle AdditionalProperties
+func (a *InstructionsResponse) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["local"]; found {
+		err = json.Unmarshal(raw, &a.Local)
+		if err != nil {
+			return fmt.Errorf("error reading 'local': %w", err)
+		}
+		delete(object, "local")
+	}
+
+	if raw, found := object["main"]; found {
+		err = json.Unmarshal(raw, &a.Main)
+		if err != nil {
+			return fmt.Errorf("error reading 'main': %w", err)
+		}
+		delete(object, "main")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for InstructionsResponse to handle AdditionalProperties
+func (a InstructionsResponse) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["local"], err = json.Marshal(a.Local)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'local': %w", err)
+	}
+
+	object["main"], err = json.Marshal(a.Main)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'main': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
 // Getter for additional properties for LoginRequest. Returns the specified
 // element and whether it was found
 func (a LoginRequest) Get(fieldName string) (value interface{}, found bool) {
@@ -3095,6 +3472,190 @@ func (a LoginRequest) MarshalJSON() ([]byte, error) {
 	object["password"], err = json.Marshal(a.Password)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling 'password': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for MemoryDetail. Returns the specified
+// element and whether it was found
+func (a MemoryDetail) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for MemoryDetail
+func (a *MemoryDetail) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for MemoryDetail to handle AdditionalProperties
+func (a *MemoryDetail) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["content"]; found {
+		err = json.Unmarshal(raw, &a.Content)
+		if err != nil {
+			return fmt.Errorf("error reading 'content': %w", err)
+		}
+		delete(object, "content")
+	}
+
+	if raw, found := object["filePath"]; found {
+		err = json.Unmarshal(raw, &a.FilePath)
+		if err != nil {
+			return fmt.Errorf("error reading 'filePath': %w", err)
+		}
+		delete(object, "filePath")
+	}
+
+	if raw, found := object["filename"]; found {
+		err = json.Unmarshal(raw, &a.Filename)
+		if err != nil {
+			return fmt.Errorf("error reading 'filename': %w", err)
+		}
+		delete(object, "filename")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for MemoryDetail to handle AdditionalProperties
+func (a MemoryDetail) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["content"], err = json.Marshal(a.Content)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'content': %w", err)
+	}
+
+	object["filePath"], err = json.Marshal(a.FilePath)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'filePath': %w", err)
+	}
+
+	object["filename"], err = json.Marshal(a.Filename)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'filename': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for MemoryFile. Returns the specified
+// element and whether it was found
+func (a MemoryFile) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for MemoryFile
+func (a *MemoryFile) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for MemoryFile to handle AdditionalProperties
+func (a *MemoryFile) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["filePath"]; found {
+		err = json.Unmarshal(raw, &a.FilePath)
+		if err != nil {
+			return fmt.Errorf("error reading 'filePath': %w", err)
+		}
+		delete(object, "filePath")
+	}
+
+	if raw, found := object["filename"]; found {
+		err = json.Unmarshal(raw, &a.Filename)
+		if err != nil {
+			return fmt.Errorf("error reading 'filename': %w", err)
+		}
+		delete(object, "filename")
+	}
+
+	if raw, found := object["preview"]; found {
+		err = json.Unmarshal(raw, &a.Preview)
+		if err != nil {
+			return fmt.Errorf("error reading 'preview': %w", err)
+		}
+		delete(object, "preview")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for MemoryFile to handle AdditionalProperties
+func (a MemoryFile) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["filePath"], err = json.Marshal(a.FilePath)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'filePath': %w", err)
+	}
+
+	object["filename"], err = json.Marshal(a.Filename)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'filename': %w", err)
+	}
+
+	object["preview"], err = json.Marshal(a.Preview)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'preview': %w", err)
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
@@ -4340,6 +4901,194 @@ func (a UpdateHookRequest) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
+// Getter for additional properties for UpdateInstructionsRequest. Returns the specified
+// element and whether it was found
+func (a UpdateInstructionsRequest) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for UpdateInstructionsRequest
+func (a *UpdateInstructionsRequest) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for UpdateInstructionsRequest to handle AdditionalProperties
+func (a *UpdateInstructionsRequest) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["content"]; found {
+		err = json.Unmarshal(raw, &a.Content)
+		if err != nil {
+			return fmt.Errorf("error reading 'content': %w", err)
+		}
+		delete(object, "content")
+	}
+
+	if raw, found := object["file"]; found {
+		err = json.Unmarshal(raw, &a.File)
+		if err != nil {
+			return fmt.Errorf("error reading 'file': %w", err)
+		}
+		delete(object, "file")
+	}
+
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
+		if err != nil {
+			return fmt.Errorf("error reading 'projectId': %w", err)
+		}
+		delete(object, "projectId")
+	}
+
+	if raw, found := object["scope"]; found {
+		err = json.Unmarshal(raw, &a.Scope)
+		if err != nil {
+			return fmt.Errorf("error reading 'scope': %w", err)
+		}
+		delete(object, "scope")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for UpdateInstructionsRequest to handle AdditionalProperties
+func (a UpdateInstructionsRequest) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["content"], err = json.Marshal(a.Content)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'content': %w", err)
+	}
+
+	object["file"], err = json.Marshal(a.File)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'file': %w", err)
+	}
+
+	if a.ProjectId != nil {
+		object["projectId"], err = json.Marshal(a.ProjectId)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
+		}
+	}
+
+	if a.Scope != nil {
+		object["scope"], err = json.Marshal(a.Scope)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'scope': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for UpdateMemoryRequest. Returns the specified
+// element and whether it was found
+func (a UpdateMemoryRequest) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for UpdateMemoryRequest
+func (a *UpdateMemoryRequest) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for UpdateMemoryRequest to handle AdditionalProperties
+func (a *UpdateMemoryRequest) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["content"]; found {
+		err = json.Unmarshal(raw, &a.Content)
+		if err != nil {
+			return fmt.Errorf("error reading 'content': %w", err)
+		}
+		delete(object, "content")
+	}
+
+	if raw, found := object["projectId"]; found {
+		err = json.Unmarshal(raw, &a.ProjectId)
+		if err != nil {
+			return fmt.Errorf("error reading 'projectId': %w", err)
+		}
+		delete(object, "projectId")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for UpdateMemoryRequest to handle AdditionalProperties
+func (a UpdateMemoryRequest) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["content"], err = json.Marshal(a.Content)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'content': %w", err)
+	}
+
+	object["projectId"], err = json.Marshal(a.ProjectId)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'projectId': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
 // Getter for additional properties for UpdateSkillRequest. Returns the specified
 // element and whether it was found
 func (a UpdateSkillRequest) Get(fieldName string) (value interface{}, found bool) {
@@ -4516,6 +5265,27 @@ type ServerInterface interface {
 	// Update a hook
 	// (PUT /api/hooks/{id})
 	UpdateHook(w http.ResponseWriter, r *http.Request, id string)
+	// Get CLAUDE.md and CLAUDE.local.md content
+	// (GET /api/instructions)
+	GetInstructions(w http.ResponseWriter, r *http.Request, params GetInstructionsParams)
+	// Write CLAUDE.md or CLAUDE.local.md
+	// (PUT /api/instructions)
+	UpdateInstructions(w http.ResponseWriter, r *http.Request)
+	// List memory files for a project
+	// (GET /api/memory)
+	ListMemory(w http.ResponseWriter, r *http.Request, params ListMemoryParams)
+	// Create a new memory file
+	// (POST /api/memory)
+	CreateMemory(w http.ResponseWriter, r *http.Request)
+	// Delete a memory file
+	// (DELETE /api/memory/{filename})
+	DeleteMemory(w http.ResponseWriter, r *http.Request, filename string, params DeleteMemoryParams)
+	// Get a single memory file
+	// (GET /api/memory/{filename})
+	GetMemory(w http.ResponseWriter, r *http.Request, filename string, params GetMemoryParams)
+	// Update a memory file
+	// (PUT /api/memory/{filename})
+	UpdateMemory(w http.ResponseWriter, r *http.Request, filename string)
 	// List plugins
 	// (GET /api/plugins)
 	GetPlugins(w http.ResponseWriter, r *http.Request)
@@ -5221,6 +5991,214 @@ func (siw *ServerInterfaceWrapper) UpdateHook(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
+// GetInstructions operation middleware
+func (siw *ServerInterfaceWrapper) GetInstructions(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetInstructionsParams
+
+	// ------------- Optional query parameter "scope" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "scope", r.URL.Query(), &params.Scope)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "scope", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "projectId" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "projectId", r.URL.Query(), &params.ProjectId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetInstructions(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateInstructions operation middleware
+func (siw *ServerInterfaceWrapper) UpdateInstructions(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateInstructions(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListMemory operation middleware
+func (siw *ServerInterfaceWrapper) ListMemory(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListMemoryParams
+
+	// ------------- Required query parameter "projectId" -------------
+
+	if paramValue := r.URL.Query().Get("projectId"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "projectId"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "projectId", r.URL.Query(), &params.ProjectId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListMemory(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateMemory operation middleware
+func (siw *ServerInterfaceWrapper) CreateMemory(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateMemory(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteMemory operation middleware
+func (siw *ServerInterfaceWrapper) DeleteMemory(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "filename" -------------
+	var filename string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "filename", r.PathValue("filename"), &filename, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "filename", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteMemoryParams
+
+	// ------------- Required query parameter "projectId" -------------
+
+	if paramValue := r.URL.Query().Get("projectId"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "projectId"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "projectId", r.URL.Query(), &params.ProjectId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteMemory(w, r, filename, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetMemory operation middleware
+func (siw *ServerInterfaceWrapper) GetMemory(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "filename" -------------
+	var filename string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "filename", r.PathValue("filename"), &filename, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "filename", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetMemoryParams
+
+	// ------------- Required query parameter "projectId" -------------
+
+	if paramValue := r.URL.Query().Get("projectId"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "projectId"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "projectId", r.URL.Query(), &params.ProjectId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetMemory(w, r, filename, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateMemory operation middleware
+func (siw *ServerInterfaceWrapper) UpdateMemory(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "filename" -------------
+	var filename string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "filename", r.PathValue("filename"), &filename, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "filename", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateMemory(w, r, filename)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetPlugins operation middleware
 func (siw *ServerInterfaceWrapper) GetPlugins(w http.ResponseWriter, r *http.Request) {
 
@@ -5637,6 +6615,13 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/api/hooks", wrapper.CreateHook)
 	m.HandleFunc("DELETE "+options.BaseURL+"/api/hooks/{id}", wrapper.DeleteHook)
 	m.HandleFunc("PUT "+options.BaseURL+"/api/hooks/{id}", wrapper.UpdateHook)
+	m.HandleFunc("GET "+options.BaseURL+"/api/instructions", wrapper.GetInstructions)
+	m.HandleFunc("PUT "+options.BaseURL+"/api/instructions", wrapper.UpdateInstructions)
+	m.HandleFunc("GET "+options.BaseURL+"/api/memory", wrapper.ListMemory)
+	m.HandleFunc("POST "+options.BaseURL+"/api/memory", wrapper.CreateMemory)
+	m.HandleFunc("DELETE "+options.BaseURL+"/api/memory/{filename}", wrapper.DeleteMemory)
+	m.HandleFunc("GET "+options.BaseURL+"/api/memory/{filename}", wrapper.GetMemory)
+	m.HandleFunc("PUT "+options.BaseURL+"/api/memory/{filename}", wrapper.UpdateMemory)
 	m.HandleFunc("GET "+options.BaseURL+"/api/plugins", wrapper.GetPlugins)
 	m.HandleFunc("GET "+options.BaseURL+"/api/projects", wrapper.GetProjects)
 	m.HandleFunc("GET "+options.BaseURL+"/api/search", wrapper.Search)
@@ -6103,6 +7088,128 @@ func (response UpdateHook200JSONResponse) VisitUpdateHookResponse(w http.Respons
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetInstructionsRequestObject struct {
+	Params GetInstructionsParams
+}
+
+type GetInstructionsResponseObject interface {
+	VisitGetInstructionsResponse(w http.ResponseWriter) error
+}
+
+type GetInstructions200JSONResponse InstructionsResponse
+
+func (response GetInstructions200JSONResponse) VisitGetInstructionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateInstructionsRequestObject struct {
+	Body *UpdateInstructionsJSONRequestBody
+}
+
+type UpdateInstructionsResponseObject interface {
+	VisitUpdateInstructionsResponse(w http.ResponseWriter) error
+}
+
+type UpdateInstructions200JSONResponse SuccessResponse
+
+func (response UpdateInstructions200JSONResponse) VisitUpdateInstructionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ListMemoryRequestObject struct {
+	Params ListMemoryParams
+}
+
+type ListMemoryResponseObject interface {
+	VisitListMemoryResponse(w http.ResponseWriter) error
+}
+
+type ListMemory200JSONResponse []MemoryFile
+
+func (response ListMemory200JSONResponse) VisitListMemoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateMemoryRequestObject struct {
+	Body *CreateMemoryJSONRequestBody
+}
+
+type CreateMemoryResponseObject interface {
+	VisitCreateMemoryResponse(w http.ResponseWriter) error
+}
+
+type CreateMemory200JSONResponse MemoryFile
+
+func (response CreateMemory200JSONResponse) VisitCreateMemoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteMemoryRequestObject struct {
+	Filename string `json:"filename"`
+	Params   DeleteMemoryParams
+}
+
+type DeleteMemoryResponseObject interface {
+	VisitDeleteMemoryResponse(w http.ResponseWriter) error
+}
+
+type DeleteMemory200JSONResponse SuccessResponse
+
+func (response DeleteMemory200JSONResponse) VisitDeleteMemoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetMemoryRequestObject struct {
+	Filename string `json:"filename"`
+	Params   GetMemoryParams
+}
+
+type GetMemoryResponseObject interface {
+	VisitGetMemoryResponse(w http.ResponseWriter) error
+}
+
+type GetMemory200JSONResponse MemoryDetail
+
+func (response GetMemory200JSONResponse) VisitGetMemoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateMemoryRequestObject struct {
+	Filename string `json:"filename"`
+	Body     *UpdateMemoryJSONRequestBody
+}
+
+type UpdateMemoryResponseObject interface {
+	VisitUpdateMemoryResponse(w http.ResponseWriter) error
+}
+
+type UpdateMemory200JSONResponse SuccessResponse
+
+func (response UpdateMemory200JSONResponse) VisitUpdateMemoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetPluginsRequestObject struct {
 }
 
@@ -6350,6 +7457,27 @@ type StrictServerInterface interface {
 	// Update a hook
 	// (PUT /api/hooks/{id})
 	UpdateHook(ctx context.Context, request UpdateHookRequestObject) (UpdateHookResponseObject, error)
+	// Get CLAUDE.md and CLAUDE.local.md content
+	// (GET /api/instructions)
+	GetInstructions(ctx context.Context, request GetInstructionsRequestObject) (GetInstructionsResponseObject, error)
+	// Write CLAUDE.md or CLAUDE.local.md
+	// (PUT /api/instructions)
+	UpdateInstructions(ctx context.Context, request UpdateInstructionsRequestObject) (UpdateInstructionsResponseObject, error)
+	// List memory files for a project
+	// (GET /api/memory)
+	ListMemory(ctx context.Context, request ListMemoryRequestObject) (ListMemoryResponseObject, error)
+	// Create a new memory file
+	// (POST /api/memory)
+	CreateMemory(ctx context.Context, request CreateMemoryRequestObject) (CreateMemoryResponseObject, error)
+	// Delete a memory file
+	// (DELETE /api/memory/{filename})
+	DeleteMemory(ctx context.Context, request DeleteMemoryRequestObject) (DeleteMemoryResponseObject, error)
+	// Get a single memory file
+	// (GET /api/memory/{filename})
+	GetMemory(ctx context.Context, request GetMemoryRequestObject) (GetMemoryResponseObject, error)
+	// Update a memory file
+	// (PUT /api/memory/{filename})
+	UpdateMemory(ctx context.Context, request UpdateMemoryRequestObject) (UpdateMemoryResponseObject, error)
 	// List plugins
 	// (GET /api/plugins)
 	GetPlugins(ctx context.Context, request GetPluginsRequestObject) (GetPluginsResponseObject, error)
@@ -7149,6 +8277,207 @@ func (sh *strictHandler) UpdateHook(w http.ResponseWriter, r *http.Request, id s
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(UpdateHookResponseObject); ok {
 		if err := validResponse.VisitUpdateHookResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetInstructions operation middleware
+func (sh *strictHandler) GetInstructions(w http.ResponseWriter, r *http.Request, params GetInstructionsParams) {
+	var request GetInstructionsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetInstructions(ctx, request.(GetInstructionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetInstructions")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetInstructionsResponseObject); ok {
+		if err := validResponse.VisitGetInstructionsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateInstructions operation middleware
+func (sh *strictHandler) UpdateInstructions(w http.ResponseWriter, r *http.Request) {
+	var request UpdateInstructionsRequestObject
+
+	var body UpdateInstructionsJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateInstructions(ctx, request.(UpdateInstructionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateInstructions")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(UpdateInstructionsResponseObject); ok {
+		if err := validResponse.VisitUpdateInstructionsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// ListMemory operation middleware
+func (sh *strictHandler) ListMemory(w http.ResponseWriter, r *http.Request, params ListMemoryParams) {
+	var request ListMemoryRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ListMemory(ctx, request.(ListMemoryRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ListMemory")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ListMemoryResponseObject); ok {
+		if err := validResponse.VisitListMemoryResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateMemory operation middleware
+func (sh *strictHandler) CreateMemory(w http.ResponseWriter, r *http.Request) {
+	var request CreateMemoryRequestObject
+
+	var body CreateMemoryJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateMemory(ctx, request.(CreateMemoryRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateMemory")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(CreateMemoryResponseObject); ok {
+		if err := validResponse.VisitCreateMemoryResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteMemory operation middleware
+func (sh *strictHandler) DeleteMemory(w http.ResponseWriter, r *http.Request, filename string, params DeleteMemoryParams) {
+	var request DeleteMemoryRequestObject
+
+	request.Filename = filename
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteMemory(ctx, request.(DeleteMemoryRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteMemory")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteMemoryResponseObject); ok {
+		if err := validResponse.VisitDeleteMemoryResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetMemory operation middleware
+func (sh *strictHandler) GetMemory(w http.ResponseWriter, r *http.Request, filename string, params GetMemoryParams) {
+	var request GetMemoryRequestObject
+
+	request.Filename = filename
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetMemory(ctx, request.(GetMemoryRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetMemory")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetMemoryResponseObject); ok {
+		if err := validResponse.VisitGetMemoryResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateMemory operation middleware
+func (sh *strictHandler) UpdateMemory(w http.ResponseWriter, r *http.Request, filename string) {
+	var request UpdateMemoryRequestObject
+
+	request.Filename = filename
+
+	var body UpdateMemoryJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateMemory(ctx, request.(UpdateMemoryRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateMemory")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(UpdateMemoryResponseObject); ok {
+		if err := validResponse.VisitUpdateMemoryResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

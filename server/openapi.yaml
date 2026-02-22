@@ -696,6 +696,150 @@ paths:
                 items:
                   $ref: "#/components/schemas/SearchResult"
 
+  # Instructions (CLAUDE.md files)
+  /api/instructions:
+    get:
+      operationId: getInstructions
+      summary: Get CLAUDE.md and CLAUDE.local.md content
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [global, project]
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InstructionsResponse"
+    put:
+      operationId: updateInstructions
+      summary: Write CLAUDE.md or CLAUDE.local.md
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateInstructionsRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # Memory files (per-project only)
+  /api/memory:
+    get:
+      operationId: listMemory
+      summary: List memory files for a project
+      parameters:
+        - name: projectId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemoryFile"
+    post:
+      operationId: createMemory
+      summary: Create a new memory file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMemoryRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemoryFile"
+
+  /api/memory/{filename}:
+    get:
+      operationId: getMemory
+      summary: Get a single memory file
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: projectId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemoryDetail"
+    put:
+      operationId: updateMemory
+      summary: Update a memory file
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMemoryRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+    delete:
+      operationId: deleteMemory
+      summary: Delete a memory file
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: projectId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   # Watch (SSE)
   /api/watch:
     get:
@@ -1282,6 +1426,91 @@ components:
           type: string
         preview:
           type: string
+
+    InstructionsFile:
+      type: object
+      required: [filePath, exists]
+      properties:
+        filePath:
+          type: string
+        exists:
+          type: boolean
+        content:
+          type: string
+          nullable: true
+      additionalProperties: true
+
+    InstructionsResponse:
+      type: object
+      required: [main, local]
+      properties:
+        main:
+          $ref: "#/components/schemas/InstructionsFile"
+        local:
+          $ref: "#/components/schemas/InstructionsFile"
+      additionalProperties: true
+
+    UpdateInstructionsRequest:
+      type: object
+      required: [file, content]
+      properties:
+        file:
+          type: string
+          enum: [main, local]
+        content:
+          type: string
+        scope:
+          type: string
+          enum: [global, project]
+        projectId:
+          type: string
+      additionalProperties: true
+
+    MemoryFile:
+      type: object
+      required: [filename, filePath, preview]
+      properties:
+        filename:
+          type: string
+        filePath:
+          type: string
+        preview:
+          type: string
+      additionalProperties: true
+
+    MemoryDetail:
+      type: object
+      required: [filename, filePath, content]
+      properties:
+        filename:
+          type: string
+        filePath:
+          type: string
+        content:
+          type: string
+      additionalProperties: true
+
+    CreateMemoryRequest:
+      type: object
+      required: [filename, content, projectId]
+      properties:
+        filename:
+          type: string
+        content:
+          type: string
+        projectId:
+          type: string
+      additionalProperties: true
+
+    UpdateMemoryRequest:
+      type: object
+      required: [content, projectId]
+      properties:
+        content:
+          type: string
+        projectId:
+          type: string
+      additionalProperties: true
 
     LoginRequest:
       type: object

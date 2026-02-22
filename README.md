@@ -182,6 +182,3 @@ make lint           # go vet + Biome
 npm run typecheck   # TypeScript
 ```
 
-## License
-
-Private

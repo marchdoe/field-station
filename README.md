@@ -8,7 +8,7 @@ A local web interface for managing [Claude Code](https://docs.anthropic.com/en/d
 
 **Configuration** — View settings across all four layers (global, global-local, project, project-local) with a merged "effective config" view. Sensitive values like API keys are automatically redacted.
 
-**Projects** — Browse all your Claude Code projects and drill into each one to manage its resources independently.
+**Projects** — Browse all your Claude Code projects and drill into each one to manage its resources independently. On first run a guided setup page lets you pick a folder, scan for Claude Code projects inside it, and register them in one go.
 
 **Agents, Commands & Skills** — Create, edit, and delete markdown-based resources. Files are displayed with syntax-highlighted previews and parsed YAML frontmatter.
 
@@ -26,7 +26,7 @@ A local web interface for managing [Claude Code](https://docs.anthropic.com/en/d
 
 **Change History** — Every write operation is backed up first. You can browse the change timeline and restore any previous version of any file.
 
-**Authentication** — Optional token-based auth for running on a server or shared machine. Set `FIELD_STATION_TOKEN` and the UI requires a login before granting access.
+**Authentication** — Password-based auth is enabled by default. On first run you're guided through a one-time setup to create a password. Subsequent visits require that password to log in. Disable auth entirely with `FIELD_STATION_AUTH=false`.
 
 **Live updates** — The UI refreshes automatically via SSE when files change on disk or when Claude Code is upgraded.
 
@@ -70,19 +70,21 @@ Open **http://localhost:3456**.
 
 ## Authentication
 
-By default Field Station requires no login — suitable for local use. To protect a shared or remote deployment, set `FIELD_STATION_TOKEN` before starting the server:
+Field Station uses password-based authentication backed by bcrypt. Auth is **enabled by default**.
+
+**First run:** Opening the UI redirects you to `/auth/setup`. Enter a password and confirm it — this is a one-time step. Your password hash and a signing key are stored in `~/.claude/field-station-credentials`.
+
+**Subsequent visits:** You'll see a login form. Enter your password to access the UI. A logout button is pinned to the bottom of the sidebar.
+
+**Forgot your password?** Delete `~/.claude/field-station-credentials` and restart the server. The next visit will prompt you to set a new password.
+
+**Disable auth** (local use only):
 
 ```bash
-# Generate a secure token (do this once, save the value)
-openssl rand -hex 32
-
-# Start with auth enabled
-FIELD_STATION_TOKEN=<your-token> ./field-station
+FIELD_STATION_AUTH=false ./field-station
 ```
 
-Anyone opening the UI will be prompted to enter this token. Sessions are HMAC-signed and stored in a cookie — the token never leaves the server.
-
-For development, `make dev-server` starts without auth unless you export `FIELD_STATION_TOKEN` in your shell first.
+For development, `make dev-server` starts with auth enabled. Set `FIELD_STATION_AUTH=false` in your shell to skip it locally.
 
 ## Building
 
@@ -104,14 +106,9 @@ make build
 scp field-station user@your-server:/usr/local/bin/
 ```
 
-**2. Set an auth token** (required for any remote deployment)
+**2. Set a password on first run**
 
-```bash
-export FIELD_STATION_TOKEN=your-secret-token
-./field-station
-```
-
-The token is set once at startup. Anyone who opens the UI must enter it on the login screen. Sessions are signed with HMAC and stored in a cookie.
+Auth is enabled by default. The first time you open the UI, you'll be prompted at `/auth/setup` to create a password. That password hash and a signing key are stored in `~/.claude/field-station-credentials` on the server. Sessions are HMAC-signed and stored in a cookie.
 
 **3. Reverse proxy with nginx** (optional but recommended for TLS)
 
@@ -169,7 +166,7 @@ systemctl --user enable --now field-station
 
 | Variable | Default | Description |
 |---|---|---|
-| `FIELD_STATION_TOKEN` | _(none)_ | Auth token. If unset, no login is required. |
+| `FIELD_STATION_AUTH` | `true` | Set to `false` to disable authentication entirely (local use only). |
 | `FIELD_STATION_ADDR` | `127.0.0.1:3457` | Listen address. Set to `:3457` for Docker or remote access. |
 | `FIELD_STATION_SECURE_COOKIES` | `0` | Set to `1` to mark session cookies as `Secure` (required when serving over HTTPS). |
 | `CLAUDE_HOME` | `~/.claude` | Override the Claude config directory. |

@@ -264,6 +264,24 @@ export interface paths {
         /** List projects */
         get: operations["getProjects"];
         put?: never;
+        /** Register one or more projects by filesystem path */
+        post: operations["postProjects"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/projects/scan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Scan a folder for subdirectories containing .claude/ */
+        get: operations["scanProjects"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -842,6 +860,23 @@ export interface components {
         };
         LoginRequest: {
             password: string;
+        } & {
+            [key: string]: unknown;
+        };
+        ErrorResponse: {
+            error: string;
+        } & {
+            [key: string]: unknown;
+        };
+        AddProjectsRequest: {
+            paths: string[];
+        } & {
+            [key: string]: unknown;
+        };
+        ScanProjectResult: {
+            name: string;
+            path: string;
+            registered: boolean;
         } & {
             [key: string]: unknown;
         };
@@ -1498,6 +1533,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectFile"][];
+                };
+            };
+        };
+    };
+    postProjects: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddProjectsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectFile"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    scanProjects: {
+        parameters: {
+            query: {
+                folder: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScanProjectResult"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

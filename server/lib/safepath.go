@@ -8,6 +8,14 @@ import (
 	"strings"
 )
 
+// EncodePath encodes a filesystem path to the Claude Code project directory name format.
+// This is the reverse of DecodePath: "/Users/foo/bar" → "-Users-foo-bar".
+func EncodePath(path string) string {
+	cleaned := filepath.Clean(path)
+	withoutSlash := strings.TrimPrefix(cleaned, "/")
+	return "-" + strings.ReplaceAll(withoutSlash, "/", "-")
+}
+
 // DecodePath decodes a Claude Code project directory name back to a filesystem path.
 // Claude Code encodes project paths by replacing the leading '/' with '-' and all
 // subsequent '/' characters with '-'. For example, '/Users/foo/bar' becomes '-Users-foo-bar'.

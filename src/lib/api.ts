@@ -13,6 +13,7 @@ export type FeaturesData = components["schemas"]["FeaturesData"];
 export type Feature = components["schemas"]["Feature"];
 export type BackupFile = components["schemas"]["BackupFile"];
 export type ProjectFile = components["schemas"]["ProjectFile"];
+export type ScanProjectResult = components["schemas"]["ScanProjectResult"];
 export type PluginFile = components["schemas"]["PluginFile"];
 export type SearchResult = components["schemas"]["SearchResult"];
 export type ConfigLayerSource = components["schemas"]["ConfigLayer"]["source"];
@@ -292,6 +293,18 @@ export function restoreBackup(id: string): Promise<void> {
 // Projects
 export function getProjects(): Promise<ProjectFile[]> {
   return apiFetch<ProjectFile[]>("/api/projects");
+}
+
+export function scanProjects(folder: string): Promise<ScanProjectResult[]> {
+  return apiFetch<ScanProjectResult[]>(`/api/projects/scan?folder=${encodeURIComponent(folder)}`);
+}
+
+export function addProjects(paths: string[]): Promise<ProjectFile[]> {
+  return apiFetch<ProjectFile[]>("/api/projects", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ paths }),
+  });
 }
 
 // Search

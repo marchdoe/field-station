@@ -600,6 +600,56 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ProjectFile"
+    post:
+      operationId: postProjects
+      summary: Register one or more projects by filesystem path
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddProjectsRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProjectFile"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/projects/scan:
+    get:
+      operationId: scanProjects
+      summary: Scan a folder for subdirectories containing .claude/
+      parameters:
+        - name: folder
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScanProjectResult"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   # Plugins
   /api/plugins:
@@ -1572,3 +1622,33 @@ components:
       properties:
         password:
           type: string
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      additionalProperties: true
+      properties:
+        error:
+          type: string
+
+    AddProjectsRequest:
+      type: object
+      required: [paths]
+      additionalProperties: true
+      properties:
+        paths:
+          type: array
+          items:
+            type: string
+
+    ScanProjectResult:
+      type: object
+      required: [name, path, registered]
+      additionalProperties: true
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        registered:
+          type: boolean

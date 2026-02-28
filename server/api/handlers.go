@@ -7,16 +7,16 @@ import (
 
 // FieldStationHandler implements StrictServerInterface.
 type FieldStationHandler struct {
-	claudeHome string
-	authToken  string
-	hub        *watchHub
+	claudeHome  string
+	authEnabled bool
+	hub         *watchHub
 }
 
 // NewHandler creates a new FieldStationHandler.
-func NewHandler(claudeHome, authToken string) *FieldStationHandler {
+func NewHandler(claudeHome string, authEnabled bool) *FieldStationHandler {
 	return &FieldStationHandler{
-		claudeHome: claudeHome,
-		authToken:  authToken,
+		claudeHome:  claudeHome,
+		authEnabled: authEnabled,
 		hub: &watchHub{
 			listeners: make(map[chan struct{}]struct{}),
 		},

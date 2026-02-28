@@ -29,7 +29,7 @@ func newTestHandler(t *testing.T) (*api.FieldStationHandler, string) {
 	t.Helper()
 	claudeHome := t.TempDir()
 	t.Setenv("CLAUDE_HOME", claudeHome)
-	return api.NewHandler(claudeHome, ""), claudeHome
+	return api.NewHandler(claudeHome, false), claudeHome
 }
 
 func writeAgentFile(t *testing.T, dir, name, content string) {

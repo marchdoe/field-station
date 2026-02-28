@@ -1,4 +1,6 @@
-import { Navigate, Route, Routes } from "react-router";
+import { Navigate, Outlet, Route, Routes } from "react-router";
+import { RequireAuth } from "./components/RequireAuth.js";
+import { AuthSetupPage } from "./routes/auth-setup.js";
 import { GlobalAgentDetailPage } from "./routes/global/agents/$agentName.js";
 import { GlobalAgentsPage } from "./routes/global/agents/index.js";
 import { GlobalAgentsOutlet } from "./routes/global/agents/route.js";
@@ -40,60 +42,72 @@ import { SetupPage } from "./routes/setup.js";
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<DashboardPage />} />
+      {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/setup" element={<SetupPage />} />
-      <Route path="/history" element={<HistoryPage />} />
+      <Route path="/auth/setup" element={<AuthSetupPage />} />
 
-      {/* Global routes */}
-      <Route path="/global" element={<GlobalOverviewPage />} />
-      <Route path="/global/settings" element={<GlobalSettingsPage />} />
+      {/* Protected routes wrapped in RequireAuth */}
+      <Route
+        element={
+          <RequireAuth>
+            <Outlet />
+          </RequireAuth>
+        }
+      >
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/setup" element={<SetupPage />} />
+        <Route path="/history" element={<HistoryPage />} />
 
-      <Route path="/global/agents" element={<GlobalAgentsOutlet />}>
-        <Route index element={<GlobalAgentsPage />} />
-        <Route path=":agentName" element={<GlobalAgentDetailPage />} />
-      </Route>
+        {/* Global routes */}
+        <Route path="/global" element={<GlobalOverviewPage />} />
+        <Route path="/global/settings" element={<GlobalSettingsPage />} />
 
-      <Route path="/global/commands" element={<GlobalCommandsOutlet />}>
-        <Route index element={<GlobalCommandsPage />} />
-        <Route path=":folder/:commandName" element={<GlobalCommandDetailPage />} />
-      </Route>
-
-      <Route path="/global/skills" element={<GlobalSkillsOutlet />}>
-        <Route index element={<GlobalSkillsPage />} />
-        <Route path=":skillName" element={<GlobalSkillDetailPage />} />
-      </Route>
-
-      <Route path="/global/hooks" element={<GlobalHooksPage />} />
-      <Route path="/global/features" element={<GlobalFeaturesPage />} />
-      <Route path="/global/plugins" element={<GlobalPluginsPage />} />
-      <Route path="/global/instructions" element={<GlobalInstructionsPage />} />
-
-      {/* Projects routes */}
-      <Route path="/projects" element={<ProjectsListPage />} />
-
-      <Route path="/projects/:projectId" element={<ProjectLayout />}>
-        <Route index element={<Navigate to="settings" replace />} />
-        <Route path="settings" element={<ProjectSettingsPage />} />
-
-        <Route path="agents" element={<ProjectAgentsOutlet />}>
-          <Route index element={<ProjectAgentsPage />} />
-          <Route path=":agentName" element={<ProjectAgentDetailPage />} />
+        <Route path="/global/agents" element={<GlobalAgentsOutlet />}>
+          <Route index element={<GlobalAgentsPage />} />
+          <Route path=":agentName" element={<GlobalAgentDetailPage />} />
         </Route>
 
-        <Route path="commands" element={<ProjectCommandsOutlet />}>
-          <Route index element={<ProjectCommandsPage />} />
-          <Route path=":folder/:commandName" element={<ProjectCommandDetailPage />} />
+        <Route path="/global/commands" element={<GlobalCommandsOutlet />}>
+          <Route index element={<GlobalCommandsPage />} />
+          <Route path=":folder/:commandName" element={<GlobalCommandDetailPage />} />
         </Route>
 
-        <Route path="skills" element={<ProjectSkillsOutlet />}>
-          <Route index element={<ProjectSkillsPage />} />
-          <Route path=":skillName" element={<ProjectSkillDetailPage />} />
+        <Route path="/global/skills" element={<GlobalSkillsOutlet />}>
+          <Route index element={<GlobalSkillsPage />} />
+          <Route path=":skillName" element={<GlobalSkillDetailPage />} />
         </Route>
 
-        <Route path="instructions" element={<ProjectInstructionsPage />} />
-        <Route path="memory" element={<ProjectMemoryListPage />} />
-        <Route path="memory/:filename" element={<ProjectMemoryDetailPage />} />
+        <Route path="/global/hooks" element={<GlobalHooksPage />} />
+        <Route path="/global/features" element={<GlobalFeaturesPage />} />
+        <Route path="/global/plugins" element={<GlobalPluginsPage />} />
+        <Route path="/global/instructions" element={<GlobalInstructionsPage />} />
+
+        {/* Projects routes */}
+        <Route path="/projects" element={<ProjectsListPage />} />
+
+        <Route path="/projects/:projectId" element={<ProjectLayout />}>
+          <Route index element={<Navigate to="settings" replace />} />
+          <Route path="settings" element={<ProjectSettingsPage />} />
+
+          <Route path="agents" element={<ProjectAgentsOutlet />}>
+            <Route index element={<ProjectAgentsPage />} />
+            <Route path=":agentName" element={<ProjectAgentDetailPage />} />
+          </Route>
+
+          <Route path="commands" element={<ProjectCommandsOutlet />}>
+            <Route index element={<ProjectCommandsPage />} />
+            <Route path=":folder/:commandName" element={<ProjectCommandDetailPage />} />
+          </Route>
+
+          <Route path="skills" element={<ProjectSkillsOutlet />}>
+            <Route index element={<ProjectSkillsPage />} />
+            <Route path=":skillName" element={<ProjectSkillDetailPage />} />
+          </Route>
+
+          <Route path="instructions" element={<ProjectInstructionsPage />} />
+          <Route path="memory" element={<ProjectMemoryListPage />} />
+          <Route path="memory/:filename" element={<ProjectMemoryDetailPage />} />
+        </Route>
       </Route>
     </Routes>
   );

@@ -6,6 +6,7 @@ import {
   Globe,
   History,
   LayoutDashboard,
+  LogOut,
   Puzzle,
   Radio,
   Settings,
@@ -102,6 +103,11 @@ interface SidebarProps {
 export default function Sidebar({ onClose }: SidebarProps) {
   const projects = useQuery({ queryKey: ["projects"], queryFn: getProjects });
 
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    window.location.href = "/login";
+  }
+
   return (
     <aside className={cn("flex h-full w-60 flex-col border-r border-border-default bg-surface-1")}>
       {/* Logo */}
@@ -173,6 +179,18 @@ export default function Sidebar({ onClose }: SidebarProps) {
           />
         </div>
       </nav>
+
+      {/* Logout — pinned to bottom, separated */}
+      <div className="border-t border-border-default p-3">
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors text-text-secondary hover:text-text-primary hover:bg-surface-2"
+        >
+          <LogOut size={16} />
+          <span>Log out</span>
+        </button>
+      </div>
     </aside>
   );
 }

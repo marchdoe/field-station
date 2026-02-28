@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { NavLink } from "react-router";
+import { AddProjectPopover } from "@/components/layout/AddProjectPopover.js";
 import { getProjects } from "@/lib/api.js";
 import { cn, encodePath, getProjectName } from "@/lib/utils";
 
@@ -169,6 +170,10 @@ export default function Sidebar({ onClose }: SidebarProps) {
             {(projects.data ?? []).length === 0 && (
               <p className="px-3 py-2 text-xs text-text-muted">No projects registered</p>
             )}
+          </div>
+          {/* Add project — separated from project list */}
+          <div className="mt-1 pt-2 pb-2 border-t border-border-muted">
+            <AddProjectPopover />
           </div>
         </div>
 

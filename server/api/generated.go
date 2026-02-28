@@ -5573,6 +5573,9 @@ type ServerInterface interface {
 	// Scan a folder for subdirectories containing .claude/
 	// (GET /api/projects/scan)
 	ScanProjects(w http.ResponseWriter, r *http.Request, params ScanProjectsParams)
+	// Remove a registered project
+	// (DELETE /api/projects/{projectId})
+	DeleteProject(w http.ResponseWriter, r *http.Request, projectId string)
 	// Search across all resources
 	// (GET /api/search)
 	Search(w http.ResponseWriter, r *http.Request, params SearchParams)
@@ -6584,6 +6587,31 @@ func (siw *ServerInterfaceWrapper) ScanProjects(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
+// DeleteProject operation middleware
+func (siw *ServerInterfaceWrapper) DeleteProject(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "projectId" -------------
+	var projectId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "projectId", r.PathValue("projectId"), &projectId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "projectId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteProject(w, r, projectId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // Search operation middleware
 func (siw *ServerInterfaceWrapper) Search(w http.ResponseWriter, r *http.Request) {
 
@@ -6985,6 +7013,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/api/projects", wrapper.GetProjects)
 	m.HandleFunc("POST "+options.BaseURL+"/api/projects", wrapper.PostProjects)
 	m.HandleFunc("GET "+options.BaseURL+"/api/projects/scan", wrapper.ScanProjects)
+	m.HandleFunc("DELETE "+options.BaseURL+"/api/projects/{projectId}", wrapper.DeleteProject)
 	m.HandleFunc("GET "+options.BaseURL+"/api/search", wrapper.Search)
 	m.HandleFunc("GET "+options.BaseURL+"/api/skills", wrapper.GetSkills)
 	m.HandleFunc("POST "+options.BaseURL+"/api/skills", wrapper.CreateSkill)
@@ -7696,6 +7725,40 @@ func (response ScanProjects400JSONResponse) VisitScanProjectsResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type DeleteProjectRequestObject struct {
+	ProjectId string `json:"projectId"`
+}
+
+type DeleteProjectResponseObject interface {
+	VisitDeleteProjectResponse(w http.ResponseWriter) error
+}
+
+type DeleteProject204Response struct {
+}
+
+func (response DeleteProject204Response) VisitDeleteProjectResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteProject400JSONResponse ErrorResponse
+
+func (response DeleteProject400JSONResponse) VisitDeleteProjectResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteProject404JSONResponse ErrorResponse
+
+func (response DeleteProject404JSONResponse) VisitDeleteProjectResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type SearchRequestObject struct {
 	Params SearchParams
 }
@@ -7950,6 +8013,9 @@ type StrictServerInterface interface {
 	// Scan a folder for subdirectories containing .claude/
 	// (GET /api/projects/scan)
 	ScanProjects(ctx context.Context, request ScanProjectsRequestObject) (ScanProjectsResponseObject, error)
+	// Remove a registered project
+	// (DELETE /api/projects/{projectId})
+	DeleteProject(ctx context.Context, request DeleteProjectRequestObject) (DeleteProjectResponseObject, error)
 	// Search across all resources
 	// (GET /api/search)
 	Search(ctx context.Context, request SearchRequestObject) (SearchResponseObject, error)
@@ -9104,6 +9170,32 @@ func (sh *strictHandler) ScanProjects(w http.ResponseWriter, r *http.Request, pa
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(ScanProjectsResponseObject); ok {
 		if err := validResponse.VisitScanProjectsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteProject operation middleware
+func (sh *strictHandler) DeleteProject(w http.ResponseWriter, r *http.Request, projectId string) {
+	var request DeleteProjectRequestObject
+
+	request.ProjectId = projectId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteProject(ctx, request.(DeleteProjectRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteProject")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteProjectResponseObject); ok {
+		if err := validResponse.VisitDeleteProjectResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

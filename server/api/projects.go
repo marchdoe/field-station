@@ -145,3 +145,24 @@ func (h *FieldStationHandler) ScanProjects(ctx context.Context, req ScanProjects
 	}
 	return ScanProjects200JSONResponse(results), nil
 }
+
+// DeleteProject removes a registered project directory from ~/.claude/projects/.
+func (h *FieldStationHandler) DeleteProject(ctx context.Context, req DeleteProjectRequestObject) (DeleteProjectResponseObject, error) {
+	projectID := req.ProjectId
+
+	// A valid encoded path always starts with "-" (the leading "/" becomes "-")
+	if !strings.HasPrefix(projectID, "-") {
+		return DeleteProject400JSONResponse{Error: "invalid project id"}, nil
+	}
+
+	projectDir := filepath.Join(h.claudeHome, "projects", projectID)
+	if _, err := os.Stat(projectDir); os.IsNotExist(err) {
+		return DeleteProject404JSONResponse{Error: "project not found"}, nil
+	}
+
+	if err := os.RemoveAll(projectDir); err != nil {
+		return DeleteProject400JSONResponse{Error: "failed to remove project"}, nil
+	}
+
+	return DeleteProject204Response{}, nil
+}

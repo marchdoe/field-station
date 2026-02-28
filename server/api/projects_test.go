@@ -242,3 +242,48 @@ func TestPostProjects_RejectsNonexistentPath(t *testing.T) {
 	_, is400 := resp.(api.PostProjects400JSONResponse)
 	assert.True(t, is400, "nonexistent path should return 400")
 }
+
+// --- DeleteProject tests ---
+
+func TestDeleteProject_RemovesRegisteredProject(t *testing.T) {
+	h, claudeHome := newTestHandler(t)
+
+	projectPath := t.TempDir()
+	projectID := registerProject(t, claudeHome, projectPath)
+
+	resp, err := h.DeleteProject(context.Background(), api.DeleteProjectRequestObject{
+		ProjectId: projectID,
+	})
+	require.NoError(t, err)
+
+	_, ok := resp.(api.DeleteProject204Response)
+	assert.True(t, ok, "should return 204 on successful removal")
+
+	projectDir := filepath.Join(claudeHome, "projects", projectID)
+	_, statErr := os.Stat(projectDir)
+	assert.True(t, os.IsNotExist(statErr), "project directory should be gone")
+}
+
+func TestDeleteProject_Returns404WhenNotRegistered(t *testing.T) {
+	h, _ := newTestHandler(t)
+
+	resp, err := h.DeleteProject(context.Background(), api.DeleteProjectRequestObject{
+		ProjectId: "-nonexistent-project-xyz",
+	})
+	require.NoError(t, err)
+
+	_, is404 := resp.(api.DeleteProject404JSONResponse)
+	assert.True(t, is404, "unregistered project should return 404")
+}
+
+func TestDeleteProject_Returns400ForInvalidID(t *testing.T) {
+	h, _ := newTestHandler(t)
+
+	resp, err := h.DeleteProject(context.Background(), api.DeleteProjectRequestObject{
+		ProjectId: "../../etc/passwd",
+	})
+	require.NoError(t, err)
+
+	_, is400 := resp.(api.DeleteProject400JSONResponse)
+	assert.True(t, is400, "path-traversal ID should return 400")
+}

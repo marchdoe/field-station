@@ -307,6 +307,18 @@ export function addProjects(paths: string[]): Promise<ProjectFile[]> {
   });
 }
 
+export async function removeProject(projectId: string): Promise<void> {
+  const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    throw new Error(
+      typeof body.error === "string" ? body.error : `API error: ${res.status} ${res.statusText}`,
+    );
+  }
+}
+
 // Search
 export function search(q: string, projectId?: string): Promise<SearchResult[]> {
   const params = new URLSearchParams({ q });

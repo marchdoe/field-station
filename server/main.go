@@ -16,6 +16,7 @@ func main() {
 	claudeHome := lib.ResolveClaudeHome()
 	authToken := lib.ResolveAuthToken(claudeHome)
 	isDev := os.Getenv("FIELD_STATION_DEV") == "1"
+	authEnabled := os.Getenv("FIELD_STATION_NO_AUTH") != "1"
 
 	handler := api.NewHandler(claudeHome, authToken)
 	strictHandler := api.NewStrictHandler(handler, nil)
@@ -54,7 +55,7 @@ func main() {
 	}
 	srv := &http.Server{
 		Addr:              addr,
-		Handler:           maxBytesMiddleware(middleware.RequireLocalOrigin(makeTopHandler(mux, authToken))),
+		Handler:           maxBytesMiddleware(middleware.RequireLocalOrigin(makeTopHandler(mux, claudeHome, authEnabled))),
 		ReadHeaderTimeout: 30 * time.Second,
 		IdleTimeout:       120 * time.Second,
 	}
@@ -74,11 +75,8 @@ func maxBytesMiddleware(next http.Handler) http.Handler {
 }
 
 // makeTopHandler wraps mux with auth middleware, exempting the login endpoint.
-func makeTopHandler(mux *http.ServeMux, authToken string) http.Handler {
-	if authToken == "" {
-		return mux
-	}
-	protected := middleware.RequireAuth(mux, authToken)
+func makeTopHandler(mux *http.ServeMux, claudeHome string, authEnabled bool) http.Handler {
+	protected := middleware.RequireAuth(mux, claudeHome, authEnabled)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/auth/login" {
 			mux.ServeHTTP(w, r)

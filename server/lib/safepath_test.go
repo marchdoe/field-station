@@ -48,6 +48,18 @@ func TestAssertSafePath_TraversalAttempt(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestEncodePath_Simple(t *testing.T) {
+	assert.Equal(t, "-Users-foo-bar", lib.EncodePath("/Users/foo/bar"))
+}
+
+func TestEncodePath_Roundtrip(t *testing.T) {
+	original := "/Users/dougmarch/Projects/myapp"
+	encoded := lib.EncodePath(original)
+	decoded, err := lib.DecodePath(encoded)
+	require.NoError(t, err)
+	assert.Equal(t, original, decoded)
+}
+
 func TestDecodePath_Simple(t *testing.T) {
 	// -Users-foo-bar -> /Users/foo/bar
 	got, err := lib.DecodePath("-Users-foo-bar")

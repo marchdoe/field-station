@@ -133,6 +133,12 @@ const (
 	Project GetSkillsParamsScope = "project"
 )
 
+// AddProjectsRequest defines model for AddProjectsRequest.
+type AddProjectsRequest struct {
+	Paths                []string               `json:"paths"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
 // AgentDetail defines model for AgentDetail.
 type AgentDetail struct {
 	Body                 string                 `json:"body"`
@@ -289,6 +295,12 @@ type DeleteConfigSettingRequest struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
+// ErrorResponse defines model for ErrorResponse.
+type ErrorResponse struct {
+	Error                string                 `json:"error"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
 // Feature defines model for Feature.
 type Feature struct {
 	CurrentValue         interface{}            `json:"currentValue,omitempty"`
@@ -428,6 +440,14 @@ type PluginFile struct {
 type ProjectFile struct {
 	Name                 string                 `json:"name"`
 	Path                 string                 `json:"path"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// ScanProjectResult defines model for ScanProjectResult.
+type ScanProjectResult struct {
+	Name                 string                 `json:"name"`
+	Path                 string                 `json:"path"`
+	Registered           bool                   `json:"registered"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -628,6 +648,11 @@ type GetMemoryParams struct {
 	ProjectId string `form:"projectId" json:"projectId"`
 }
 
+// ScanProjectsParams defines parameters for ScanProjects.
+type ScanProjectsParams struct {
+	Folder string `form:"folder" json:"folder"`
+}
+
 // SearchParams defines parameters for Search.
 type SearchParams struct {
 	Q         string  `form:"q" json:"q"`
@@ -703,11 +728,82 @@ type CreateMemoryJSONRequestBody = CreateMemoryRequest
 // UpdateMemoryJSONRequestBody defines body for UpdateMemory for application/json ContentType.
 type UpdateMemoryJSONRequestBody = UpdateMemoryRequest
 
+// PostProjectsJSONRequestBody defines body for PostProjects for application/json ContentType.
+type PostProjectsJSONRequestBody = AddProjectsRequest
+
 // CreateSkillJSONRequestBody defines body for CreateSkill for application/json ContentType.
 type CreateSkillJSONRequestBody = CreateSkillRequest
 
 // UpdateSkillJSONRequestBody defines body for UpdateSkill for application/json ContentType.
 type UpdateSkillJSONRequestBody = UpdateSkillRequest
+
+// Getter for additional properties for AddProjectsRequest. Returns the specified
+// element and whether it was found
+func (a AddProjectsRequest) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for AddProjectsRequest
+func (a *AddProjectsRequest) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for AddProjectsRequest to handle AdditionalProperties
+func (a *AddProjectsRequest) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["paths"]; found {
+		err = json.Unmarshal(raw, &a.Paths)
+		if err != nil {
+			return fmt.Errorf("error reading 'paths': %w", err)
+		}
+		delete(object, "paths")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for AddProjectsRequest to handle AdditionalProperties
+func (a AddProjectsRequest) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Paths != nil {
+		object["paths"], err = json.Marshal(a.Paths)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'paths': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
 
 // Getter for additional properties for AgentDetail. Returns the specified
 // element and whether it was found
@@ -2373,6 +2469,72 @@ func (a DeleteConfigSettingRequest) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
+// Getter for additional properties for ErrorResponse. Returns the specified
+// element and whether it was found
+func (a ErrorResponse) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for ErrorResponse
+func (a *ErrorResponse) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for ErrorResponse to handle AdditionalProperties
+func (a *ErrorResponse) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["error"]; found {
+		err = json.Unmarshal(raw, &a.Error)
+		if err != nil {
+			return fmt.Errorf("error reading 'error': %w", err)
+		}
+		delete(object, "error")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for ErrorResponse to handle AdditionalProperties
+func (a ErrorResponse) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["error"], err = json.Marshal(a.Error)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'error': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
 // Getter for additional properties for Feature. Returns the specified
 // element and whether it was found
 func (a Feature) Get(fieldName string) (value interface{}, found bool) {
@@ -3934,6 +4096,98 @@ func (a ProjectFile) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
+// Getter for additional properties for ScanProjectResult. Returns the specified
+// element and whether it was found
+func (a ScanProjectResult) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for ScanProjectResult
+func (a *ScanProjectResult) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for ScanProjectResult to handle AdditionalProperties
+func (a *ScanProjectResult) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["name"]; found {
+		err = json.Unmarshal(raw, &a.Name)
+		if err != nil {
+			return fmt.Errorf("error reading 'name': %w", err)
+		}
+		delete(object, "name")
+	}
+
+	if raw, found := object["path"]; found {
+		err = json.Unmarshal(raw, &a.Path)
+		if err != nil {
+			return fmt.Errorf("error reading 'path': %w", err)
+		}
+		delete(object, "path")
+	}
+
+	if raw, found := object["registered"]; found {
+		err = json.Unmarshal(raw, &a.Registered)
+		if err != nil {
+			return fmt.Errorf("error reading 'registered': %w", err)
+		}
+		delete(object, "registered")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for ScanProjectResult to handle AdditionalProperties
+func (a ScanProjectResult) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	object["name"], err = json.Marshal(a.Name)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'name': %w", err)
+	}
+
+	object["path"], err = json.Marshal(a.Path)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'path': %w", err)
+	}
+
+	object["registered"], err = json.Marshal(a.Registered)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling 'registered': %w", err)
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
 // Getter for additional properties for SearchResult. Returns the specified
 // element and whether it was found
 func (a SearchResult) Get(fieldName string) (value interface{}, found bool) {
@@ -5292,6 +5546,12 @@ type ServerInterface interface {
 	// List projects
 	// (GET /api/projects)
 	GetProjects(w http.ResponseWriter, r *http.Request)
+	// Register one or more projects by filesystem path
+	// (POST /api/projects)
+	PostProjects(w http.ResponseWriter, r *http.Request)
+	// Scan a folder for subdirectories containing .claude/
+	// (GET /api/projects/scan)
+	ScanProjects(w http.ResponseWriter, r *http.Request, params ScanProjectsParams)
 	// Search across all resources
 	// (GET /api/search)
 	Search(w http.ResponseWriter, r *http.Request, params SearchParams)
@@ -6227,6 +6487,54 @@ func (siw *ServerInterfaceWrapper) GetProjects(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r)
 }
 
+// PostProjects operation middleware
+func (siw *ServerInterfaceWrapper) PostProjects(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostProjects(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ScanProjects operation middleware
+func (siw *ServerInterfaceWrapper) ScanProjects(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ScanProjectsParams
+
+	// ------------- Required query parameter "folder" -------------
+
+	if paramValue := r.URL.Query().Get("folder"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "folder"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "folder", r.URL.Query(), &params.Folder)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "folder", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ScanProjects(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // Search operation middleware
 func (siw *ServerInterfaceWrapper) Search(w http.ResponseWriter, r *http.Request) {
 
@@ -6624,6 +6932,8 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("PUT "+options.BaseURL+"/api/memory/{filename}", wrapper.UpdateMemory)
 	m.HandleFunc("GET "+options.BaseURL+"/api/plugins", wrapper.GetPlugins)
 	m.HandleFunc("GET "+options.BaseURL+"/api/projects", wrapper.GetProjects)
+	m.HandleFunc("POST "+options.BaseURL+"/api/projects", wrapper.PostProjects)
+	m.HandleFunc("GET "+options.BaseURL+"/api/projects/scan", wrapper.ScanProjects)
 	m.HandleFunc("GET "+options.BaseURL+"/api/search", wrapper.Search)
 	m.HandleFunc("GET "+options.BaseURL+"/api/skills", wrapper.GetSkills)
 	m.HandleFunc("POST "+options.BaseURL+"/api/skills", wrapper.CreateSkill)
@@ -7242,6 +7552,58 @@ func (response GetProjects200JSONResponse) VisitGetProjectsResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostProjectsRequestObject struct {
+	Body *PostProjectsJSONRequestBody
+}
+
+type PostProjectsResponseObject interface {
+	VisitPostProjectsResponse(w http.ResponseWriter) error
+}
+
+type PostProjects200JSONResponse []ProjectFile
+
+func (response PostProjects200JSONResponse) VisitPostProjectsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostProjects400JSONResponse ErrorResponse
+
+func (response PostProjects400JSONResponse) VisitPostProjectsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ScanProjectsRequestObject struct {
+	Params ScanProjectsParams
+}
+
+type ScanProjectsResponseObject interface {
+	VisitScanProjectsResponse(w http.ResponseWriter) error
+}
+
+type ScanProjects200JSONResponse []ScanProjectResult
+
+func (response ScanProjects200JSONResponse) VisitScanProjectsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ScanProjects400JSONResponse ErrorResponse
+
+func (response ScanProjects400JSONResponse) VisitScanProjectsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type SearchRequestObject struct {
 	Params SearchParams
 }
@@ -7484,6 +7846,12 @@ type StrictServerInterface interface {
 	// List projects
 	// (GET /api/projects)
 	GetProjects(ctx context.Context, request GetProjectsRequestObject) (GetProjectsResponseObject, error)
+	// Register one or more projects by filesystem path
+	// (POST /api/projects)
+	PostProjects(ctx context.Context, request PostProjectsRequestObject) (PostProjectsResponseObject, error)
+	// Scan a folder for subdirectories containing .claude/
+	// (GET /api/projects/scan)
+	ScanProjects(ctx context.Context, request ScanProjectsRequestObject) (ScanProjectsResponseObject, error)
 	// Search across all resources
 	// (GET /api/search)
 	Search(ctx context.Context, request SearchRequestObject) (SearchResponseObject, error)
@@ -8526,6 +8894,63 @@ func (sh *strictHandler) GetProjects(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetProjectsResponseObject); ok {
 		if err := validResponse.VisitGetProjectsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostProjects operation middleware
+func (sh *strictHandler) PostProjects(w http.ResponseWriter, r *http.Request) {
+	var request PostProjectsRequestObject
+
+	var body PostProjectsJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostProjects(ctx, request.(PostProjectsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostProjects")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostProjectsResponseObject); ok {
+		if err := validResponse.VisitPostProjectsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// ScanProjects operation middleware
+func (sh *strictHandler) ScanProjects(w http.ResponseWriter, r *http.Request, params ScanProjectsParams) {
+	var request ScanProjectsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ScanProjects(ctx, request.(ScanProjectsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ScanProjects")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ScanProjectsResponseObject); ok {
+		if err := validResponse.VisitScanProjectsResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

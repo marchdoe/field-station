@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"fieldstation/lib"
 )
 
 const sessionIDBytes = 16
@@ -29,15 +31,15 @@ func CreateSession(token string) string {
 	return id + "." + sign(id, token)
 }
 
-// VerifySession verifies a session cookie value against the token. Constant-time comparison.
-func VerifySession(cookieValue, token string) bool {
+// VerifySession verifies a session cookie value against the signing key. Constant-time comparison.
+func VerifySession(cookieValue, signingKey string) bool {
 	dot := strings.Index(cookieValue, ".")
 	if dot == -1 {
 		return false
 	}
 	id := cookieValue[:dot]
 	given := cookieValue[dot+1:]
-	expected := sign(id, token)
+	expected := sign(id, signingKey)
 	return hmac.Equal([]byte(given), []byte(expected))
 }
 
@@ -47,14 +49,21 @@ func SessionCookieName() string {
 }
 
 // RequireAuth wraps an http.Handler, requiring a valid session cookie.
-// If token is empty, auth is disabled and all requests pass through.
-func RequireAuth(next http.Handler, token string) http.Handler {
-	if token == "" {
+// If authEnabled is false, all requests pass through.
+// If no credentials file exists (setup required), requests pass through.
+func RequireAuth(next http.Handler, claudeHome string, authEnabled bool) http.Handler {
+	if !authEnabled {
 		return next
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		creds, err := lib.LoadCredentials(claudeHome)
+		if err != nil || creds == nil {
+			// Setup not yet complete — pass through so frontend can redirect to /auth/setup
+			next.ServeHTTP(w, r)
+			return
+		}
 		cookie, err := r.Cookie(sessionCookieName)
-		if err != nil || !VerifySession(cookie.Value, token) {
+		if err != nil || !VerifySession(cookie.Value, creds.SigningKey) {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}

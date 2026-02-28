@@ -159,6 +159,13 @@ type AgentFile struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
+// AuthStatusResponse defines model for AuthStatusResponse.
+type AuthStatusResponse struct {
+	AuthEnabled   bool `json:"authEnabled"`
+	Authenticated bool `json:"authenticated"`
+	SetupRequired bool `json:"setupRequired"`
+}
+
 // BackupFile defines model for BackupFile.
 type BackupFile struct {
 	CreatedAt            string                 `json:"createdAt"`
@@ -444,6 +451,11 @@ type SearchResult struct {
 // SearchResultType defines model for SearchResult.Type.
 type SearchResultType string
 
+// SetupAuthRequest defines model for SetupAuthRequest.
+type SetupAuthRequest struct {
+	Password string `json:"password"`
+}
+
 // SkillDetail defines model for SkillDetail.
 type SkillDetail struct {
 	Body                 string                 `json:"body"`
@@ -669,6 +681,9 @@ type UpdateAgentJSONRequestBody = UpdateAgentRequest
 
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
 type LoginJSONRequestBody = LoginRequest
+
+// SetupAuthJSONRequestBody defines body for SetupAuth for application/json ContentType.
+type SetupAuthJSONRequestBody = SetupAuthRequest
 
 // CreateCommandJSONRequestBody defines body for CreateCommand for application/json ContentType.
 type CreateCommandJSONRequestBody = CreateCommandRequest
@@ -5208,6 +5223,12 @@ type ServerInterface interface {
 	// Logout
 	// (POST /api/auth/logout)
 	Logout(w http.ResponseWriter, r *http.Request)
+	// Set initial password (only allowed when no credentials exist)
+	// (POST /api/auth/setup)
+	SetupAuth(w http.ResponseWriter, r *http.Request)
+	// Get authentication status
+	// (GET /api/auth/status)
+	GetAuthStatus(w http.ResponseWriter, r *http.Request)
 	// List backups
 	// (GET /api/backups)
 	GetBackups(w http.ResponseWriter, r *http.Request)
@@ -5486,6 +5507,34 @@ func (siw *ServerInterfaceWrapper) Logout(w http.ResponseWriter, r *http.Request
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.Logout(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// SetupAuth operation middleware
+func (siw *ServerInterfaceWrapper) SetupAuth(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.SetupAuth(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetAuthStatus operation middleware
+func (siw *ServerInterfaceWrapper) GetAuthStatus(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAuthStatus(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -6596,6 +6645,8 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("PUT "+options.BaseURL+"/api/agents/{name}", wrapper.UpdateAgent)
 	m.HandleFunc("POST "+options.BaseURL+"/api/auth/login", wrapper.Login)
 	m.HandleFunc("POST "+options.BaseURL+"/api/auth/logout", wrapper.Logout)
+	m.HandleFunc("POST "+options.BaseURL+"/api/auth/setup", wrapper.SetupAuth)
+	m.HandleFunc("GET "+options.BaseURL+"/api/auth/status", wrapper.GetAuthStatus)
 	m.HandleFunc("GET "+options.BaseURL+"/api/backups", wrapper.GetBackups)
 	m.HandleFunc("POST "+options.BaseURL+"/api/backups/{id}/restore", wrapper.RestoreBackup)
 	m.HandleFunc("GET "+options.BaseURL+"/api/commands", wrapper.GetCommands)
@@ -6750,6 +6801,47 @@ type LogoutResponseObject interface {
 type Logout200JSONResponse SuccessResponse
 
 func (response Logout200JSONResponse) VisitLogoutResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type SetupAuthRequestObject struct {
+	Body *SetupAuthJSONRequestBody
+}
+
+type SetupAuthResponseObject interface {
+	VisitSetupAuthResponse(w http.ResponseWriter) error
+}
+
+type SetupAuth200JSONResponse SuccessResponse
+
+func (response SetupAuth200JSONResponse) VisitSetupAuthResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type SetupAuth403Response struct {
+}
+
+func (response SetupAuth403Response) VisitSetupAuthResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetAuthStatusRequestObject struct {
+}
+
+type GetAuthStatusResponseObject interface {
+	VisitGetAuthStatusResponse(w http.ResponseWriter) error
+}
+
+type GetAuthStatus200JSONResponse AuthStatusResponse
+
+func (response GetAuthStatus200JSONResponse) VisitGetAuthStatusResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
@@ -7400,6 +7492,12 @@ type StrictServerInterface interface {
 	// Logout
 	// (POST /api/auth/logout)
 	Logout(ctx context.Context, request LogoutRequestObject) (LogoutResponseObject, error)
+	// Set initial password (only allowed when no credentials exist)
+	// (POST /api/auth/setup)
+	SetupAuth(ctx context.Context, request SetupAuthRequestObject) (SetupAuthResponseObject, error)
+	// Get authentication status
+	// (GET /api/auth/status)
+	GetAuthStatus(ctx context.Context, request GetAuthStatusRequestObject) (GetAuthStatusResponseObject, error)
 	// List backups
 	// (GET /api/backups)
 	GetBackups(ctx context.Context, request GetBackupsRequestObject) (GetBackupsResponseObject, error)
@@ -7734,6 +7832,61 @@ func (sh *strictHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(LogoutResponseObject); ok {
 		if err := validResponse.VisitLogoutResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// SetupAuth operation middleware
+func (sh *strictHandler) SetupAuth(w http.ResponseWriter, r *http.Request) {
+	var request SetupAuthRequestObject
+
+	var body SetupAuthJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.SetupAuth(ctx, request.(SetupAuthRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "SetupAuth")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(SetupAuthResponseObject); ok {
+		if err := validResponse.VisitSetupAuthResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAuthStatus operation middleware
+func (sh *strictHandler) GetAuthStatus(w http.ResponseWriter, r *http.Request) {
+	var request GetAuthStatusRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAuthStatus(ctx, request.(GetAuthStatusRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAuthStatus")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetAuthStatusResponseObject); ok {
+		if err := validResponse.VisitGetAuthStatusResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

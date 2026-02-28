@@ -5,10 +5,9 @@ import { useSearchParams } from "react-router";
 export function LoginPage() {
   const [searchParams] = useSearchParams();
   const next = searchParams.get("next") ?? undefined;
-  const [token, setToken] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,7 +21,7 @@ export function LoginPage() {
       const res = await fetch(`/api/auth/login?${params}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: token }),
+        body: JSON.stringify({ password }),
         redirect: "follow",
       });
 
@@ -41,8 +40,7 @@ export function LoginPage() {
         return;
       }
 
-      const body = (await res.json().catch(() => ({}))) as { error?: string };
-      setError(body.error ?? "Invalid token");
+      setError("Incorrect password. Please try again.");
     } catch {
       setError("Network error. Please try again.");
     } finally {
@@ -66,15 +64,15 @@ export function LoginPage() {
           className="bg-surface-1 border border-border-default rounded-xl p-6"
         >
           <div className="mb-4">
-            <label htmlFor="token" className="block text-sm font-medium text-text-primary mb-2">
-              Access token
+            <label htmlFor="password" className="block text-sm font-medium text-text-primary mb-2">
+              Password
             </label>
             <input
-              id="token"
+              id="password"
               type="password"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="Paste your token here"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
               required
               autoFocus
               autoComplete="current-password"
@@ -95,66 +93,43 @@ export function LoginPage() {
 
           <button
             type="submit"
-            disabled={submitting || !token}
+            disabled={submitting || !password}
             className="w-full py-2.5 px-4 rounded-xl font-medium text-sm transition-colors bg-accent text-white hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? "Signing in\u2026" : "Sign in"}
           </button>
 
           <div className="mt-4 pt-4 border-t border-border-muted">
-            <button
-              type="button"
-              onClick={() => setHelpOpen((v) => !v)}
-              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`flex-shrink-0 transition-transform ${helpOpen ? "rotate-90" : ""}`}
-                aria-hidden="true"
-              >
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-              How do I get a token?
-            </button>
-
-            {helpOpen && (
-              <div className="mt-3 space-y-3 text-xs text-text-secondary">
-                <p>
-                  The token matches the{" "}
-                  <code className="bg-surface-2 px-1 py-0.5 rounded text-accent font-mono">
-                    FIELD_STATION_TOKEN
-                  </code>{" "}
-                  environment variable set when the server was started.
-                </p>
-                <div>
-                  <p className="mb-1 text-text-muted">Generate a secure token:</p>
-                  <pre className="bg-surface-2 rounded px-2 py-1.5 font-mono text-text-primary overflow-x-auto">
-                    openssl rand -hex 32
-                  </pre>
-                </div>
-                <div>
-                  <p className="mb-1 text-text-muted">Start the server with it:</p>
-                  <pre className="bg-surface-2 rounded px-2 py-1.5 font-mono text-text-primary overflow-x-auto">
-                    {"FIELD_STATION_TOKEN=<your-token> ./field-station"}
-                  </pre>
-                </div>
+            <details className="group">
+              <summary className="cursor-pointer text-xs text-text-muted hover:text-text-secondary transition-colors list-none flex items-center gap-1.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="flex-shrink-0 transition-transform group-open:rotate-90"
+                  aria-hidden="true"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+                Forgot your password?
+              </summary>
+              <div className="mt-3 space-y-2 text-xs text-text-secondary">
+                <p>To reset your password, stop the server and delete the credentials file:</p>
+                <pre className="bg-surface-2 rounded px-2 py-1.5 font-mono text-text-primary overflow-x-auto">
+                  rm ~/.claude/field-station-credentials
+                </pre>
                 <p className="text-text-muted">
-                  Running locally without auth? Start the server without setting{" "}
-                  <code className="bg-surface-2 px-1 py-0.5 rounded text-accent font-mono">
-                    FIELD_STATION_TOKEN
-                  </code>
-                  .
+                  Restart the server — you'll be taken back to the setup page to create a new
+                  password.
                 </p>
               </div>
-            )}
+            </details>
           </div>
         </form>
       </div>

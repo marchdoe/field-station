@@ -91,7 +91,7 @@ export function AddProjectPopover() {
         aria-label="Add project"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+          "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors cursor-pointer",
           "text-text-secondary hover:text-text-primary hover:bg-surface-2",
           open && "bg-surface-2 text-text-primary",
         )}

@@ -2,8 +2,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { FolderOpen, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
-import * as api from "@/lib/api.js";
 import type { ProjectFile } from "@/lib/api.js";
+import * as api from "@/lib/api.js";
 import { encodePath, getProjectName } from "@/lib/utils.js";
 
 interface ProjectCardProps {
@@ -29,10 +29,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <div className="group relative bg-surface-1 border border-border-default rounded-xl p-4 hover:border-accent/40 transition-colors">
-      <Link
-        to={`/projects/${encodePath(project.path)}`}
-        className="block"
-      >
+      <Link to={`/projects/${encodePath(project.path)}`} className="block">
         <div className="flex items-center gap-3 mb-2">
           <FolderOpen className="w-5 h-5 text-accent" />
           <h3 className="font-semibold text-text-primary truncate">{name}</h3>
@@ -44,7 +41,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         type="button"
         onClick={() => setConfirming(true)}
         aria-label={`Remove ${name}`}
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex items-center justify-center w-5 h-5 rounded-full bg-surface-2 text-text-muted hover:bg-red-100 hover:text-red-600 transition-all"
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex items-center justify-center w-5 h-5 rounded-full bg-surface-2 text-text-muted hover:bg-red-500/20 hover:text-red-400 cursor-pointer transition-all"
       >
         <X className="w-3 h-3" />
       </button>

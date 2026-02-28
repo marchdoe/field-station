@@ -15,10 +15,7 @@ describe("removeProject", () => {
 
     await removeProject("-Users-foo-myapp");
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      "/api/projects/-Users-foo-myapp",
-      { method: "DELETE" },
-    );
+    expect(mockFetch).toHaveBeenCalledWith("/api/projects/-Users-foo-myapp", { method: "DELETE" });
   });
 
   it("throws when the server returns an error", async () => {

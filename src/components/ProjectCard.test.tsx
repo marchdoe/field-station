@@ -3,8 +3,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ProjectFile } from "@/lib/api.js";
 import { ProjectCard } from "@/components/ProjectCard.js";
+import type { ProjectFile } from "@/lib/api.js";
 
 const { mockRemoveProject } = vi.hoisted(() => ({
   mockRemoveProject: vi.fn(),
@@ -59,9 +59,7 @@ describe("ProjectCard", () => {
     await waitFor(() => screen.getByRole("button", { name: /^remove$/i }));
     fireEvent.click(screen.getByRole("button", { name: /^remove$/i }));
 
-    await waitFor(() =>
-      expect(mockRemoveProject).toHaveBeenCalledWith("-Users-foo-myapp"),
-    );
+    await waitFor(() => expect(mockRemoveProject).toHaveBeenCalledWith("-Users-foo-myapp"));
   });
 
   it("closes modal on cancel without calling removeProject", async () => {

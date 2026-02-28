@@ -172,7 +172,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
             )}
           </div>
           {/* Add project — separated from project list */}
-          <div className="mt-1 pt-2 border-t border-border-muted">
+          <div className="mt-1 pt-2 pb-2 border-t border-border-muted">
             <AddProjectPopover />
           </div>
         </div>

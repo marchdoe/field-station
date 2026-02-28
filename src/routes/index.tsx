@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { FolderOpen, History, Radio, Settings } from "lucide-react";
+import { History, Radio, Settings } from "lucide-react";
 import { Link } from "react-router";
 import { AppShell } from "@/components/layout/AppShell.js";
-import type { ProjectFile } from "@/lib/api.js";
+import { ProjectCard } from "@/components/ProjectCard.js";
 import * as api from "@/lib/api.js";
-import { encodePath, getProjectName } from "@/lib/utils.js";
 
 export function DashboardPage() {
   const { data: projects, isLoading } = useQuery({
@@ -88,19 +87,3 @@ export function DashboardPage() {
   );
 }
 
-function ProjectCard({ project }: { project: ProjectFile }) {
-  const name = getProjectName(project.path);
-
-  return (
-    <Link
-      to={`/projects/${encodePath(project.path)}`}
-      className="bg-surface-1 border border-border-default rounded-xl p-4 hover:border-accent/40 transition-colors"
-    >
-      <div className="flex items-center gap-3 mb-2">
-        <FolderOpen className="w-5 h-5 text-accent" />
-        <h3 className="font-semibold text-text-primary truncate">{name}</h3>
-      </div>
-      <p className="text-sm text-text-muted truncate">{project.path}</p>
-    </Link>
-  );
-}

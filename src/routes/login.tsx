@@ -98,6 +98,39 @@ export function LoginPage() {
           >
             {submitting ? "Signing in\u2026" : "Sign in"}
           </button>
+
+          <div className="mt-4 pt-4 border-t border-border-muted">
+            <details className="group">
+              <summary className="cursor-pointer text-xs text-text-muted hover:text-text-secondary transition-colors list-none flex items-center gap-1.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="flex-shrink-0 transition-transform group-open:rotate-90"
+                  aria-hidden="true"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+                Forgot your password?
+              </summary>
+              <div className="mt-3 space-y-2 text-xs text-text-secondary">
+                <p>To reset your password, stop the server and delete the credentials file:</p>
+                <pre className="bg-surface-2 rounded px-2 py-1.5 font-mono text-text-primary overflow-x-auto">
+                  rm ~/.claude/field-station-credentials
+                </pre>
+                <p className="text-text-muted">
+                  Restart the server — you'll be taken back to the setup page to create a new
+                  password.
+                </p>
+              </div>
+            </details>
+          </div>
         </form>
       </div>
     </div>

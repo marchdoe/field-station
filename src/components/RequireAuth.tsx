@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { Navigate, useLocation } from "react-router";
 
 type AuthStatus = {
   authEnabled: boolean;
@@ -10,16 +10,18 @@ type AuthStatus = {
 type State = { status: "loading" } | { status: "ready" } | { status: "redirect"; to: string };
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate();
   const location = useLocation();
   const [state, setState] = useState<State>({ status: "loading" });
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/auth/status")
-      .then((res) => res.json() as Promise<AuthStatus>)
-      .then((data) => {
+
+    async function checkAuth() {
+      try {
+        const statusRes = await fetch("/api/auth/status");
+        const data = (await statusRes.json()) as AuthStatus;
         if (cancelled) return;
+
         if (!data.authEnabled) {
           setState({ status: "ready" });
           return;
@@ -28,17 +30,23 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
           setState({ status: "redirect", to: "/auth/setup" });
           return;
         }
-        if (!data.authenticated) {
+        // Ping a protected endpoint to detect actual cookie auth state,
+        // since /api/auth/status cannot inspect the session cookie server-side.
+        const pingRes = await fetch("/api/health");
+        if (cancelled) return;
+        if (pingRes.status === 401) {
           const next = encodeURIComponent(location.pathname + location.search);
           setState({ status: "redirect", to: `/login?next=${next}` });
           return;
         }
         setState({ status: "ready" });
-      })
-      .catch(() => {
+      } catch {
         // Network error — assume authenticated to avoid redirect loops during restarts
         if (!cancelled) setState({ status: "ready" });
-      });
+      }
+    }
+
+    void checkAuth();
     return () => {
       cancelled = true;
     };
@@ -46,8 +54,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
   if (state.status === "loading") return null;
   if (state.status === "redirect") {
-    void navigate(state.to, { replace: true });
-    return null;
+    return <Navigate to={state.to} replace />;
   }
   return <>{children}</>;
 }

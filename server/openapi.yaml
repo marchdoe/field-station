@@ -860,6 +860,38 @@ paths:
                 type: string
 
   # Auth
+  /api/auth/status:
+    get:
+      operationId: getAuthStatus
+      summary: Get authentication status
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthStatusResponse"
+
+  /api/auth/setup:
+    post:
+      operationId: setupAuth
+      summary: Set initial password (only allowed when no credentials exist)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupAuthRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "403":
+          description: Forbidden — credentials already exist
+
   /api/auth/login:
     post:
       operationId: login
@@ -908,6 +940,27 @@ components:
       properties:
         success:
           type: boolean
+
+    AuthStatusResponse:
+      type: object
+      required: [authEnabled, setupRequired, authenticated]
+      additionalProperties: false
+      properties:
+        authEnabled:
+          type: boolean
+        setupRequired:
+          type: boolean
+        authenticated:
+          type: boolean
+
+    SetupAuthRequest:
+      type: object
+      required: [password]
+      additionalProperties: false
+      properties:
+        password:
+          type: string
+          minLength: 1
 
     ConfigLayer:
       type: object

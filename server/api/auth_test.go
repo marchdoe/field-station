@@ -69,7 +69,7 @@ func TestSetupAuth_SetsPasswordWhenNoCredentials(t *testing.T) {
 func TestSetupAuth_Returns403WhenCredentialsExist(t *testing.T) {
 	claudeHome := t.TempDir()
 	// Pre-create credentials
-	creds := &lib.Credentials{PasswordHash: "$2a$12$fake", SigningKey: "key"}
+	creds := &lib.Credentials{PasswordHash: "$2a$12$fake", SigningKey: "key"} //nolint:gosec // test data; not real credentials
 	require.NoError(t, lib.SaveCredentials(claudeHome, creds))
 
 	h := api.NewHandler(claudeHome, true)

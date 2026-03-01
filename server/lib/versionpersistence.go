@@ -17,7 +17,7 @@ type versionFile struct {
 // Returns "" on any error (missing file, malformed JSON, missing or non-string version field).
 func ReadPersistedVersion(dataDir string) string {
 	filePath := filepath.Join(dataDir, versionFileName)
-	data, err := os.ReadFile(filePath)
+	data, err := os.ReadFile(filePath) //nolint:gosec // filePath is constructed from a controlled claude home path
 	if err != nil {
 		return ""
 	}
@@ -35,7 +35,7 @@ func ReadPersistedVersion(dataDir string) string {
 // Creates dataDir if it does not exist. Uses WriteFileAtomic for safe writes.
 // An empty version string is stored as {"version":null}.
 func WritePersistedVersion(dataDir string, version string) error {
-	if err := os.MkdirAll(dataDir, 0o755); err != nil {
+	if err := os.MkdirAll(dataDir, 0o750); err != nil {
 		return err
 	}
 	filePath := filepath.Join(dataDir, versionFileName)

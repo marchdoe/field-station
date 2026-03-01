@@ -1,3 +1,4 @@
+// Package middleware provides HTTP middleware for field-station, including authentication and request validation.
 package middleware
 
 import (

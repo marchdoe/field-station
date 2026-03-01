@@ -10,7 +10,7 @@ import (
 // otherwise returns ~/.claude.
 func ResolveClaudeHome() string {
 	if envHome := os.Getenv("CLAUDE_HOME"); envHome != "" {
-		if _, err := os.Stat(envHome); err == nil {
+		if _, err := os.Stat(envHome); err == nil { //nolint:gosec // CLAUDE_HOME is a trusted operator-set env var
 			return envHome
 		}
 	}

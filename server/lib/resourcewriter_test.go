@@ -14,8 +14,8 @@ import (
 
 func writeResourceFile(t *testing.T, dir, id, content string) {
 	t.Helper()
-	require.NoError(t, os.MkdirAll(dir, 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(dir, id+".md"), []byte(content), 0o644))
+	require.NoError(t, os.MkdirAll(dir, 0o750))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, id+".md"), []byte(content), 0o600))
 }
 
 // ResolveResourceDir
@@ -55,7 +55,7 @@ func TestListResources_WithFiles(t *testing.T) {
 	writeResourceFile(t, agentsDir, "alpha", "---\nname: Alpha Agent\ndescription: Does alpha things\n---\nBody text.")
 	writeResourceFile(t, agentsDir, "beta", "---\nname: Beta Agent\n---\nAnother body.")
 	// non-.md file — should be ignored
-	require.NoError(t, os.WriteFile(filepath.Join(agentsDir, "readme.txt"), []byte("ignore me"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(agentsDir, "readme.txt"), []byte("ignore me"), 0o600))
 
 	resources, err := lib.ListResources(lib.ResourceTypeAgent, claudeHome)
 	require.NoError(t, err)
@@ -124,7 +124,7 @@ func TestCreateResource_Success(t *testing.T) {
 	// verify file exists on disk
 	filePath := filepath.Join(claudeHome, "agents", "new-agent.md")
 	assert.FileExists(t, filePath)
-	data, err := os.ReadFile(filePath)
+	data, err := os.ReadFile(filePath) //nolint:gosec // filePath is a controlled temp path in tests
 	require.NoError(t, err)
 	assert.Equal(t, content, string(data))
 }
@@ -160,7 +160,7 @@ func TestUpdateResource_Success(t *testing.T) {
 	assert.Equal(t, "New body.", rf.Body)
 
 	// verify file was updated on disk
-	data, err := os.ReadFile(filepath.Join(agentsDir, "updatable.md"))
+	data, err := os.ReadFile(filepath.Join(agentsDir, "updatable.md")) //nolint:gosec // path is a controlled temp path in tests
 	require.NoError(t, err)
 	assert.Equal(t, newContent, string(data))
 

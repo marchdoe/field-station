@@ -8,7 +8,7 @@ import (
 )
 
 func TestRedactSensitiveValues_ApiKey(t *testing.T) {
-	input := lib.JsonObject{
+	input := lib.JsonObject{ //nolint:gosec // test data; not real credentials
 		"apiKey": "sk-ant-api03-supersecretvalue",
 		"name":   "test",
 	}
@@ -58,7 +58,7 @@ func TestRedactSensitiveValues_NonSecretKey(t *testing.T) {
 
 func TestRedactSensitiveValues_NestedObject(t *testing.T) {
 	input := lib.JsonObject{
-		"settings": lib.JsonObject{
+		"settings": lib.JsonObject{ //nolint:gosec // test data; not real credentials
 			"apiKey": "sk-ant-secret",
 			"model":  "claude-3",
 		},

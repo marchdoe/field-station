@@ -12,6 +12,7 @@ import (
 // ResourceType identifies which category of markdown resource to operate on.
 type ResourceType string
 
+// Resource type constants identifying which category of markdown resource to operate on.
 const (
 	ResourceTypeAgent   ResourceType = "agent"
 	ResourceTypeCommand ResourceType = "command"
@@ -59,7 +60,7 @@ func ResolveResourceDir(resourceType ResourceType, claudeHome string) string {
 // parseResourceFile reads a file at filePath, parses it, and constructs a
 // ResourceFile. id is the filename without the .md extension.
 func parseResourceFile(id, filePath string) (ResourceFile, error) {
-	data, err := os.ReadFile(filePath)
+	data, err := os.ReadFile(filePath) //nolint:gosec // filePath is validated by validateResourceID and ResolveResourceDir
 	if err != nil {
 		return ResourceFile{}, fmt.Errorf("resourcewriter: cannot read %s: %w", filePath, err)
 	}
@@ -163,12 +164,12 @@ func CreateResource(resourceType ResourceType, id string, content string, claude
 	dir := ResolveResourceDir(resourceType, claudeHome)
 	filePath := filepath.Join(dir, id+".md")
 
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return ResourceFile{}, fmt.Errorf("resourcewriter: cannot create directory %s: %w", dir, err)
 	}
 
 	// O_CREATE|O_EXCL atomically creates the file or fails if it already exists.
-	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
+	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600) //nolint:gosec // filePath is validated by validateResourceID and ResolveResourceDir
 	if err != nil {
 		if errors.Is(err, os.ErrExist) {
 			return ResourceFile{}, fmt.Errorf("resourcewriter: resource already exists: %s", id)
@@ -176,12 +177,12 @@ func CreateResource(resourceType ResourceType, id string, content string, claude
 		return ResourceFile{}, fmt.Errorf("resourcewriter: cannot create %s: %w", filePath, err)
 	}
 	if _, werr := f.WriteString(content); werr != nil {
-		f.Close()
-		os.Remove(filePath)
+		_ = f.Close()              //nolint:errcheck // best-effort cleanup on write failure
+		_ = os.Remove(filePath)    //nolint:errcheck // best-effort cleanup on write failure
 		return ResourceFile{}, fmt.Errorf("resourcewriter: cannot write %s: %w", filePath, werr)
 	}
 	if err := f.Close(); err != nil {
-		os.Remove(filePath)
+		_ = os.Remove(filePath) //nolint:errcheck // best-effort cleanup on close failure
 		return ResourceFile{}, fmt.Errorf("resourcewriter: cannot close %s: %w", filePath, err)
 	}
 

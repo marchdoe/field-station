@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -43,7 +43,7 @@ func (h *watchHub) unsubscribe(ch chan struct{}) {
 			h.debounce = nil
 		}
 		if h.watcher != nil {
-			h.watcher.Close()
+			_ = h.watcher.Close() //nolint:errcheck // watcher close is best-effort on cleanup
 			h.watcher = nil
 		}
 	}

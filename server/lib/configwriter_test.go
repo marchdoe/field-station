@@ -10,50 +10,50 @@ import (
 	"fieldstation/lib"
 )
 
-// --- ReadJsonFileSafe ---
+// --- ReadJSONFileSafe ---
 
-func TestReadJsonFileSafe_ExistingFile(t *testing.T) {
+func TestReadJSONFileSafe_ExistingFile(t *testing.T) {
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "settings.json")
-	require.NoError(t, os.WriteFile(filePath, []byte(`{"key":"val"}`), 0o644))
+	require.NoError(t, os.WriteFile(filePath, []byte(`{"key":"val"}`), 0o600))
 
-	obj := lib.ReadJsonFileSafe(filePath)
+	obj := lib.ReadJSONFileSafe(filePath)
 	assert.Equal(t, "val", obj["key"])
 }
 
-func TestReadJsonFileSafe_MissingFile(t *testing.T) {
+func TestReadJSONFileSafe_MissingFile(t *testing.T) {
 	dir := t.TempDir()
-	obj := lib.ReadJsonFileSafe(filepath.Join(dir, "nope.json"))
+	obj := lib.ReadJSONFileSafe(filepath.Join(dir, "nope.json"))
 	assert.Equal(t, lib.JsonObject{}, obj)
 }
 
-func TestReadJsonFileSafe_InvalidJSON(t *testing.T) {
+func TestReadJSONFileSafe_InvalidJSON(t *testing.T) {
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "bad.json")
-	require.NoError(t, os.WriteFile(filePath, []byte("not json"), 0o644))
+	require.NoError(t, os.WriteFile(filePath, []byte("not json"), 0o600))
 
-	obj := lib.ReadJsonFileSafe(filePath)
+	obj := lib.ReadJSONFileSafe(filePath)
 	assert.Equal(t, lib.JsonObject{}, obj)
 }
 
-// --- WriteJsonFileSafe ---
+// --- WriteJSONFileSafe ---
 
-func TestWriteJsonFileSafe_WritesFile(t *testing.T) {
+func TestWriteJSONFileSafe_WritesFile(t *testing.T) {
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "out.json")
-	require.NoError(t, lib.WriteJsonFileSafe(filePath, lib.JsonObject{"x": 1}))
+	require.NoError(t, lib.WriteJSONFileSafe(filePath, lib.JsonObject{"x": 1}))
 
-	data, err := os.ReadFile(filePath)
+	data, err := os.ReadFile(filePath) //nolint:gosec // filePath is a controlled temp file
 	require.NoError(t, err)
 	assert.Contains(t, string(data), `"x"`)
 	// Should end with newline
 	assert.Equal(t, byte('\n'), data[len(data)-1])
 }
 
-func TestWriteJsonFileSafe_CreatesParentDirs(t *testing.T) {
+func TestWriteJSONFileSafe_CreatesParentDirs(t *testing.T) {
 	parent := t.TempDir()
 	filePath := filepath.Join(parent, "sub", "dir", "out.json")
-	require.NoError(t, lib.WriteJsonFileSafe(filePath, lib.JsonObject{"ok": true}))
+	require.NoError(t, lib.WriteJSONFileSafe(filePath, lib.JsonObject{"ok": true}))
 	assert.FileExists(t, filePath)
 }
 
@@ -107,11 +107,11 @@ func TestApplyUpdateSetting_UpdatesKey(t *testing.T) {
 	claudeHome := t.TempDir()
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "settings.json")
-	require.NoError(t, os.WriteFile(filePath, []byte(`{"theme":"light"}`), 0o644))
+	require.NoError(t, os.WriteFile(filePath, []byte(`{"theme":"light"}`), 0o600))
 
 	require.NoError(t, lib.ApplyUpdateSetting(filePath, "theme", "dark", claudeHome))
 
-	obj := lib.ReadJsonFileSafe(filePath)
+	obj := lib.ReadJSONFileSafe(filePath)
 	assert.Equal(t, "dark", obj["theme"])
 }
 
@@ -119,11 +119,11 @@ func TestApplyUpdateSetting_CreatesNestedKey(t *testing.T) {
 	claudeHome := t.TempDir()
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "settings.json")
-	require.NoError(t, os.WriteFile(filePath, []byte(`{}`), 0o644))
+	require.NoError(t, os.WriteFile(filePath, []byte(`{}`), 0o600))
 
 	require.NoError(t, lib.ApplyUpdateSetting(filePath, "a.b.c", 42, claudeHome))
 
-	obj := lib.ReadJsonFileSafe(filePath)
+	obj := lib.ReadJSONFileSafe(filePath)
 	a, ok := obj["a"].(lib.JsonObject)
 	require.True(t, ok)
 	b, ok := a["b"].(lib.JsonObject)
@@ -135,7 +135,7 @@ func TestApplyUpdateSetting_CreatesBackup(t *testing.T) {
 	claudeHome := t.TempDir()
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "settings.json")
-	require.NoError(t, os.WriteFile(filePath, []byte(`{"k":"v"}`), 0o644))
+	require.NoError(t, os.WriteFile(filePath, []byte(`{"k":"v"}`), 0o600))
 
 	require.NoError(t, lib.ApplyUpdateSetting(filePath, "k", "new", claudeHome))
 
@@ -149,11 +149,11 @@ func TestApplyDeleteSetting_RemovesKey(t *testing.T) {
 	claudeHome := t.TempDir()
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "settings.json")
-	require.NoError(t, os.WriteFile(filePath, []byte(`{"a":1,"b":2}`), 0o644))
+	require.NoError(t, os.WriteFile(filePath, []byte(`{"a":1,"b":2}`), 0o600))
 
 	require.NoError(t, lib.ApplyDeleteSetting(filePath, "a", claudeHome))
 
-	obj := lib.ReadJsonFileSafe(filePath)
+	obj := lib.ReadJSONFileSafe(filePath)
 	_, hasA := obj["a"]
 	assert.False(t, hasA)
 	assert.EqualValues(t, 2, obj["b"])
@@ -174,17 +174,17 @@ func TestApplyMoveSetting_MovesKey(t *testing.T) {
 	fromPath := filepath.Join(dir, "from.json")
 	toPath := filepath.Join(dir, "to.json")
 
-	require.NoError(t, os.WriteFile(fromPath, []byte(`{"theme":"dark","other":"keep"}`), 0o644))
-	require.NoError(t, os.WriteFile(toPath, []byte(`{"existing":true}`), 0o644))
+	require.NoError(t, os.WriteFile(fromPath, []byte(`{"theme":"dark","other":"keep"}`), 0o600))
+	require.NoError(t, os.WriteFile(toPath, []byte(`{"existing":true}`), 0o600))
 
 	require.NoError(t, lib.ApplyMoveSetting(fromPath, toPath, "theme", claudeHome))
 
-	fromObj := lib.ReadJsonFileSafe(fromPath)
+	fromObj := lib.ReadJSONFileSafe(fromPath)
 	_, hasTheme := fromObj["theme"]
 	assert.False(t, hasTheme, "key should be removed from source")
 	assert.Equal(t, "keep", fromObj["other"])
 
-	toObj := lib.ReadJsonFileSafe(toPath)
+	toObj := lib.ReadJSONFileSafe(toPath)
 	assert.Equal(t, "dark", toObj["theme"])
 	assert.Equal(t, true, toObj["existing"])
 }
@@ -195,8 +195,8 @@ func TestApplyMoveSetting_ErrorIfKeyNotFound(t *testing.T) {
 
 	fromPath := filepath.Join(dir, "from.json")
 	toPath := filepath.Join(dir, "to.json")
-	require.NoError(t, os.WriteFile(fromPath, []byte(`{}`), 0o644))
-	require.NoError(t, os.WriteFile(toPath, []byte(`{}`), 0o644))
+	require.NoError(t, os.WriteFile(fromPath, []byte(`{}`), 0o600))
+	require.NoError(t, os.WriteFile(toPath, []byte(`{}`), 0o600))
 
 	err := lib.ApplyMoveSetting(fromPath, toPath, "missing", claudeHome)
 	assert.Error(t, err)

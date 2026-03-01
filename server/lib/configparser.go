@@ -9,6 +9,7 @@ import (
 // ConfigLayerSource identifies which configuration layer a file belongs to.
 type ConfigLayerSource string
 
+// Config layer source constants used to identify which settings file a layer belongs to.
 const (
 	ConfigLayerGlobal       ConfigLayerSource = "global"
 	ConfigLayerGlobalLocal  ConfigLayerSource = "global-local"
@@ -44,7 +45,7 @@ func GetConfigLayer(filePath string, source ConfigLayerSource) ConfigLayer {
 		}
 	}
 
-	data, err := os.ReadFile(filePath)
+	data, err := os.ReadFile(filePath) //nolint:gosec // filePath is validated by ResolveLayerPath which returns only known config paths
 	if err != nil {
 		return ConfigLayer{Source: source, FilePath: filePath, Exists: true, Content: nil}
 	}

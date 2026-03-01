@@ -33,7 +33,7 @@ func TestVerifySession_MissingDot(t *testing.T) {
 
 func TestRequireAuth_Disabled_WhenAuthEnabledFalse(t *testing.T) {
 	claudeHome := t.TempDir()
-	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	inner := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 	handler := middleware.RequireAuth(inner, claudeHome, false)
@@ -47,7 +47,7 @@ func TestRequireAuth_Disabled_WhenAuthEnabledFalse(t *testing.T) {
 func TestRequireAuth_Passthrough_WhenNoCredentials(t *testing.T) {
 	// Setup required (no credentials file) → passthrough (frontend handles redirect)
 	claudeHome := t.TempDir()
-	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	inner := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 	handler := middleware.RequireAuth(inner, claudeHome, true)
@@ -62,7 +62,7 @@ func TestRequireAuth_Blocks_WithNoCookie(t *testing.T) {
 	claudeHome := t.TempDir()
 	credentialsWithKey(t, claudeHome, "signing-key")
 
-	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	inner := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 	handler := middleware.RequireAuth(inner, claudeHome, true)
@@ -77,7 +77,7 @@ func TestRequireAuth_Allows_WithValidSession(t *testing.T) {
 	claudeHome := t.TempDir()
 	creds := credentialsWithKey(t, claudeHome, "my-signing-key")
 
-	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	inner := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 	handler := middleware.RequireAuth(inner, claudeHome, true)
@@ -94,7 +94,7 @@ func TestRequireAuth_Blocks_WithWrongKey(t *testing.T) {
 	claudeHome := t.TempDir()
 	credentialsWithKey(t, claudeHome, "correct-key")
 
-	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	inner := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 	handler := middleware.RequireAuth(inner, claudeHome, true)
@@ -116,7 +116,7 @@ func TestSessionCookieName_MatchesTypeScriptServer(t *testing.T) {
 // credentialsWithKey saves fake credentials with the given signing key to claudeHome.
 func credentialsWithKey(t *testing.T, claudeHome, signingKey string) *lib.Credentials {
 	t.Helper()
-	creds := &lib.Credentials{PasswordHash: "$2a$12$fake", SigningKey: signingKey}
+	creds := &lib.Credentials{PasswordHash: "$2a$12$fake", SigningKey: signingKey} //nolint:gosec // test data; not real credentials
 	require.NoError(t, lib.SaveCredentials(claudeHome, creds))
 	return creds
 }

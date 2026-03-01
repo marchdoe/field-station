@@ -26,7 +26,7 @@ func TestLocateClaudeBinary_FindsExecutable(t *testing.T) {
 	// successfully resolves a binary that exists.
 	dir := t.TempDir()
 	fakeBin := filepath.Join(dir, "claude")
-	if err := os.WriteFile(fakeBin, []byte("#!/bin/sh\necho fake"), 0o755); err != nil {
+	if err := os.WriteFile(fakeBin, []byte("#!/bin/sh\necho fake"), 0o700); err != nil { //nolint:gosec // test binary needs execute bit
 		t.Fatal(err)
 	}
 
@@ -52,7 +52,7 @@ func TestGetClaudeVersion_ParsesOutput(t *testing.T) {
 	dir := t.TempDir()
 	fakeBin := filepath.Join(dir, "fakeclaude")
 	script := "#!/bin/sh\necho '1.2.34 (build abc)'\n"
-	if err := os.WriteFile(fakeBin, []byte(script), 0o755); err != nil {
+	if err := os.WriteFile(fakeBin, []byte(script), 0o700); err != nil { //nolint:gosec // test binary needs execute bit
 		t.Fatal(err)
 	}
 
@@ -70,7 +70,7 @@ func TestGetClaudeVersion_NoMatch(t *testing.T) {
 	dir := t.TempDir()
 	fakeBin := filepath.Join(dir, "fakeclaude")
 	script := "#!/bin/sh\necho 'something without a version'\n"
-	if err := os.WriteFile(fakeBin, []byte(script), 0o755); err != nil {
+	if err := os.WriteFile(fakeBin, []byte(script), 0o700); err != nil { //nolint:gosec // test binary needs execute bit
 		t.Fatal(err)
 	}
 
@@ -85,7 +85,7 @@ func TestGetClaudeVersion_BinaryFails(t *testing.T) {
 	dir := t.TempDir()
 	fakeBin := filepath.Join(dir, "fakeclaude")
 	script := "#!/bin/sh\nexit 1\n"
-	if err := os.WriteFile(fakeBin, []byte(script), 0o755); err != nil {
+	if err := os.WriteFile(fakeBin, []byte(script), 0o700); err != nil { //nolint:gosec // test binary needs execute bit
 		t.Fatal(err)
 	}
 
@@ -104,7 +104,7 @@ func TestScanBinaryForEnvVars_MatchesPattern(t *testing.T) {
 	// separated by null bytes to simulate binary content.
 	content := "CLAUDE_CODE_ENABLE_TELEMETRY\x00DISABLE_ERROR_REPORTING\x00ANTHROPIC_API_KEY\x00" +
 		"short\x00CLAUDE_CODE_FOO\x00not_valid\x00DISABLE_AUTOUPDATE\x00"
-	if err := os.WriteFile(tmpFile, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -145,7 +145,7 @@ func TestScanBinaryForEnvVars_ExcludesShortStrings(t *testing.T) {
 
 	// CLD_ is 4 chars but has wrong prefix. AB is 2 chars. CLAUDE_CODE_X is 13 chars.
 	content := "AB\x00CLD\x00CLAUDE_CODE_X\x00"
-	if err := os.WriteFile(tmpFile, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -179,7 +179,7 @@ func TestScanBinaryForEnvVars_Deduplicates(t *testing.T) {
 
 	// Repeat the same var multiple times.
 	content := "CLAUDE_CODE_FOO\x00CLAUDE_CODE_FOO\x00CLAUDE_CODE_FOO\x00"
-	if err := os.WriteFile(tmpFile, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -205,7 +205,7 @@ func TestScanBinaryForEnvVars_SortedOutput(t *testing.T) {
 	tmpFile := filepath.Join(dir, "fakebinary")
 
 	content := "DISABLE_ZZZ\x00CLAUDE_CODE_AAA\x00DISABLE_MMM\x00"
-	if err := os.WriteFile(tmpFile, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(tmpFile, []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -236,7 +236,7 @@ func TestScanClaudeBinary_ReturnsStruct(t *testing.T) {
 	// Write a fake claude binary that outputs a version string.
 	fakeBin := filepath.Join(dir, "claude")
 	script := "#!/bin/sh\necho '9.8.7'\n"
-	if err := os.WriteFile(fakeBin, []byte(script), 0o755); err != nil {
+	if err := os.WriteFile(fakeBin, []byte(script), 0o700); err != nil { //nolint:gosec // test binary needs execute bit
 		t.Fatal(err)
 	}
 

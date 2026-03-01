@@ -40,7 +40,7 @@ func listSkillsFromDir(dir string) ([]SkillFile, error) {
 		folderName := entry.Name()
 		skillMdPath := filepath.Join(dir, folderName, "SKILL.md")
 
-		data, err := os.ReadFile(skillMdPath) //nolint:gosec // skillMdPath is validated by AssertSafePath on the parent dir
+		data, err := os.ReadFile(skillMdPath) //nolint:gosec // skillMdPath is constructed from os.ReadDir entries within a validated skills directory
 		if err != nil {
 			// Folder without SKILL.md is not a skill.
 			continue

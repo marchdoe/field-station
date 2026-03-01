@@ -30,14 +30,20 @@ jobs:
       - name: Lint & format check
         run: npm run check
 
-      - name: Test
-        run: npm test
+      - name: Test (with coverage)
+        run: npm run test:coverage
 
       - name: Go vet
         run: cd server && go vet -tags dev ./...
 
+      - name: Go lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          working-directory: server
+          version: latest
+
       - name: Go tests
-        run: cd server && go test -tags dev ./...
+        run: cd server && go test -race -tags dev ./...
 
       - name: Check generated files are up to date
         run: make generate-check

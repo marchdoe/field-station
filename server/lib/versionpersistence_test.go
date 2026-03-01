@@ -33,7 +33,7 @@ func TestVersionPersistence_WriteEmpty(t *testing.T) {
 
 func TestVersionPersistence_MalformedJSON(t *testing.T) {
 	dir := t.TempDir()
-	err := os.WriteFile(filepath.Join(dir, "claude-version.json"), []byte("not json"), 0o644)
+	err := os.WriteFile(filepath.Join(dir, "claude-version.json"), []byte("not json"), 0o600)
 	require.NoError(t, err)
 	got := lib.ReadPersistedVersion(dir)
 	assert.Equal(t, "", got)
@@ -41,7 +41,7 @@ func TestVersionPersistence_MalformedJSON(t *testing.T) {
 
 func TestVersionPersistence_MissingVersionField(t *testing.T) {
 	dir := t.TempDir()
-	err := os.WriteFile(filepath.Join(dir, "claude-version.json"), []byte(`{"other":"field"}`), 0o644)
+	err := os.WriteFile(filepath.Join(dir, "claude-version.json"), []byte(`{"other":"field"}`), 0o600)
 	require.NoError(t, err)
 	got := lib.ReadPersistedVersion(dir)
 	assert.Equal(t, "", got)

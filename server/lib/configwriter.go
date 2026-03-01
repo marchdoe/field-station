@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 )
 
-// ReadJsonFileSafe reads and parses a JSON object from filePath.
+// ReadJSONFileSafe reads and parses a JSON object from filePath.
 // Returns an empty JsonObject on any error (missing file, invalid JSON, etc.).
-func ReadJsonFileSafe(filePath string) JsonObject {
-	data, err := os.ReadFile(filePath)
+func ReadJSONFileSafe(filePath string) JsonObject {
+	data, err := os.ReadFile(filePath) //nolint:gosec // filePath is validated by ResolveLayerPath which returns only known config paths
 	if err != nil {
 		return JsonObject{}
 	}
@@ -21,11 +21,11 @@ func ReadJsonFileSafe(filePath string) JsonObject {
 	return obj
 }
 
-// WriteJsonFileSafe writes obj to filePath as pretty-printed JSON followed by a newline.
+// WriteJSONFileSafe writes obj to filePath as pretty-printed JSON followed by a newline.
 // Creates all parent directories if they do not exist. Uses WriteFileAtomic for safe writes.
-func WriteJsonFileSafe(filePath string, obj JsonObject) error {
+func WriteJSONFileSafe(filePath string, obj JsonObject) error {
 	dir := filepath.Dir(filePath)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return fmt.Errorf("configwriter mkdir: %w", err)
 	}
 	out, err := json.MarshalIndent(obj, "", "  ")
@@ -63,10 +63,10 @@ func ResolveLayerPath(source ConfigLayerSource, projectPath string) (string, err
 // ApplyUpdateSetting reads the JSON file at filePath, sets keyPath to value,
 // backs up the original file, then writes the updated object.
 func ApplyUpdateSetting(filePath string, keyPath string, value any, claudeHome string) error {
-	current := ReadJsonFileSafe(filePath)
+	current := ReadJSONFileSafe(filePath)
 	updated := SetAtPath(current, keyPath, value)
 	BackupFile(filePath, BackupOpUpdate, claudeHome)
-	return WriteJsonFileSafe(filePath, updated)
+	return WriteJSONFileSafe(filePath, updated)
 }
 
 // ApplyDeleteSetting reads the JSON file at filePath, removes the key at keyPath,
@@ -76,25 +76,25 @@ func ApplyDeleteSetting(filePath string, keyPath string, claudeHome string) erro
 	if _, err := os.Stat(filePath); err != nil {
 		return fmt.Errorf("file does not exist: %s", filePath)
 	}
-	current := ReadJsonFileSafe(filePath)
+	current := ReadJSONFileSafe(filePath)
 	updated := DeleteAtPath(current, keyPath)
 	BackupFile(filePath, BackupOpDelete, claudeHome)
-	return WriteJsonFileSafe(filePath, updated)
+	return WriteJSONFileSafe(filePath, updated)
 }
 
 // ApplyMoveSetting moves the value at keyPath from fromPath to toPath.
 // Backs up both files before writing. Returns an error if keyPath is not found in fromPath.
 func ApplyMoveSetting(fromPath, toPath, keyPath string, claudeHome string) error {
-	fromData := ReadJsonFileSafe(fromPath)
+	fromData := ReadJSONFileSafe(fromPath)
 	value, ok := GetAtPath(fromData, keyPath)
 	if !ok {
 		return fmt.Errorf("key %q not found in source file", keyPath)
 	}
-	toData := ReadJsonFileSafe(toPath)
+	toData := ReadJSONFileSafe(toPath)
 	BackupFile(fromPath, BackupOpMove, claudeHome)
 	BackupFile(toPath, BackupOpMove, claudeHome)
-	if err := WriteJsonFileSafe(toPath, SetAtPath(toData, keyPath, value)); err != nil {
+	if err := WriteJSONFileSafe(toPath, SetAtPath(toData, keyPath, value)); err != nil {
 		return err
 	}
-	return WriteJsonFileSafe(fromPath, DeleteAtPath(fromData, keyPath))
+	return WriteJSONFileSafe(fromPath, DeleteAtPath(fromData, keyPath))
 }

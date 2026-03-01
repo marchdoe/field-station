@@ -30,16 +30,16 @@ func TestGetProjects_ExcludesHomeDirectory(t *testing.T) {
 	require.NoError(t, err)
 
 	projectsDir := filepath.Join(claudeHome, "projects")
-	require.NoError(t, os.MkdirAll(projectsDir, 0o755))
+	require.NoError(t, os.MkdirAll(projectsDir, 0o750))
 
 	// Create an entry that decodes to the home directory
 	homeEncoded := encodePath(home)
-	require.NoError(t, os.MkdirAll(filepath.Join(projectsDir, homeEncoded), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(projectsDir, homeEncoded), 0o750))
 
 	// Create a legitimate project entry
 	legitimateProject := "/tmp/myproject"
 	projectEncoded := encodePath(legitimateProject)
-	require.NoError(t, os.MkdirAll(filepath.Join(projectsDir, projectEncoded), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(projectsDir, projectEncoded), 0o750))
 
 	resp, err := h.GetProjects(context.Background(), api.GetProjectsRequestObject{})
 	require.NoError(t, err)
@@ -77,14 +77,14 @@ func TestGetProjects_ExcludesAncestorPaths(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
 
 	projectsDir := filepath.Join(claudeHome, "projects")
-	require.NoError(t, os.MkdirAll(projectsDir, 0o755))
+	require.NoError(t, os.MkdirAll(projectsDir, 0o750))
 
 	// Register parent and two children using the same helper from test suite
 	parent := t.TempDir()
 	app := filepath.Join(parent, "app")
 	apiDir := filepath.Join(parent, "api")
-	require.NoError(t, os.MkdirAll(app, 0o755))
-	require.NoError(t, os.MkdirAll(apiDir, 0o755))
+	require.NoError(t, os.MkdirAll(app, 0o750))
+	require.NoError(t, os.MkdirAll(apiDir, 0o750))
 
 	for _, p := range []string{parent, app, apiDir} {
 		registerProject(t, claudeHome, p)
@@ -117,10 +117,10 @@ func TestScanProjects_FindsClaudeDirs(t *testing.T) {
 	folder := t.TempDir()
 	// Create 3 subdirs; 2 have .claude/
 	for _, name := range []string{"proj-a", "proj-b", "no-claude"} {
-		require.NoError(t, os.MkdirAll(filepath.Join(folder, name), 0o755))
+		require.NoError(t, os.MkdirAll(filepath.Join(folder, name), 0o750))
 	}
-	require.NoError(t, os.MkdirAll(filepath.Join(folder, "proj-a", ".claude"), 0o755))
-	require.NoError(t, os.MkdirAll(filepath.Join(folder, "proj-b", ".claude"), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(folder, "proj-a", ".claude"), 0o750))
+	require.NoError(t, os.MkdirAll(filepath.Join(folder, "proj-b", ".claude"), 0o750))
 
 	resp, err := h.ScanProjects(context.Background(), api.ScanProjectsRequestObject{
 		Params: api.ScanProjectsParams{Folder: folder},
@@ -139,7 +139,7 @@ func TestScanProjects_MarksRegisteredProjects(t *testing.T) {
 	projA := filepath.Join(folder, "proj-a")
 	projB := filepath.Join(folder, "proj-b")
 	for _, p := range []string{projA, projB} {
-		require.NoError(t, os.MkdirAll(filepath.Join(p, ".claude"), 0o755))
+		require.NoError(t, os.MkdirAll(filepath.Join(p, ".claude"), 0o750))
 	}
 	// Register only proj-a
 	registerProject(t, claudeHome, projA)
@@ -176,7 +176,7 @@ func TestScanProjects_EmptyWhenNoneHaveClaudeDir(t *testing.T) {
 	h, _ := newTestHandler(t)
 
 	folder := t.TempDir()
-	require.NoError(t, os.MkdirAll(filepath.Join(folder, "no-claude-here"), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(folder, "no-claude-here"), 0o750))
 
 	resp, err := h.ScanProjects(context.Background(), api.ScanProjectsRequestObject{
 		Params: api.ScanProjectsParams{Folder: folder},

@@ -13,10 +13,10 @@ import (
 
 func TestGetHooks_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	fakeId := "-nonexistent-project"
+	fakeID := "-nonexistent-project"
 
 	_, err := h.GetHooks(context.Background(), api.GetHooksRequestObject{
-		Params: api.GetHooksParams{ProjectId: &fakeId},
+		Params: api.GetHooksParams{ProjectId: &fakeID},
 	})
 	require.Error(t, err, "GetHooks must reject unregistered project ids")
 	assert.Contains(t, err.Error(), "unregistered")
@@ -24,13 +24,13 @@ func TestGetHooks_RejectsUnregisteredProjectPath(t *testing.T) {
 
 func TestCreateHook_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	fakeId := "-nonexistent-project"
+	fakeID := "-nonexistent-project"
 
 	scope := api.CreateHookRequestScopeProject
 	_, err := h.CreateHook(context.Background(), api.CreateHookRequestObject{
 		Body: &api.CreateHookJSONRequestBody{
 			Scope:     scope,
-			ProjectId: &fakeId,
+			ProjectId: &fakeID,
 			Event:     "PreToolUse",
 			Commands:  []string{"echo injected"},
 		},
@@ -41,14 +41,14 @@ func TestCreateHook_RejectsUnregisteredProjectPath(t *testing.T) {
 
 func TestUpdateHook_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	fakeId := "-nonexistent-project"
+	fakeID := "-nonexistent-project"
 
 	scope := api.UpdateHookRequestScopeProject
 	_, err := h.UpdateHook(context.Background(), api.UpdateHookRequestObject{
 		Id: "PreToolUse:0",
 		Body: &api.UpdateHookJSONRequestBody{
 			Scope:     scope,
-			ProjectId: &fakeId,
+			ProjectId: &fakeID,
 			Event:     "PreToolUse",
 			Commands:  []string{"echo injected"},
 		},
@@ -59,14 +59,14 @@ func TestUpdateHook_RejectsUnregisteredProjectPath(t *testing.T) {
 
 func TestDeleteHook_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	fakeId := "-nonexistent-project"
+	fakeID := "-nonexistent-project"
 
 	scope := "project"
 	_, err := h.DeleteHook(context.Background(), api.DeleteHookRequestObject{
 		Id: "PreToolUse:0",
 		Params: api.DeleteHookParams{
 			Scope:     &scope,
-			ProjectId: &fakeId,
+			ProjectId: &fakeID,
 		},
 	})
 	require.Error(t, err, "DeleteHook must reject unregistered project ids")

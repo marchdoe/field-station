@@ -14,8 +14,8 @@ import (
 func writeSkillFile(t *testing.T, skillsDir, folderName, body string) {
 	t.Helper()
 	dir := filepath.Join(skillsDir, folderName)
-	require.NoError(t, os.MkdirAll(dir, 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte(body), 0o644))
+	require.NoError(t, os.MkdirAll(dir, 0o750))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte(body), 0o600))
 }
 
 // Issue D: GetSkill must reject path traversal via the name (folder) parameter
@@ -24,10 +24,10 @@ func TestGetSkill_RejectsPathTraversalViaName(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
 
 	// Place a SKILL.md directly at the claude home root (outside skills dir)
-	require.NoError(t, os.WriteFile(filepath.Join(claudeHome, "SKILL.md"), []byte("---\nname: Escape\n---\nBody"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(claudeHome, "SKILL.md"), []byte("---\nname: Escape\n---\nBody"), 0o600))
 
 	// Ensure the skills dir exists
-	require.NoError(t, os.MkdirAll(filepath.Join(claudeHome, "skills"), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(claudeHome, "skills"), 0o750))
 
 	// name=".." resolves to claudeHome, so it would read claudeHome/SKILL.md
 	_, err := h.GetSkill(context.Background(), api.GetSkillRequestObject{
@@ -61,7 +61,7 @@ func TestCreateSkill_RejectsPluginCacheTarget(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
 
 	cacheDir := filepath.Join(claudeHome, "plugins", "cache")
-	require.NoError(t, os.MkdirAll(cacheDir, 0o755))
+	require.NoError(t, os.MkdirAll(cacheDir, 0o750))
 	encoded := registerProject(t, claudeHome, cacheDir)
 
 	scope := api.CreateSkillRequestScopeProject
@@ -81,13 +81,13 @@ func TestCreateSkill_RejectsPluginCacheTarget(t *testing.T) {
 
 func TestUpdateSkill_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	fakeId := "-nonexistent-project"
+	fakeID := "-nonexistent-project"
 
 	_, err := h.UpdateSkill(context.Background(), api.UpdateSkillRequestObject{
 		Scope: "project",
 		Name:  "my-skill",
 		Body: &api.UpdateSkillJSONRequestBody{
-			ProjectId: &fakeId,
+			ProjectId: &fakeID,
 			Body:      "# bad skill",
 		},
 	})
@@ -97,12 +97,12 @@ func TestUpdateSkill_RejectsUnregisteredProjectPath(t *testing.T) {
 
 func TestDeleteSkill_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	fakeId := "-nonexistent-project"
+	fakeID := "-nonexistent-project"
 
 	_, err := h.DeleteSkill(context.Background(), api.DeleteSkillRequestObject{
 		Scope:  "project",
 		Name:   "my-skill",
-		Params: api.DeleteSkillParams{ProjectId: &fakeId},
+		Params: api.DeleteSkillParams{ProjectId: &fakeID},
 	})
 	require.Error(t, err, "DeleteSkill must reject unregistered project ids")
 	assert.Contains(t, err.Error(), "unregistered")

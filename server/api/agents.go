@@ -1,4 +1,5 @@
-package api
+// Package api implements the HTTP handler methods for the field-station REST API.
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -80,7 +81,7 @@ func resourceFileToAgentDetail(rf lib.ResourceFile) AgentDetail {
 }
 
 // GetAgents lists all agent files for the given scope.
-func (h *FieldStationHandler) GetAgents(ctx context.Context, request GetAgentsRequestObject) (GetAgentsResponseObject, error) {
+func (h *FieldStationHandler) GetAgents(_ context.Context, request GetAgentsRequestObject) (GetAgentsResponseObject, error) {
 	scope := "global"
 	if request.Params.Scope != nil {
 		scope = string(*request.Params.Scope)
@@ -112,7 +113,7 @@ func (h *FieldStationHandler) GetAgents(ctx context.Context, request GetAgentsRe
 }
 
 // GetAgent returns the detail of a single agent by name.
-func (h *FieldStationHandler) GetAgent(ctx context.Context, request GetAgentRequestObject) (GetAgentResponseObject, error) {
+func (h *FieldStationHandler) GetAgent(_ context.Context, request GetAgentRequestObject) (GetAgentResponseObject, error) {
 	scope := "global"
 	if request.Params.Scope != nil {
 		scope = *request.Params.Scope
@@ -139,7 +140,7 @@ func (h *FieldStationHandler) GetAgent(ctx context.Context, request GetAgentRequ
 }
 
 // CreateAgent creates a new agent file.
-func (h *FieldStationHandler) CreateAgent(ctx context.Context, request CreateAgentRequestObject) (CreateAgentResponseObject, error) {
+func (h *FieldStationHandler) CreateAgent(_ context.Context, request CreateAgentRequestObject) (CreateAgentResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -191,7 +192,7 @@ func (h *FieldStationHandler) CreateAgent(ctx context.Context, request CreateAge
 }
 
 // UpdateAgent updates an existing agent file.
-func (h *FieldStationHandler) UpdateAgent(ctx context.Context, request UpdateAgentRequestObject) (UpdateAgentResponseObject, error) {
+func (h *FieldStationHandler) UpdateAgent(_ context.Context, request UpdateAgentRequestObject) (UpdateAgentResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -250,7 +251,7 @@ func (h *FieldStationHandler) UpdateAgent(ctx context.Context, request UpdateAge
 }
 
 // DeleteAgent deletes an agent file.
-func (h *FieldStationHandler) DeleteAgent(ctx context.Context, request DeleteAgentRequestObject) (DeleteAgentResponseObject, error) {
+func (h *FieldStationHandler) DeleteAgent(_ context.Context, request DeleteAgentRequestObject) (DeleteAgentResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}

@@ -1,6 +1,8 @@
 package lib
 
 // JsonObject is an alias for a JSON object (map of string keys to arbitrary values).
+//
+//nolint:revive // JsonObject is an established API name; renaming to JSONObject would break many call sites
 type JsonObject = map[string]any
 
 // GetAtPath traverses obj following the dot-separated path and returns the value

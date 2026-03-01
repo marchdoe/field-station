@@ -80,7 +80,7 @@ func GetAllowedRoots(dataFilePath string) []string {
 	addPath(claudeHome)
 
 	// Projects registered in data file (JSON array of strings)
-	if data, err := os.ReadFile(dataFilePath); err == nil {
+	if data, err := os.ReadFile(dataFilePath); err == nil { //nolint:gosec // dataFilePath is constructed from a controlled claude home path
 		var paths []string
 		if err := json.Unmarshal(data, &paths); err == nil {
 			for _, p := range paths {

@@ -15,7 +15,7 @@ func TestWriteFileAtomic_CreatesFile(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "out.txt")
 	require.NoError(t, lib.WriteFileAtomic(path, []byte("hello")))
-	content, err := os.ReadFile(path)
+	content, err := os.ReadFile(path) //nolint:gosec // path is a controlled temp file
 	require.NoError(t, err)
 	assert.Equal(t, "hello", string(content))
 }
@@ -25,7 +25,7 @@ func TestWriteFileAtomic_OverwritesExisting(t *testing.T) {
 	path := filepath.Join(dir, "out.txt")
 	require.NoError(t, lib.WriteFileAtomic(path, []byte("first")))
 	require.NoError(t, lib.WriteFileAtomic(path, []byte("second")))
-	content, err := os.ReadFile(path)
+	content, err := os.ReadFile(path) //nolint:gosec // path is a controlled temp file
 	require.NoError(t, err)
 	assert.Equal(t, "second", string(content))
 }

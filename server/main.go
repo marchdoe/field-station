@@ -1,3 +1,4 @@
+// Package main is the entry point for the field-station server.
 package main
 
 import (
@@ -38,7 +39,7 @@ func main() {
 					return
 				}
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
-				w.Write(indexData) //nolint:errcheck
+				_, _ = w.Write(indexData) //nolint:gosec // response write errors are non-fatal for static file serving
 				return
 			}
 			fileServer.ServeHTTP(w, r)
@@ -55,7 +56,7 @@ func main() {
 		ReadHeaderTimeout: 30 * time.Second,
 		IdleTimeout:       120 * time.Second,
 	}
-	log.Printf("field-station listening on %s (auth=%v, dev=%v)", addr, authEnabled, isDev)
+	log.Printf("field-station listening on %s (auth=%v, dev=%v)", addr, authEnabled, isDev) //nolint:gosec // addr and flags are operator-set; log injection risk is acceptable for startup messages
 	log.Fatal(srv.ListenAndServe())
 }
 

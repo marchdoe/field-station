@@ -32,7 +32,7 @@ func TestGetInstructions_GlobalScope_BothAbsent(t *testing.T) {
 
 func TestGetInstructions_GlobalScope_MainPresent(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
-	require.NoError(t, os.WriteFile(filepath.Join(claudeHome, "CLAUDE.md"), []byte("# Hello"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(claudeHome, "CLAUDE.md"), []byte("# Hello"), 0o600))
 
 	scope := api.GetInstructionsParamsScopeGlobal
 	resp, err := h.GetInstructions(context.Background(), api.GetInstructionsRequestObject{
@@ -51,7 +51,7 @@ func TestGetInstructions_ProjectScope_ReturnsProjectFiles(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
 	projectDir := t.TempDir()
 	encoded := registerProject(t, claudeHome, projectDir)
-	require.NoError(t, os.WriteFile(filepath.Join(projectDir, "CLAUDE.md"), []byte("# Project"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(projectDir, "CLAUDE.md"), []byte("# Project"), 0o600))
 
 	scope := api.GetInstructionsParamsScopeProject
 	resp, err := h.GetInstructions(context.Background(), api.GetInstructionsRequestObject{
@@ -90,7 +90,7 @@ func TestUpdateInstructions_GlobalScope_WritesMainFile(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	got, err := os.ReadFile(filepath.Join(claudeHome, "CLAUDE.md"))
+	got, err := os.ReadFile(filepath.Join(claudeHome, "CLAUDE.md")) //nolint:gosec // path is from t.TempDir(), safe in tests
 	require.NoError(t, err)
 	assert.Equal(t, content, string(got))
 }
@@ -109,7 +109,7 @@ func TestUpdateInstructions_GlobalScope_WritesLocalFile(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	got, err := os.ReadFile(filepath.Join(claudeHome, "CLAUDE.local.md"))
+	got, err := os.ReadFile(filepath.Join(claudeHome, "CLAUDE.local.md")) //nolint:gosec // path is from t.TempDir(), safe in tests
 	require.NoError(t, err)
 	assert.Equal(t, content, string(got))
 }
@@ -131,7 +131,7 @@ func TestUpdateInstructions_ProjectScope_WritesProjectFile(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	got, err := os.ReadFile(filepath.Join(projectDir, "CLAUDE.md"))
+	got, err := os.ReadFile(filepath.Join(projectDir, "CLAUDE.md")) //nolint:gosec // path is from t.TempDir(), safe in tests
 	require.NoError(t, err)
 	assert.Equal(t, content, string(got))
 }
@@ -142,7 +142,7 @@ func TestUpdateInstructions_ProjectScope_CreatesBackup(t *testing.T) {
 	encoded := registerProject(t, claudeHome, projectDir)
 
 	// Write an existing file so backup fires
-	require.NoError(t, os.WriteFile(filepath.Join(projectDir, "CLAUDE.md"), []byte("old"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(projectDir, "CLAUDE.md"), []byte("old"), 0o600))
 
 	scope := api.UpdateInstructionsRequestScopeProject
 	content := "# New"

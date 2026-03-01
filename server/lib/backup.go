@@ -17,6 +17,7 @@ import (
 // BackupOperation describes the mutation type that triggered a backup.
 type BackupOperation string
 
+// Backup operation types for use in BackupFile and related functions.
 const (
 	BackupOpUpdate BackupOperation = "update"
 	BackupOpDelete BackupOperation = "delete"
@@ -67,11 +68,12 @@ func generateBackupID() string {
 
 	buf := make([]byte, 3)
 	if _, err := rand.Read(buf); err != nil {
-		// Fallback to a pseudo-random suffix using nanoseconds
+		// Fallback to a pseudo-random suffix using nanoseconds.
+		// Mask to 0xFF before converting to byte to make the truncation explicit.
 		ns := now.UnixNano()
-		buf[0] = byte(ns)
-		buf[1] = byte(ns >> 8)
-		buf[2] = byte(ns >> 16)
+		buf[0] = byte(ns & 0xFF)        //nolint:gosec // intentional low-byte extraction
+		buf[1] = byte((ns >> 8) & 0xFF) //nolint:gosec // intentional low-byte extraction
+		buf[2] = byte((ns >> 16) & 0xFF) //nolint:gosec // intentional low-byte extraction
 	}
 	return ts + "-" + hex.EncodeToString(buf)
 }
@@ -79,11 +81,11 @@ func generateBackupID() string {
 // copyFile copies src to dst atomically using a temp file + rename.
 // This prevents a partial write from being visible to concurrent readers.
 func copyFile(src, dst string) error {
-	in, err := os.Open(src)
+	in, err := os.Open(src) //nolint:gosec // path validated by AssertSafePath or caller controls src
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer in.Close() //nolint:errcheck // error on read-only file close is non-fatal
 
 	dir := filepath.Dir(dst)
 	tmp, err := os.CreateTemp(dir, ".backup-*")
@@ -93,20 +95,20 @@ func copyFile(src, dst string) error {
 	tmpName := tmp.Name()
 
 	if _, err = io.Copy(tmp, in); err != nil {
-		tmp.Close()
-		os.Remove(tmpName)
+		_ = tmp.Close()               //nolint:errcheck // best-effort cleanup on copy failure
+		_ = os.Remove(tmpName)        //nolint:gosec,errcheck // tmpName from os.CreateTemp; best-effort cleanup
 		return err
 	}
 	if err := tmp.Sync(); err != nil {
-		tmp.Close()
-		os.Remove(tmpName)
+		_ = tmp.Close()               //nolint:errcheck // best-effort cleanup on sync failure
+		_ = os.Remove(tmpName)        //nolint:gosec,errcheck // tmpName from os.CreateTemp; best-effort cleanup
 		return err
 	}
 	if err := tmp.Close(); err != nil {
-		os.Remove(tmpName)
+		_ = os.Remove(tmpName)        //nolint:gosec,errcheck // tmpName from os.CreateTemp; best-effort cleanup
 		return err
 	}
-	return os.Rename(tmpName, dst)
+	return os.Rename(tmpName, dst) //nolint:gosec // dst is a controlled backup path
 }
 
 // BackupFile copies filePath into a new backup entry under claudeHome/backups/.
@@ -135,7 +137,7 @@ func doBackupFile(filePath string, operation BackupOperation, claudeHome string)
 
 	id := generateBackupID()
 	dir := filepath.Join(backupsDirPath(claudeHome), id)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return "", fmt.Errorf("cannot create backup dir: %w", err)
 	}
 
@@ -148,7 +150,7 @@ func doBackupFile(filePath string, operation BackupOperation, claudeHome string)
 	if err != nil {
 		return "", fmt.Errorf("cannot marshal meta: %w", err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "meta.json"), metaBytes, 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "meta.json"), metaBytes, 0o600); err != nil {
 		return "", fmt.Errorf("cannot write meta.json: %w", err)
 	}
 
@@ -174,7 +176,7 @@ func ListBackups(claudeHome string) []BackupEntry {
 		}
 		id := entry.Name()
 		metaPath := filepath.Join(dir, id, "meta.json")
-		data, err := os.ReadFile(metaPath)
+		data, err := os.ReadFile(metaPath) //nolint:gosec // metaPath is constructed from a controlled backup directory
 		if err != nil {
 			continue
 		}
@@ -219,10 +221,10 @@ func PruneOldBackups(claudeHome string) {
 		}
 		entryDir := filepath.Join(dir, entry.Name())
 		metaPath := filepath.Join(entryDir, "meta.json")
-		data, err := os.ReadFile(metaPath)
+		data, err := os.ReadFile(metaPath) //nolint:gosec // entryDir is a controlled backup subdirectory
 		if err != nil {
 			// Corrupted entry (no meta.json) — always remove
-			os.RemoveAll(entryDir)
+			_ = os.RemoveAll(entryDir) //nolint:errcheck // prune is best-effort; non-fatal
 			continue
 		}
 		var meta backupMeta
@@ -234,7 +236,7 @@ func PruneOldBackups(claudeHome string) {
 			continue
 		}
 		if ts.Before(cutoff) {
-			os.RemoveAll(entryDir)
+			_ = os.RemoveAll(entryDir) //nolint:errcheck // prune is best-effort; non-fatal
 		}
 	}
 }
@@ -243,7 +245,7 @@ func PruneOldBackups(claudeHome string) {
 // It backs up the current file first (making the restore itself undoable).
 func RestoreBackup(backupDir string, claudeHome string) error {
 	metaPath := filepath.Join(backupDir, "meta.json")
-	data, err := os.ReadFile(metaPath)
+	data, err := os.ReadFile(metaPath) //nolint:gosec // backupDir is validated by AssertSafePath in the API handler
 	if err != nil {
 		return fmt.Errorf("backup is corrupted — missing meta.json: %s", backupDir)
 	}
@@ -267,7 +269,7 @@ func RestoreBackup(backupDir string, claudeHome string) error {
 
 	// Ensure the parent directory exists
 	parentDir := filepath.Dir(meta.OriginalPath)
-	if err := os.MkdirAll(parentDir, 0o755); err != nil {
+	if err := os.MkdirAll(parentDir, 0o750); err != nil {
 		return fmt.Errorf("cannot create parent directory: %w", err)
 	}
 
@@ -277,7 +279,7 @@ func RestoreBackup(backupDir string, claudeHome string) error {
 	}
 
 	// Read the backup file content
-	fileData, err := os.ReadFile(backupFilePath)
+	fileData, err := os.ReadFile(backupFilePath) //nolint:gosec // backupFilePath is constructed from a controlled backup directory
 	if err != nil {
 		return fmt.Errorf("cannot read backup file: %w", err)
 	}

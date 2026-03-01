@@ -18,7 +18,7 @@ func TestResolveProjectPath_RegisteredProject(t *testing.T) {
 	withoutSlash := strings.TrimPrefix(projectPath, "/")
 	encoded := "-" + strings.ReplaceAll(withoutSlash, "/", "-")
 	// Register it (create the directory in claudeHome/projects/)
-	require.NoError(t, os.MkdirAll(filepath.Join(claudeHome, "projects", encoded), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(claudeHome, "projects", encoded), 0o750))
 
 	got, err := api.ExportedResolveProjectPath(claudeHome, encoded)
 	if err != nil {

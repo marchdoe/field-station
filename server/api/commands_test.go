@@ -16,8 +16,8 @@ import (
 func writeCommandFile(t *testing.T, commandDir, folder, name, body string) {
 	t.Helper()
 	dir := filepath.Join(commandDir, folder)
-	require.NoError(t, os.MkdirAll(dir, 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(dir, name+".md"), []byte(body), 0o644))
+	require.NoError(t, os.MkdirAll(dir, 0o750))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, name+".md"), []byte(body), 0o600))
 }
 
 // Issue D: GetCommand must reject path traversal via the folder/name parameters
@@ -27,10 +27,10 @@ func TestGetCommand_RejectsPathTraversalViaFolder(t *testing.T) {
 
 	// Put a sensitive file just outside the commands directory
 	sensitiveContent := "secret-token: abc123"
-	require.NoError(t, os.WriteFile(filepath.Join(claudeHome, "secrets.md"), []byte(sensitiveContent), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(claudeHome, "secrets.md"), []byte(sensitiveContent), 0o600))
 
 	// Ensure the commands dir exists so resolveCommandDir doesn't fail early
-	require.NoError(t, os.MkdirAll(filepath.Join(claudeHome, "commands"), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(claudeHome, "commands"), 0o750))
 
 	// folder=".." would resolve to claudeHome, letting the caller read secrets.md
 	_, err := h.GetCommand(context.Background(), api.GetCommandRequestObject{
@@ -66,7 +66,7 @@ func TestCreateCommand_RejectsPluginCacheTarget(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
 
 	cacheDir := filepath.Join(claudeHome, "plugins", "cache")
-	require.NoError(t, os.MkdirAll(cacheDir, 0o755))
+	require.NoError(t, os.MkdirAll(cacheDir, 0o750))
 	encoded := registerProject(t, claudeHome, cacheDir)
 
 	scope := api.CreateCommandRequestScopeProject
@@ -87,7 +87,7 @@ func TestCreateCommand_RejectsPluginCacheTarget(t *testing.T) {
 
 func TestUpdateCommand_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	fakeId := "-nonexistent-project"
+	fakeID := "-nonexistent-project"
 
 	scope := "project"
 	_, err := h.UpdateCommand(context.Background(), api.UpdateCommandRequestObject{
@@ -95,7 +95,7 @@ func TestUpdateCommand_RejectsUnregisteredProjectPath(t *testing.T) {
 		Folder: "myfolder",
 		Name:   "mycmd",
 		Body: &api.UpdateCommandJSONRequestBody{
-			ProjectId: &fakeId,
+			ProjectId: &fakeID,
 			Body:      "# bad command",
 		},
 	})
@@ -105,14 +105,14 @@ func TestUpdateCommand_RejectsUnregisteredProjectPath(t *testing.T) {
 
 func TestDeleteCommand_RejectsUnregisteredProjectPath(t *testing.T) {
 	h, _ := newTestHandler(t)
-	fakeId := "-nonexistent-project"
+	fakeID := "-nonexistent-project"
 
 	scope := "project"
 	_, err := h.DeleteCommand(context.Background(), api.DeleteCommandRequestObject{
 		Scope:  scope,
 		Folder: "myfolder",
 		Name:   "mycmd",
-		Params: api.DeleteCommandParams{ProjectId: &fakeId},
+		Params: api.DeleteCommandParams{ProjectId: &fakeID},
 	})
 	require.Error(t, err, "DeleteCommand must reject unregistered project ids")
 	assert.Contains(t, err.Error(), "unregistered")

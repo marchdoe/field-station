@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -40,7 +40,7 @@ func listSkillsFromDir(dir string) ([]SkillFile, error) {
 		folderName := entry.Name()
 		skillMdPath := filepath.Join(dir, folderName, "SKILL.md")
 
-		data, err := os.ReadFile(skillMdPath)
+		data, err := os.ReadFile(skillMdPath) //nolint:gosec // skillMdPath is constructed from os.ReadDir entries within a validated skills directory
 		if err != nil {
 			// Folder without SKILL.md is not a skill.
 			continue
@@ -73,7 +73,7 @@ func listSkillsFromDir(dir string) ([]SkillFile, error) {
 }
 
 // GetSkills lists all skills for the given scope.
-func (h *FieldStationHandler) GetSkills(ctx context.Context, request GetSkillsRequestObject) (GetSkillsResponseObject, error) {
+func (h *FieldStationHandler) GetSkills(_ context.Context, request GetSkillsRequestObject) (GetSkillsResponseObject, error) {
 	scope := "global"
 	if request.Params.Scope != nil {
 		scope = string(*request.Params.Scope)
@@ -103,7 +103,7 @@ func (h *FieldStationHandler) GetSkills(ctx context.Context, request GetSkillsRe
 }
 
 // GetSkill returns the detail of a single skill by folder name.
-func (h *FieldStationHandler) GetSkill(ctx context.Context, request GetSkillRequestObject) (GetSkillResponseObject, error) {
+func (h *FieldStationHandler) GetSkill(_ context.Context, request GetSkillRequestObject) (GetSkillResponseObject, error) {
 	var projectPath *string
 	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
 		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
@@ -126,7 +126,7 @@ func (h *FieldStationHandler) GetSkill(ctx context.Context, request GetSkillRequ
 		return nil, fmt.Errorf("skills: unsafe path: %w", err)
 	}
 
-	data, err := os.ReadFile(skillMdPath)
+	data, err := os.ReadFile(skillMdPath) //nolint:gosec // skillMdPath is validated by AssertSafePath above
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("skill not found: %s", folderName)
@@ -159,7 +159,7 @@ func (h *FieldStationHandler) GetSkill(ctx context.Context, request GetSkillRequ
 }
 
 // CreateSkill creates a new skill folder with a SKILL.md file.
-func (h *FieldStationHandler) CreateSkill(ctx context.Context, request CreateSkillRequestObject) (CreateSkillResponseObject, error) {
+func (h *FieldStationHandler) CreateSkill(_ context.Context, request CreateSkillRequestObject) (CreateSkillResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -189,7 +189,7 @@ func (h *FieldStationHandler) CreateSkill(ctx context.Context, request CreateSki
 		return nil, fmt.Errorf("skills: cannot write plugin-managed file: %s", skillMdPath)
 	}
 
-	if err := os.MkdirAll(folderPath, 0o755); err != nil {
+	if err := os.MkdirAll(folderPath, 0o750); err != nil {
 		return nil, fmt.Errorf("skills: cannot create folder %s: %w", folderPath, err)
 	}
 
@@ -207,7 +207,7 @@ func (h *FieldStationHandler) CreateSkill(ctx context.Context, request CreateSki
 	content := lib.SerializeMarkdown(fm)
 
 	// Atomic create — fail if already exists.
-	f, err := os.OpenFile(skillMdPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
+	f, err := os.OpenFile(skillMdPath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600) //nolint:gosec // skillMdPath is validated by AssertSafePath above
 	if err != nil {
 		if os.IsExist(err) {
 			return nil, fmt.Errorf("skills: skill already exists: %s", body.Name)
@@ -215,12 +215,12 @@ func (h *FieldStationHandler) CreateSkill(ctx context.Context, request CreateSki
 		return nil, fmt.Errorf("skills: cannot create %s: %w", skillMdPath, err)
 	}
 	if _, werr := f.WriteString(content); werr != nil {
-		f.Close()
-		os.Remove(skillMdPath)
+		_ = f.Close()                   //nolint:errcheck // best-effort cleanup on write failure
+		_ = os.Remove(skillMdPath)      //nolint:errcheck // best-effort cleanup on write failure
 		return nil, fmt.Errorf("skills: cannot write %s: %w", skillMdPath, werr)
 	}
 	if err := f.Close(); err != nil {
-		os.Remove(skillMdPath)
+		_ = os.Remove(skillMdPath) //nolint:errcheck // best-effort cleanup on close failure
 		return nil, fmt.Errorf("skills: cannot close %s: %w", skillMdPath, err)
 	}
 
@@ -240,7 +240,7 @@ func (h *FieldStationHandler) CreateSkill(ctx context.Context, request CreateSki
 }
 
 // UpdateSkill updates an existing skill's SKILL.md file.
-func (h *FieldStationHandler) UpdateSkill(ctx context.Context, request UpdateSkillRequestObject) (UpdateSkillResponseObject, error) {
+func (h *FieldStationHandler) UpdateSkill(_ context.Context, request UpdateSkillRequestObject) (UpdateSkillResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -295,7 +295,7 @@ func (h *FieldStationHandler) UpdateSkill(ctx context.Context, request UpdateSki
 }
 
 // DeleteSkill deletes a skill folder (including its SKILL.md).
-func (h *FieldStationHandler) DeleteSkill(ctx context.Context, request DeleteSkillRequestObject) (DeleteSkillResponseObject, error) {
+func (h *FieldStationHandler) DeleteSkill(_ context.Context, request DeleteSkillRequestObject) (DeleteSkillResponseObject, error) {
 	var projectPath *string
 	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
 		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)

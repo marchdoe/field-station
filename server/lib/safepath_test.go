@@ -88,7 +88,7 @@ func TestGetAllowedRoots_IncludesDataFilePaths(t *testing.T) {
 
 	dataFile := filepath.Join(claudeHome, "projects.json")
 	projectPath := t.TempDir()
-	require.NoError(t, os.WriteFile(dataFile, []byte(`["`+projectPath+`"]`), 0o644))
+	require.NoError(t, os.WriteFile(dataFile, []byte(`["`+projectPath+`"]`), 0o600))
 
 	roots := lib.GetAllowedRoots(dataFile)
 	absProject, _ := filepath.Abs(projectPath)
@@ -101,7 +101,7 @@ func TestGetAllowedRoots_IncludesProjectsDir(t *testing.T) {
 
 	// Create a project dir entry: -tmp-myproject encodes /tmp/myproject
 	projectsDir := filepath.Join(claudeHome, "projects")
-	require.NoError(t, os.MkdirAll(filepath.Join(projectsDir, "-tmp-myproject"), 0o755))
+	require.NoError(t, os.MkdirAll(filepath.Join(projectsDir, "-tmp-myproject"), 0o750))
 
 	roots := lib.GetAllowedRoots("/nonexistent/data.json")
 	assert.Contains(t, roots, "/tmp/myproject")

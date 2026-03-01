@@ -13,7 +13,7 @@ import (
 func TestGetConfigLayer_ExistingFile(t *testing.T) {
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "settings.json")
-	require.NoError(t, os.WriteFile(filePath, []byte(`{"key":"value"}`), 0o644))
+	require.NoError(t, os.WriteFile(filePath, []byte(`{"key":"value"}`), 0o600))
 
 	layer := lib.GetConfigLayer(filePath, lib.ConfigLayerGlobal)
 	assert.True(t, layer.Exists)
@@ -34,7 +34,7 @@ func TestGetConfigLayer_MissingFile(t *testing.T) {
 func TestGetConfigLayer_InvalidJSON(t *testing.T) {
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "bad.json")
-	require.NoError(t, os.WriteFile(filePath, []byte("not json{{{"), 0o644))
+	require.NoError(t, os.WriteFile(filePath, []byte("not json{{{"), 0o600))
 
 	layer := lib.GetConfigLayer(filePath, lib.ConfigLayerProject)
 	assert.True(t, layer.Exists)
@@ -57,7 +57,7 @@ func TestMergeConfigLayers_GlobalSettings(t *testing.T) {
 	require.NoError(t, os.WriteFile(
 		filepath.Join(claudeHome, "settings.json"),
 		[]byte(`{"theme":"dark"}`),
-		0o644,
+		0o600,
 	))
 
 	result := lib.MergeConfigLayers("")
@@ -71,12 +71,12 @@ func TestMergeConfigLayers_DeepMerge(t *testing.T) {
 	require.NoError(t, os.WriteFile(
 		filepath.Join(claudeHome, "settings.json"),
 		[]byte(`{"a":{"x":1,"y":2},"b":"hello"}`),
-		0o644,
+		0o600,
 	))
 	require.NoError(t, os.WriteFile(
 		filepath.Join(claudeHome, "settings.local.json"),
 		[]byte(`{"a":{"y":99,"z":3},"c":true}`),
-		0o644,
+		0o600,
 	))
 
 	result := lib.MergeConfigLayers("")
@@ -96,17 +96,17 @@ func TestMergeConfigLayers_ProjectLayers(t *testing.T) {
 
 	projectDir := t.TempDir()
 	claudeDir := filepath.Join(projectDir, ".claude")
-	require.NoError(t, os.MkdirAll(claudeDir, 0o755))
+	require.NoError(t, os.MkdirAll(claudeDir, 0o750))
 
 	require.NoError(t, os.WriteFile(
 		filepath.Join(claudeHome, "settings.json"),
 		[]byte(`{"global":true}`),
-		0o644,
+		0o600,
 	))
 	require.NoError(t, os.WriteFile(
 		filepath.Join(claudeDir, "settings.json"),
 		[]byte(`{"project":true}`),
-		0o644,
+		0o600,
 	))
 
 	result := lib.MergeConfigLayers(projectDir)
@@ -121,17 +121,17 @@ func TestMergeConfigLayers_LaterLayersOverride(t *testing.T) {
 
 	projectDir := t.TempDir()
 	claudeDir := filepath.Join(projectDir, ".claude")
-	require.NoError(t, os.MkdirAll(claudeDir, 0o755))
+	require.NoError(t, os.MkdirAll(claudeDir, 0o750))
 
 	require.NoError(t, os.WriteFile(
 		filepath.Join(claudeHome, "settings.json"),
 		[]byte(`{"mode":"global"}`),
-		0o644,
+		0o600,
 	))
 	require.NoError(t, os.WriteFile(
 		filepath.Join(claudeDir, "settings.json"),
 		[]byte(`{"mode":"project"}`),
-		0o644,
+		0o600,
 	))
 
 	result := lib.MergeConfigLayers(projectDir)
@@ -145,12 +145,12 @@ func TestMergeConfigLayers_ArraysReplaced(t *testing.T) {
 	require.NoError(t, os.WriteFile(
 		filepath.Join(claudeHome, "settings.json"),
 		[]byte(`{"items":[1,2]}`),
-		0o644,
+		0o600,
 	))
 	require.NoError(t, os.WriteFile(
 		filepath.Join(claudeHome, "settings.local.json"),
 		[]byte(`{"items":[3]}`),
-		0o644,
+		0o600,
 	))
 
 	result := lib.MergeConfigLayers("")

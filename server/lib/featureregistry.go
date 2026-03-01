@@ -3,6 +3,7 @@ package lib
 // FeatureCategory represents the category of a feature flag.
 type FeatureCategory string
 
+// Feature category constants for grouping features in the UI.
 const (
 	FeatureCategoryExperimental FeatureCategory = "experimental"
 	FeatureCategoryModel        FeatureCategory = "model"
@@ -16,6 +17,7 @@ const (
 // variable or a settings file key.
 type FeatureType string
 
+// Feature type constants indicating whether the feature is controlled via env var or settings key.
 const (
 	FeatureTypeEnv     FeatureType = "env"
 	FeatureTypeSetting FeatureType = "setting"

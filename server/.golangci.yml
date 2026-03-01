@@ -1,0 +1,20 @@
+version: "2"
+
+run:
+  build-tags:
+    - dev  # embed.go uses //go:embed all:dist which requires a built frontend
+
+linters:
+  default: none
+  enable:
+    - bodyclose    # HTTP response bodies not closed (server memory leak)
+    - errcheck     # Unchecked errors — the #1 Go footgun
+    - gosec        # Security anti-patterns
+    - govet        # Reports suspicious constructs
+    - ineffassign  # Values assigned but never used
+    - revive       # Style and convention (replaces golint)
+    - staticcheck  # Advanced static analysis
+    - unused       # Dead code
+  exclusions:
+    paths:
+      - "api/generated\\.go"  # oapi-codegen output — not hand-written

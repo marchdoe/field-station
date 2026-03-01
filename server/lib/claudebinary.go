@@ -13,11 +13,6 @@ import (
 	"time"
 )
 
-// envVarPattern matches strings that consist entirely of uppercase letters, digits,
-// and underscores, starting with an uppercase letter, with a minimum length of 4.
-// Mirroring the TypeScript: /^[A-Z][A-Z0-9_]+$/
-var envVarPattern = regexp.MustCompile(`^[A-Z][A-Z0-9_]+$`)
-
 // envVarPrefixPattern mirrors the TypeScript grep:
 // grep -E "^(CLAUDE_CODE_|DISABLE_)[A-Z0-9_]+$"
 var envVarPrefixPattern = regexp.MustCompile(`^(CLAUDE_CODE_|DISABLE_)[A-Z0-9_]+$`)

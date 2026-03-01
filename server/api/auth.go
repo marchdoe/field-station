@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -10,9 +10,8 @@ import (
 	"fieldstation/middleware"
 )
 
-// --- GetAuthStatus ---
-
-func (h *FieldStationHandler) GetAuthStatus(ctx context.Context, request GetAuthStatusRequestObject) (GetAuthStatusResponseObject, error) {
+// GetAuthStatus returns the current authentication status and whether setup is required.
+func (h *FieldStationHandler) GetAuthStatus(_ context.Context, _ GetAuthStatusRequestObject) (GetAuthStatusResponseObject, error) {
 	status := GetAuthStatus200JSONResponse{
 		AuthEnabled:   h.authEnabled,
 		SetupRequired: false,
@@ -31,8 +30,6 @@ func (h *FieldStationHandler) GetAuthStatus(ctx context.Context, request GetAuth
 
 	return status, nil
 }
-
-// --- SetupAuth ---
 
 type setupSuccessResponse struct {
 	cookieValue string
@@ -53,7 +50,8 @@ func (r setupSuccessResponse) VisitSetupAuthResponse(w http.ResponseWriter) erro
 	return json.NewEncoder(w).Encode(map[string]bool{"success": true})
 }
 
-func (h *FieldStationHandler) SetupAuth(ctx context.Context, request SetupAuthRequestObject) (SetupAuthResponseObject, error) {
+// SetupAuth initialises credentials on first run (403 if already configured).
+func (h *FieldStationHandler) SetupAuth(_ context.Context, request SetupAuthRequestObject) (SetupAuthResponseObject, error) {
 	exists, err := lib.CredentialsExist(h.claudeHome)
 	if err != nil {
 		return nil, err
@@ -77,8 +75,6 @@ func (h *FieldStationHandler) SetupAuth(ctx context.Context, request SetupAuthRe
 	cookieVal := middleware.CreateSession(signingKey)
 	return setupSuccessResponse{cookieValue: cookieVal}, nil
 }
-
-// --- Login ---
 
 type loginSuccessResponse struct {
 	cookieValue string
@@ -108,7 +104,8 @@ func (loginUnauthorizedResponse) VisitLoginResponse(w http.ResponseWriter) error
 	return nil
 }
 
-func (h *FieldStationHandler) Login(ctx context.Context, request LoginRequestObject) (LoginResponseObject, error) {
+// Login validates credentials and issues a session cookie.
+func (h *FieldStationHandler) Login(_ context.Context, request LoginRequestObject) (LoginResponseObject, error) {
 	if !h.authEnabled {
 		return loginSuccessResponse{}, nil
 	}
@@ -130,8 +127,6 @@ func (h *FieldStationHandler) Login(ctx context.Context, request LoginRequestObj
 	return loginSuccessResponse{cookieValue: cookieVal}, nil
 }
 
-// --- Logout ---
-
 type logoutClearResponse struct{}
 
 func (logoutClearResponse) VisitLogoutResponse(w http.ResponseWriter) error {
@@ -148,6 +143,7 @@ func (logoutClearResponse) VisitLogoutResponse(w http.ResponseWriter) error {
 	return json.NewEncoder(w).Encode(map[string]bool{"success": true})
 }
 
-func (h *FieldStationHandler) Logout(ctx context.Context, request LogoutRequestObject) (LogoutResponseObject, error) {
+// Logout clears the session cookie.
+func (h *FieldStationHandler) Logout(_ context.Context, _ LogoutRequestObject) (LogoutResponseObject, error) {
 	return logoutClearResponse{}, nil
 }

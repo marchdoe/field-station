@@ -20,7 +20,7 @@ func TestUpdateConfigSetting_GlobalSettings(t *testing.T) {
 
 	// Write an initial settings.json
 	settingsPath := filepath.Join(claudeHome, "settings.json")
-	require.NoError(t, os.WriteFile(settingsPath, []byte(`{"theme":"light"}`), 0o644))
+	require.NoError(t, os.WriteFile(settingsPath, []byte(`{"theme":"light"}`), 0o600))
 
 	_, err := h.UpdateConfigSetting(context.Background(), api.UpdateConfigSettingRequestObject{
 		Body: &api.UpdateConfigSettingJSONRequestBody{
@@ -30,7 +30,7 @@ func TestUpdateConfigSetting_GlobalSettings(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	data, err := os.ReadFile(settingsPath)
+	data, err := os.ReadFile(settingsPath) //nolint:gosec // path is from t.TempDir(), safe in tests
 	require.NoError(t, err)
 	assert.Contains(t, string(data), "dark")
 }
@@ -39,7 +39,7 @@ func TestDeleteConfigSetting_GlobalSettings(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
 
 	settingsPath := filepath.Join(claudeHome, "settings.json")
-	require.NoError(t, os.WriteFile(settingsPath, []byte(`{"theme":"dark","other":"value"}`), 0o644))
+	require.NoError(t, os.WriteFile(settingsPath, []byte(`{"theme":"dark","other":"value"}`), 0o600))
 
 	_, err := h.DeleteConfigSetting(context.Background(), api.DeleteConfigSettingRequestObject{
 		Body: &api.DeleteConfigSettingJSONRequestBody{
@@ -48,7 +48,7 @@ func TestDeleteConfigSetting_GlobalSettings(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	data, err := os.ReadFile(settingsPath)
+	data, err := os.ReadFile(settingsPath) //nolint:gosec // path is from t.TempDir(), safe in tests
 	require.NoError(t, err)
 	assert.NotContains(t, string(data), "dark")
 	assert.Contains(t, string(data), "other")
@@ -61,7 +61,7 @@ func TestGetConfig_GlobalScope_ReturnsLayers(t *testing.T) {
 
 	// Write a global settings file with a known value.
 	settingsPath := filepath.Join(claudeHome, "settings.json")
-	require.NoError(t, os.WriteFile(settingsPath, []byte(`{"theme":"dark"}`), 0o644))
+	require.NoError(t, os.WriteFile(settingsPath, []byte(`{"theme":"dark"}`), 0o600))
 
 	resp, err := h.GetConfig(context.Background(), api.GetConfigRequestObject{
 		Params: api.GetConfigParams{},
@@ -79,7 +79,7 @@ func TestMoveConfigSetting_GlobalUp_MovesToLocal(t *testing.T) {
 
 	// Put a key in global settings.
 	settingsPath := filepath.Join(claudeHome, "settings.json")
-	require.NoError(t, os.WriteFile(settingsPath, []byte(`{"verbosity":"verbose"}`), 0o644))
+	require.NoError(t, os.WriteFile(settingsPath, []byte(`{"verbosity":"verbose"}`), 0o600))
 
 	_, err := h.MoveConfigSetting(context.Background(), api.MoveConfigSettingRequestObject{
 		Body: &api.MoveConfigSettingJSONRequestBody{
@@ -91,7 +91,7 @@ func TestMoveConfigSetting_GlobalUp_MovesToLocal(t *testing.T) {
 
 	// Key must now appear in settings.local.json.
 	localPath := filepath.Join(claudeHome, "settings.local.json")
-	data, err := os.ReadFile(localPath)
+	data, err := os.ReadFile(localPath) //nolint:gosec // path is from t.TempDir(), safe in tests
 	require.NoError(t, err)
 	assert.Contains(t, string(data), "verbose")
 }

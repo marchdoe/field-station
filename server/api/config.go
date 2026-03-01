@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 // GetConfig returns the merged configuration with all layers.
-func (h *FieldStationHandler) GetConfig(ctx context.Context, request GetConfigRequestObject) (GetConfigResponseObject, error) {
+func (h *FieldStationHandler) GetConfig(_ context.Context, request GetConfigRequestObject) (GetConfigResponseObject, error) {
 	projectPath := ""
 	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
 		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
@@ -59,7 +59,7 @@ func (h *FieldStationHandler) resolveConfigFilePath(projectPath *string) (string
 }
 
 // UpdateConfigSetting updates a setting in the appropriate settings.json.
-func (h *FieldStationHandler) UpdateConfigSetting(ctx context.Context, request UpdateConfigSettingRequestObject) (UpdateConfigSettingResponseObject, error) {
+func (h *FieldStationHandler) UpdateConfigSetting(_ context.Context, request UpdateConfigSettingRequestObject) (UpdateConfigSettingResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -88,7 +88,7 @@ func (h *FieldStationHandler) UpdateConfigSetting(ctx context.Context, request U
 }
 
 // DeleteConfigSetting deletes a setting from the appropriate settings.json.
-func (h *FieldStationHandler) DeleteConfigSetting(ctx context.Context, request DeleteConfigSettingRequestObject) (DeleteConfigSettingResponseObject, error) {
+func (h *FieldStationHandler) DeleteConfigSetting(_ context.Context, request DeleteConfigSettingRequestObject) (DeleteConfigSettingResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -118,7 +118,7 @@ func (h *FieldStationHandler) DeleteConfigSetting(ctx context.Context, request D
 
 // MoveConfigSetting moves a config setting between base and local settings files.
 // When projectId is provided, moves between project-scoped settings files.
-func (h *FieldStationHandler) MoveConfigSetting(ctx context.Context, request MoveConfigSettingRequestObject) (MoveConfigSettingResponseObject, error) {
+func (h *FieldStationHandler) MoveConfigSetting(_ context.Context, request MoveConfigSettingRequestObject) (MoveConfigSettingResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}

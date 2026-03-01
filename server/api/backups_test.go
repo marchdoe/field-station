@@ -27,7 +27,7 @@ func TestGetBackups_ReturnsEntries(t *testing.T) {
 
 	// Create a file and back it up using lib.BackupFile.
 	original := filepath.Join(claudeHome, "test.json")
-	require.NoError(t, os.WriteFile(original, []byte(`{"key":"value"}`), 0o644))
+	require.NoError(t, os.WriteFile(original, []byte(`{"key":"value"}`), 0o600))
 	lib.BackupFile(original, lib.BackupOpUpdate, claudeHome)
 
 	resp, err := h.GetBackups(context.Background(), api.GetBackupsRequestObject{})
@@ -43,12 +43,12 @@ func TestRestoreBackup_RestoresFile(t *testing.T) {
 
 	// Create and back up a file.
 	original := filepath.Join(claudeHome, "agents", "test.md")
-	require.NoError(t, os.MkdirAll(filepath.Dir(original), 0o755))
-	require.NoError(t, os.WriteFile(original, []byte("original content"), 0o644))
+	require.NoError(t, os.MkdirAll(filepath.Dir(original), 0o750))
+	require.NoError(t, os.WriteFile(original, []byte("original content"), 0o600))
 	lib.BackupFile(original, lib.BackupOpUpdate, claudeHome)
 
 	// Overwrite the original.
-	require.NoError(t, os.WriteFile(original, []byte("overwritten"), 0o644))
+	require.NoError(t, os.WriteFile(original, []byte("overwritten"), 0o600))
 
 	// Get backup ID from listing.
 	backups := lib.ListBackups(claudeHome)
@@ -61,7 +61,7 @@ func TestRestoreBackup_RestoresFile(t *testing.T) {
 	require.NoError(t, err)
 
 	// Original file should be restored.
-	data, err := os.ReadFile(original)
+	data, err := os.ReadFile(original) //nolint:gosec // path is from t.TempDir(), safe in tests
 	require.NoError(t, err)
 	assert.Equal(t, "original content", string(data))
 }

@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -51,7 +51,7 @@ func listCommandsFromDir(dir string) ([]CommandFile, error) {
 			filePath := filepath.Join(folderPath, mdEntry.Name())
 			name := strings.TrimSuffix(mdEntry.Name(), ".md")
 
-			data, err := os.ReadFile(filePath)
+			data, err := os.ReadFile(filePath) //nolint:gosec // filePath is constructed from os.ReadDir entries within a validated commands directory
 			if err != nil {
 				continue
 			}
@@ -69,7 +69,7 @@ func listCommandsFromDir(dir string) ([]CommandFile, error) {
 }
 
 // GetCommands lists all command files for the given scope.
-func (h *FieldStationHandler) GetCommands(ctx context.Context, request GetCommandsRequestObject) (GetCommandsResponseObject, error) {
+func (h *FieldStationHandler) GetCommands(_ context.Context, request GetCommandsRequestObject) (GetCommandsResponseObject, error) {
 	scope := "global"
 	if request.Params.Scope != nil {
 		scope = string(*request.Params.Scope)
@@ -99,7 +99,7 @@ func (h *FieldStationHandler) GetCommands(ctx context.Context, request GetComman
 }
 
 // GetCommand returns the detail of a single command by scope, folder, and name.
-func (h *FieldStationHandler) GetCommand(ctx context.Context, request GetCommandRequestObject) (GetCommandResponseObject, error) {
+func (h *FieldStationHandler) GetCommand(_ context.Context, request GetCommandRequestObject) (GetCommandResponseObject, error) {
 	var projectPath *string
 	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
 		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)
@@ -120,7 +120,7 @@ func (h *FieldStationHandler) GetCommand(ctx context.Context, request GetCommand
 		return nil, fmt.Errorf("commands: unsafe path: %w", err)
 	}
 
-	data, err := os.ReadFile(filePath)
+	data, err := os.ReadFile(filePath) //nolint:gosec // path validated by AssertSafePath above
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("command not found: %s/%s", request.Folder, request.Name)
@@ -139,7 +139,7 @@ func (h *FieldStationHandler) GetCommand(ctx context.Context, request GetCommand
 }
 
 // CreateCommand creates a new command file inside the specified folder.
-func (h *FieldStationHandler) CreateCommand(ctx context.Context, request CreateCommandRequestObject) (CreateCommandResponseObject, error) {
+func (h *FieldStationHandler) CreateCommand(_ context.Context, request CreateCommandRequestObject) (CreateCommandResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -169,12 +169,12 @@ func (h *FieldStationHandler) CreateCommand(ctx context.Context, request CreateC
 		return nil, fmt.Errorf("commands: cannot write plugin-managed file: %s", filePath)
 	}
 
-	if err := os.MkdirAll(folderPath, 0o755); err != nil {
+	if err := os.MkdirAll(folderPath, 0o750); err != nil {
 		return nil, fmt.Errorf("commands: cannot create folder %s: %w", folderPath, err)
 	}
 
 	// Fail if file already exists (atomic create).
-	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
+	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600) //nolint:gosec // filePath is validated by AssertSafePath above
 	if err != nil {
 		if os.IsExist(err) {
 			return nil, fmt.Errorf("commands: command already exists: %s/%s", body.Folder, body.Name)
@@ -182,12 +182,12 @@ func (h *FieldStationHandler) CreateCommand(ctx context.Context, request CreateC
 		return nil, fmt.Errorf("commands: cannot create %s: %w", filePath, err)
 	}
 	if _, werr := f.WriteString(body.Body); werr != nil {
-		f.Close()
-		os.Remove(filePath)
+		_ = f.Close()                //nolint:errcheck // best-effort cleanup on write failure
+		_ = os.Remove(filePath)     //nolint:errcheck // best-effort cleanup on write failure
 		return nil, fmt.Errorf("commands: cannot write %s: %w", filePath, werr)
 	}
 	if err := f.Close(); err != nil {
-		os.Remove(filePath)
+		_ = os.Remove(filePath) //nolint:errcheck // best-effort cleanup on close failure
 		return nil, fmt.Errorf("commands: cannot close %s: %w", filePath, err)
 	}
 
@@ -202,7 +202,7 @@ func (h *FieldStationHandler) CreateCommand(ctx context.Context, request CreateC
 }
 
 // UpdateCommand updates an existing command file.
-func (h *FieldStationHandler) UpdateCommand(ctx context.Context, request UpdateCommandRequestObject) (UpdateCommandResponseObject, error) {
+func (h *FieldStationHandler) UpdateCommand(_ context.Context, request UpdateCommandRequestObject) (UpdateCommandResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -241,7 +241,7 @@ func (h *FieldStationHandler) UpdateCommand(ctx context.Context, request UpdateC
 }
 
 // DeleteCommand deletes a command file.
-func (h *FieldStationHandler) DeleteCommand(ctx context.Context, request DeleteCommandRequestObject) (DeleteCommandResponseObject, error) {
+func (h *FieldStationHandler) DeleteCommand(_ context.Context, request DeleteCommandRequestObject) (DeleteCommandResponseObject, error) {
 	var projectPath *string
 	if request.Params.ProjectId != nil && *request.Params.ProjectId != "" {
 		pp, err := resolveProjectPath(h.claudeHome, *request.Params.ProjectId)

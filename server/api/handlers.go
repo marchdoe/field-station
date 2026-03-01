@@ -1,8 +1,7 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
-	"net/http"
 )
 
 // FieldStationHandler implements StrictServerInterface.
@@ -23,13 +22,7 @@ func NewHandler(claudeHome string, authEnabled bool) *FieldStationHandler {
 	}
 }
 
-// write501 writes a 501 Not Implemented response.
-func write501(w http.ResponseWriter) error {
-	http.Error(w, "Not Implemented", http.StatusNotImplemented)
-	return nil
-}
-
 // GetHealth returns server health status.
-func (h *FieldStationHandler) GetHealth(ctx context.Context, request GetHealthRequestObject) (GetHealthResponseObject, error) {
+func (h *FieldStationHandler) GetHealth(_ context.Context, _ GetHealthRequestObject) (GetHealthResponseObject, error) {
 	return GetHealth200JSONResponse{Status: "ok"}, nil
 }

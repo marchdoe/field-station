@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -11,18 +11,18 @@ import (
 
 // resolveInstructionsDir returns the directory containing CLAUDE.md for the given scope.
 // For global scope: claudeHome. For project scope: the decoded project root.
-func (h *FieldStationHandler) resolveInstructionsDir(scope string, projectId *string) (string, error) {
+func (h *FieldStationHandler) resolveInstructionsDir(scope string, projectID *string) (string, error) {
 	if scope == "project" {
-		if projectId == nil || *projectId == "" {
+		if projectID == nil || *projectID == "" {
 			return "", fmt.Errorf("projectId is required for project scope")
 		}
-		return resolveProjectPath(h.claudeHome, *projectId)
+		return resolveProjectPath(h.claudeHome, *projectID)
 	}
 	return h.claudeHome, nil
 }
 
 func readInstructionsFile(path string) InstructionsFile {
-	content, err := os.ReadFile(path)
+	content, err := os.ReadFile(path) //nolint:gosec // path is constructed from a validated project or claude home directory
 	if err != nil {
 		return InstructionsFile{FilePath: path, Exists: false, Content: nil}
 	}
@@ -31,7 +31,7 @@ func readInstructionsFile(path string) InstructionsFile {
 }
 
 // GetInstructions returns CLAUDE.md and CLAUDE.local.md for the given scope.
-func (h *FieldStationHandler) GetInstructions(ctx context.Context, request GetInstructionsRequestObject) (GetInstructionsResponseObject, error) {
+func (h *FieldStationHandler) GetInstructions(_ context.Context, request GetInstructionsRequestObject) (GetInstructionsResponseObject, error) {
 	scope := "global"
 	if request.Params.Scope != nil {
 		scope = string(*request.Params.Scope)
@@ -49,7 +49,7 @@ func (h *FieldStationHandler) GetInstructions(ctx context.Context, request GetIn
 }
 
 // UpdateInstructions writes CLAUDE.md or CLAUDE.local.md for the given scope.
-func (h *FieldStationHandler) UpdateInstructions(ctx context.Context, request UpdateInstructionsRequestObject) (UpdateInstructionsResponseObject, error) {
+func (h *FieldStationHandler) UpdateInstructions(_ context.Context, request UpdateInstructionsRequestObject) (UpdateInstructionsResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -77,7 +77,7 @@ func (h *FieldStationHandler) UpdateInstructions(ctx context.Context, request Up
 		lib.BackupFile(filePath, lib.BackupOpUpdate, h.claudeHome)
 	}
 
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return nil, fmt.Errorf("instructions: cannot create directory %s: %w", dir, err)
 	}
 

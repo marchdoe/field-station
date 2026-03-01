@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -13,19 +13,19 @@ import (
 // memoryDirForProject returns the memory directory path for the given projectId.
 // Memory lives at claudeHome/projects/<projectId>/memory/ — the encoded directory
 // is used directly (no decoding needed for the memory path itself).
-func (h *FieldStationHandler) memoryDirForProject(projectId string) (string, error) {
+func (h *FieldStationHandler) memoryDirForProject(projectID string) (string, error) {
 	// Validate the project is registered by calling resolveProjectPath (discards result).
-	if _, err := resolveProjectPath(h.claudeHome, projectId); err != nil {
+	if _, err := resolveProjectPath(h.claudeHome, projectID); err != nil {
 		return "", err
 	}
-	return filepath.Join(h.claudeHome, "projects", projectId, "memory"), nil
+	return filepath.Join(h.claudeHome, "projects", projectID, "memory"), nil
 }
 
 // validateMemoryFilename returns an error if the filename is unsafe:
 // must end in .md and contain no path separators or dot-dot sequences.
 func validateMemoryFilename(filename string) error {
 	if filename == "" || strings.ContainsAny(filename, "/\\") || strings.Contains(filename, "..") {
-		return fmt.Errorf("invalid filename %q: must not contain path separators or ..", filename)
+		return fmt.Errorf("invalid filename %q: must not contain path separators or dot-dot sequences", filename)
 	}
 	if !strings.HasSuffix(filename, ".md") {
 		return fmt.Errorf("invalid filename %q: must end in .md", filename)
@@ -34,7 +34,7 @@ func validateMemoryFilename(filename string) error {
 }
 
 // ListMemory returns all *.md files in the project's memory directory.
-func (h *FieldStationHandler) ListMemory(ctx context.Context, request ListMemoryRequestObject) (ListMemoryResponseObject, error) {
+func (h *FieldStationHandler) ListMemory(_ context.Context, request ListMemoryRequestObject) (ListMemoryResponseObject, error) {
 	dir, err := h.memoryDirForProject(request.Params.ProjectId)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (h *FieldStationHandler) ListMemory(ctx context.Context, request ListMemory
 			continue
 		}
 		filePath := filepath.Join(dir, entry.Name())
-		content, err := os.ReadFile(filePath)
+		content, err := os.ReadFile(filePath) //nolint:gosec // filePath is constructed from a validated project or claude home directory
 		if err != nil {
 			continue
 		}
@@ -66,7 +66,7 @@ func (h *FieldStationHandler) ListMemory(ctx context.Context, request ListMemory
 }
 
 // GetMemory returns the full content of a single memory file.
-func (h *FieldStationHandler) GetMemory(ctx context.Context, request GetMemoryRequestObject) (GetMemoryResponseObject, error) {
+func (h *FieldStationHandler) GetMemory(_ context.Context, request GetMemoryRequestObject) (GetMemoryResponseObject, error) {
 	if err := validateMemoryFilename(request.Filename); err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (h *FieldStationHandler) GetMemory(ctx context.Context, request GetMemoryRe
 		return nil, err
 	}
 	filePath := filepath.Join(dir, request.Filename)
-	content, err := os.ReadFile(filePath)
+	content, err := os.ReadFile(filePath) //nolint:gosec // filePath is constructed from a validated project or claude home directory
 	if err != nil {
 		return nil, fmt.Errorf("memory: file not found: %s", request.Filename)
 	}
@@ -87,7 +87,7 @@ func (h *FieldStationHandler) GetMemory(ctx context.Context, request GetMemoryRe
 }
 
 // CreateMemory creates a new memory file.
-func (h *FieldStationHandler) CreateMemory(ctx context.Context, request CreateMemoryRequestObject) (CreateMemoryResponseObject, error) {
+func (h *FieldStationHandler) CreateMemory(_ context.Context, request CreateMemoryRequestObject) (CreateMemoryResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -100,7 +100,7 @@ func (h *FieldStationHandler) CreateMemory(ctx context.Context, request CreateMe
 	if err != nil {
 		return nil, err
 	}
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return nil, fmt.Errorf("memory: cannot create directory: %w", err)
 	}
 	filePath := filepath.Join(dir, body.Filename)
@@ -115,7 +115,7 @@ func (h *FieldStationHandler) CreateMemory(ctx context.Context, request CreateMe
 }
 
 // UpdateMemory overwrites an existing memory file.
-func (h *FieldStationHandler) UpdateMemory(ctx context.Context, request UpdateMemoryRequestObject) (UpdateMemoryResponseObject, error) {
+func (h *FieldStationHandler) UpdateMemory(_ context.Context, request UpdateMemoryRequestObject) (UpdateMemoryResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -138,7 +138,7 @@ func (h *FieldStationHandler) UpdateMemory(ctx context.Context, request UpdateMe
 }
 
 // DeleteMemory removes a memory file.
-func (h *FieldStationHandler) DeleteMemory(ctx context.Context, request DeleteMemoryRequestObject) (DeleteMemoryResponseObject, error) {
+func (h *FieldStationHandler) DeleteMemory(_ context.Context, request DeleteMemoryRequestObject) (DeleteMemoryResponseObject, error) {
 	if err := validateMemoryFilename(request.Filename); err != nil {
 		return nil, err
 	}

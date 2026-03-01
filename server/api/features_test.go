@@ -34,7 +34,7 @@ func TestUpdateFeature_WritesValueToSettings(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	data, err := os.ReadFile(filepath.Join(claudeHome, "settings.json"))
+	data, err := os.ReadFile(filepath.Join(claudeHome, "settings.json")) //nolint:gosec // path is from t.TempDir(), safe in tests
 	require.NoError(t, err)
 	assert.Contains(t, string(data), "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR")
 	assert.Contains(t, string(data), "1")
@@ -47,14 +47,14 @@ func TestDeleteFeature_RemovesValueFromSettings(t *testing.T) {
 	// correct path (env.CLAUDE_CODE_DISABLE_AUTO_MEMORY) and removes it.
 	settingsPath := filepath.Join(claudeHome, "settings.json")
 	require.NoError(t, os.WriteFile(settingsPath,
-		[]byte(`{"env":{"CLAUDE_CODE_DISABLE_AUTO_MEMORY":"1"}}`), 0o644))
+		[]byte(`{"env":{"CLAUDE_CODE_DISABLE_AUTO_MEMORY":"1"}}`), 0o600))
 
 	_, err := h.DeleteFeature(context.Background(), api.DeleteFeatureRequestObject{
 		Key: "CLAUDE_CODE_DISABLE_AUTO_MEMORY",
 	})
 	require.NoError(t, err)
 
-	data, err := os.ReadFile(settingsPath)
+	data, err := os.ReadFile(settingsPath) //nolint:gosec // path is from t.TempDir(), safe in tests
 	require.NoError(t, err)
 	assert.NotContains(t, string(data), "CLAUDE_CODE_DISABLE_AUTO_MEMORY")
 }

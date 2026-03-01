@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -36,11 +36,11 @@ func getFeatureCurrentValue(key string, featureType lib.FeatureType, settings li
 }
 
 // GetFeatures scans the Claude binary and assembles the full feature list with current values.
-func (h *FieldStationHandler) GetFeatures(ctx context.Context, request GetFeaturesRequestObject) (GetFeaturesResponseObject, error) {
+func (h *FieldStationHandler) GetFeatures(_ context.Context, _ GetFeaturesRequestObject) (GetFeaturesResponseObject, error) {
 	scan := lib.ScanClaudeBinary()
 	allFeatures := lib.AllFeatures()
 	settingsPath := filepath.Join(h.claudeHome, "settings.json")
-	settings := lib.ReadJsonFileSafe(settingsPath)
+	settings := lib.ReadJSONFileSafe(settingsPath)
 
 	features := make([]Feature, 0, len(allFeatures)+len(scan.EnvVars))
 	seen := make(map[string]struct{}, len(allFeatures)+len(scan.EnvVars))
@@ -104,7 +104,7 @@ func (h *FieldStationHandler) GetFeatures(ctx context.Context, request GetFeatur
 // UpdateFeature writes a feature value to the global settings file.
 // For env-type features, the value is stored under settings["env"][key].
 // For setting-type features, the value is stored at the dot-path key.
-func (h *FieldStationHandler) UpdateFeature(ctx context.Context, request UpdateFeatureRequestObject) (UpdateFeatureResponseObject, error) {
+func (h *FieldStationHandler) UpdateFeature(_ context.Context, request UpdateFeatureRequestObject) (UpdateFeatureResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -130,7 +130,7 @@ func (h *FieldStationHandler) UpdateFeature(ctx context.Context, request UpdateF
 // DeleteFeature removes a feature value from the global settings file.
 // For env-type features, the value lives under settings["env"][key].
 // For setting-type features, the value lives at the dot-path key.
-func (h *FieldStationHandler) DeleteFeature(ctx context.Context, request DeleteFeatureRequestObject) (DeleteFeatureResponseObject, error) {
+func (h *FieldStationHandler) DeleteFeature(_ context.Context, request DeleteFeatureRequestObject) (DeleteFeatureResponseObject, error) {
 	key := request.Key
 	settingsPath := filepath.Join(h.claudeHome, "settings.json")
 

@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 var validBackupIDPattern = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
 
 // GetBackups lists all backup entries from ~/.claude/backups/, newest first.
-func (h *FieldStationHandler) GetBackups(ctx context.Context, request GetBackupsRequestObject) (GetBackupsResponseObject, error) {
+func (h *FieldStationHandler) GetBackups(_ context.Context, _ GetBackupsRequestObject) (GetBackupsResponseObject, error) {
 	entries := lib.ListBackups(h.claudeHome)
 
 	result := make([]BackupFile, 0, len(entries))
@@ -37,7 +37,7 @@ func (h *FieldStationHandler) GetBackups(ctx context.Context, request GetBackups
 }
 
 // RestoreBackup restores a backup snapshot by ID.
-func (h *FieldStationHandler) RestoreBackup(ctx context.Context, request RestoreBackupRequestObject) (RestoreBackupResponseObject, error) {
+func (h *FieldStationHandler) RestoreBackup(_ context.Context, request RestoreBackupRequestObject) (RestoreBackupResponseObject, error) {
 	id := request.Id
 	if !validBackupIDPattern.MatchString(id) {
 		return nil, fmt.Errorf("invalid backup ID format: %q", id)

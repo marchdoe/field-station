@@ -18,7 +18,7 @@ func TestGetPlugins_ReturnsFullMetadata(t *testing.T) {
 	h, claudeHome := newTestHandler(t)
 
 	pluginsDir := filepath.Join(claudeHome, "plugins")
-	require.NoError(t, os.MkdirAll(pluginsDir, 0o755))
+	require.NoError(t, os.MkdirAll(pluginsDir, 0o750))
 
 	// Write an installed_plugins.json with rich metadata
 	installedJSON := map[string]interface{}{
@@ -38,7 +38,7 @@ func TestGetPlugins_ReturnsFullMetadata(t *testing.T) {
 	}
 	data, err := json.Marshal(installedJSON)
 	require.NoError(t, err)
-	require.NoError(t, os.WriteFile(filepath.Join(pluginsDir, "installed_plugins.json"), data, 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(pluginsDir, "installed_plugins.json"), data, 0o600))
 
 	resp, err := h.GetPlugins(context.Background(), api.GetPluginsRequestObject{})
 	require.NoError(t, err)

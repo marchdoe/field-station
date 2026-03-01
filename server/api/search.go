@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -26,7 +26,7 @@ func searchMatchesQuery(query string, texts ...string) bool {
 
 // Search returns a filtered list of agents, commands, and skills matching the
 // query string. When projectPath is provided, also includes project-scoped resources.
-func (h *FieldStationHandler) Search(ctx context.Context, request SearchRequestObject) (SearchResponseObject, error) {
+func (h *FieldStationHandler) Search(_ context.Context, request SearchRequestObject) (SearchResponseObject, error) {
 	query := request.Params.Q
 
 	// Resolve project path from projectId if provided.

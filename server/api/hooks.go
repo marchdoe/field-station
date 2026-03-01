@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -57,7 +57,7 @@ func (h *FieldStationHandler) settingsHooksPath(scope string, projectPath string
 // readHooksByEvent reads the hooks map from a settings.json file.
 // Returns nil if the file does not exist or has no hooks key.
 func readHooksByEvent(settingsPath string) map[string][]settingsHookDefinition {
-	settings := lib.ReadJsonFileSafe(settingsPath)
+	settings := lib.ReadJSONFileSafe(settingsPath)
 	hooksRaw, ok := settings["hooks"]
 	if !ok || hooksRaw == nil {
 		return nil
@@ -121,7 +121,7 @@ func hooksByEventToAPIType(hooksMap map[string][]settingsHookDefinition) *HooksB
 }
 
 // GetHooks reads hooks from global (and optionally project) settings.
-func (h *FieldStationHandler) GetHooks(ctx context.Context, request GetHooksRequestObject) (GetHooksResponseObject, error) {
+func (h *FieldStationHandler) GetHooks(_ context.Context, request GetHooksRequestObject) (GetHooksResponseObject, error) {
 	globalSettingsPath := filepath.Join(h.claudeHome, "settings.json")
 	globalHooks := readHooksByEvent(globalSettingsPath)
 	globalByEvent := hooksByEventToAPIType(globalHooks)
@@ -164,7 +164,7 @@ func parseHookID(id string) (event string, index int, err error) {
 
 // writeHooksToSettings reads settings, replaces the hooks key, and writes back atomically.
 func writeHooksToSettings(settingsPath string, claudeHome string, hooksMap map[string][]settingsHookDefinition) error {
-	settings := lib.ReadJsonFileSafe(settingsPath)
+	settings := lib.ReadJSONFileSafe(settingsPath)
 
 	if len(hooksMap) == 0 {
 		delete(settings, "hooks")
@@ -182,11 +182,11 @@ func writeHooksToSettings(settingsPath string, claudeHome string, hooksMap map[s
 	}
 
 	lib.BackupFile(settingsPath, lib.BackupOpUpdate, claudeHome)
-	return lib.WriteJsonFileSafe(settingsPath, settings)
+	return lib.WriteJSONFileSafe(settingsPath, settings)
 }
 
 // CreateHook appends a new HookDefinition to the specified event in settings.
-func (h *FieldStationHandler) CreateHook(ctx context.Context, request CreateHookRequestObject) (CreateHookResponseObject, error) {
+func (h *FieldStationHandler) CreateHook(_ context.Context, request CreateHookRequestObject) (CreateHookResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -229,7 +229,7 @@ func (h *FieldStationHandler) CreateHook(ctx context.Context, request CreateHook
 }
 
 // UpdateHook replaces the hook at the given event:index position.
-func (h *FieldStationHandler) UpdateHook(ctx context.Context, request UpdateHookRequestObject) (UpdateHookResponseObject, error) {
+func (h *FieldStationHandler) UpdateHook(_ context.Context, request UpdateHookRequestObject) (UpdateHookResponseObject, error) {
 	if request.Body == nil {
 		return nil, fmt.Errorf("request body is required")
 	}
@@ -281,7 +281,7 @@ func (h *FieldStationHandler) UpdateHook(ctx context.Context, request UpdateHook
 }
 
 // DeleteHook removes the hook at the given event:index position.
-func (h *FieldStationHandler) DeleteHook(ctx context.Context, request DeleteHookRequestObject) (DeleteHookResponseObject, error) {
+func (h *FieldStationHandler) DeleteHook(_ context.Context, request DeleteHookRequestObject) (DeleteHookResponseObject, error) {
 	event, index, err := parseHookID(request.Id)
 	if err != nil {
 		return nil, err

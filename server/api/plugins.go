@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -25,10 +25,10 @@ type installedPluginsFile struct {
 }
 
 // GetPlugins lists all installed plugins from ~/.claude/plugins/installed_plugins.json.
-func (h *FieldStationHandler) GetPlugins(ctx context.Context, request GetPluginsRequestObject) (GetPluginsResponseObject, error) {
+func (h *FieldStationHandler) GetPlugins(_ context.Context, _ GetPluginsRequestObject) (GetPluginsResponseObject, error) {
 	pluginsPath := filepath.Join(h.claudeHome, "plugins", "installed_plugins.json")
 
-	data, err := os.ReadFile(pluginsPath)
+	data, err := os.ReadFile(pluginsPath) //nolint:gosec // pluginsPath is constructed from a controlled claude home path
 	if err != nil {
 		// Return empty list if file does not exist or cannot be read.
 		return GetPlugins200JSONResponse([]PluginFile{}), nil

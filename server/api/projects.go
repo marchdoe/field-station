@@ -1,4 +1,4 @@
-package api
+package api //nolint:revive // "api" is a meaningful package name for this HTTP handler package
 
 import (
 	"context"
@@ -21,7 +21,7 @@ func userHomeDir() string {
 
 // GetProjects lists all project directories from ~/.claude/projects/.
 // Each entry is a directory whose name is the encoded project path.
-func (h *FieldStationHandler) GetProjects(ctx context.Context, request GetProjectsRequestObject) (GetProjectsResponseObject, error) {
+func (h *FieldStationHandler) GetProjects(_ context.Context, _ GetProjectsRequestObject) (GetProjectsResponseObject, error) {
 	projectsDir := filepath.Join(h.claudeHome, "projects")
 
 	entries, err := os.ReadDir(projectsDir)
@@ -71,7 +71,7 @@ func (h *FieldStationHandler) GetProjects(ctx context.Context, request GetProjec
 }
 
 // PostProjects batch-registers one or more project paths under ~/.claude/projects/.
-func (h *FieldStationHandler) PostProjects(ctx context.Context, req PostProjectsRequestObject) (PostProjectsResponseObject, error) {
+func (h *FieldStationHandler) PostProjects(_ context.Context, req PostProjectsRequestObject) (PostProjectsResponseObject, error) {
 	var result []ProjectFile
 	for _, rawPath := range req.Body.Paths {
 		path := filepath.Clean(rawPath)
@@ -84,7 +84,7 @@ func (h *FieldStationHandler) PostProjects(ctx context.Context, req PostProjects
 		}
 		encoded := lib.EncodePath(path)
 		entry := filepath.Join(h.claudeHome, "projects", encoded)
-		if err := os.MkdirAll(entry, 0o755); err != nil {
+		if err := os.MkdirAll(entry, 0o750); err != nil {
 			return PostProjects400JSONResponse{Error: "failed to register project"}, nil
 		}
 		result = append(result, ProjectFile{Name: filepath.Base(path), Path: path})
@@ -96,7 +96,7 @@ func (h *FieldStationHandler) PostProjects(ctx context.Context, req PostProjects
 }
 
 // ScanProjects scans a folder for subdirectories that contain a .claude/ directory.
-func (h *FieldStationHandler) ScanProjects(ctx context.Context, req ScanProjectsRequestObject) (ScanProjectsResponseObject, error) {
+func (h *FieldStationHandler) ScanProjects(_ context.Context, req ScanProjectsRequestObject) (ScanProjectsResponseObject, error) {
 	folderRaw := req.Params.Folder
 	if folderRaw == "" {
 		return ScanProjects400JSONResponse{Error: "folder is required"}, nil
@@ -147,7 +147,7 @@ func (h *FieldStationHandler) ScanProjects(ctx context.Context, req ScanProjects
 }
 
 // DeleteProject removes a registered project directory from ~/.claude/projects/.
-func (h *FieldStationHandler) DeleteProject(ctx context.Context, req DeleteProjectRequestObject) (DeleteProjectResponseObject, error) {
+func (h *FieldStationHandler) DeleteProject(_ context.Context, req DeleteProjectRequestObject) (DeleteProjectResponseObject, error) {
 	projectID := req.ProjectId
 
 	// A valid encoded path always starts with "-" (the leading "/" becomes "-")

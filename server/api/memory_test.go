@@ -11,14 +11,14 @@ import (
 	"fieldstation/api"
 )
 
-func memoryDir(claudeHome, projectId string) string {
-	return filepath.Join(claudeHome, "projects", projectId, "memory")
+func memoryDir(claudeHome, projectID string) string {
+	return filepath.Join(claudeHome, "projects", projectID, "memory")
 }
 
 func writeMemoryFile(t *testing.T, dir, filename, content string) {
 	t.Helper()
-	require.NoError(t, os.MkdirAll(dir, 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(dir, filename), []byte(content), 0o644))
+	require.NoError(t, os.MkdirAll(dir, 0o750))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, filename), []byte(content), 0o600))
 }
 
 // --- ListMemory ---
@@ -45,7 +45,7 @@ func TestListMemory_ReturnsMdFiles(t *testing.T) {
 	writeMemoryFile(t, dir, "MEMORY.md", "# My memory")
 	writeMemoryFile(t, dir, "notes.md", "Some notes")
 	// a non-.md file should be ignored
-	require.NoError(t, os.WriteFile(filepath.Join(dir, "ignore.txt"), []byte("skip"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "ignore.txt"), []byte("skip"), 0o600))
 
 	resp, err := h.ListMemory(context.Background(), api.ListMemoryRequestObject{
 		Params: api.ListMemoryParams{ProjectId: encoded},
@@ -164,7 +164,7 @@ func TestUpdateMemory_OverwritesAndBacksUp(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	got, err := os.ReadFile(filepath.Join(dir, "MEMORY.md"))
+	got, err := os.ReadFile(filepath.Join(dir, "MEMORY.md")) //nolint:gosec // path is from t.TempDir(), safe in tests
 	require.NoError(t, err)
 	assert.Equal(t, "new content", string(got))
 

@@ -15,7 +15,6 @@ linters:
     - revive       # Style and convention (replaces golint)
     - staticcheck  # Advanced static analysis
     - unused       # Dead code
-
-issues:
-  exclude-files:
-    - "api/generated\\.go"  # oapi-codegen output — not hand-written
+  exclusions:
+    paths:
+      - "api/generated\\.go"  # oapi-codegen output — not hand-written

@@ -17,6 +17,13 @@ export default defineConfig({
     include: ["src/**/*.test.{ts,tsx}"],
     coverage: {
       provider: "v8",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/**/*.test.{ts,tsx}", "src/lib/api-types.ts", "src/routeTree.gen.ts"],
+      thresholds: {
+        lines: 20,
+        functions: 20,
+        branches: 15,
+      },
     },
   },
 });

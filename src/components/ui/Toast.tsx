@@ -69,7 +69,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext value={{ toast: addToast }}>
       {children}
-      {/* biome-ignore lint/a11y/useSemanticElements: role="status" on div is correct for toast notifications container */}
       <div
         role="status"
         aria-live="polite"

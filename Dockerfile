@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Build the Go binary (with embedded frontend)
-FROM golang:1.24-bookworm AS builder
+FROM golang:1.26-bookworm AS builder
 WORKDIR /app
 COPY --from=frontend /app /app
 COPY server/go.mod server/go.sum ./server/

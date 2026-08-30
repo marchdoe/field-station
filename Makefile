@@ -40,9 +40,12 @@ generate:
 		--config api/oapi-codegen.yaml \
 		../server/openapi.yaml
 
-# Regenerate TypeScript types from openapi.yaml
+# Regenerate TypeScript types from openapi.yaml.
+# openapi-typescript peers typescript@^5.x and crashes on the repo's
+# TypeScript 7, so it runs in an isolated npx env with its own pinned TS 5.
 generate-ts:
-	npx openapi-typescript server/openapi.yaml -o src/lib/api-types.ts
+	npx -y -p typescript@5.9.3 -p openapi-typescript@7.13.0 \
+		openapi-typescript server/openapi.yaml -o src/lib/api-types.ts
 
 # Verify generated files are up to date (for CI)
 generate-check:
